@@ -1,8 +1,8 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar>
-    <ion-title>Tali</ion-title>
+  <ion-toolbar class="topbar">
+    <ion-title class="app-title">Tali</ion-title>
     <ion-buttons slot="end">
-      <ion-button>
+      <ion-button class="profile-button" aria-label="Profile">
         <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
       </ion-button>
     </ion-buttons>
@@ -10,41 +10,56 @@
 </ion-header>
 
 <ion-content class="feed-content">
-  @for (post of posts; track post) {
-  <div class="post">
-    <ion-avatar class="post-avatar">
-      <ion-icon name="person-circle-outline"></ion-icon>
-    </ion-avatar>
-    <div class="post-body">
-      <div class="post-header">
-        <span class="post-name">{{ post.name }}</span>
-        <span class="post-username">{{ post.username }}</span>
+  <div class="content-shell">
+    @for (post of posts; track post) {
+    <article class="post">
+      <ion-avatar class="post-avatar">
+        <ion-icon name="person-circle-outline"></ion-icon>
+      </ion-avatar>
+
+      <div class="post-body">
+        <div class="post-header-row">
+          <div class="post-identity">
+            <span class="post-name">{{ post.name }}</span>
+            <span class="post-username">{{ post.username }}</span>
+          </div>
+          <button class="post-more" type="button" aria-label="More options">•••</button>
+        </div>
+
+        <p class="post-text">{{ post.text }}</p>
+
+        @if (post.hasImage) {
+        <div class="post-image" aria-label="Post visual"></div>
+        }
+
+        <div class="post-actions">
+          <span class="action-pill">5</span>
+          <span class="action-pill">12</span>
+          <span class="action-pill">23</span>
+          <span class="action-pill">1</span>
+        </div>
       </div>
-      <p class="post-text">{{ post.text }}</p>
-      @if (post.hasImage) {
-      <div class="post-image"></div>
-      }
-    </div>
+    </article>
+    }
   </div>
-  }
 </ion-content>
 
 <ion-footer class="ion-no-border">
   <ion-toolbar class="tab-bar">
-    <ion-button fill="clear">
+    <ion-button fill="clear" class="nav-button is-active" aria-label="Home">
       <ion-icon name="home-sharp" color="primary"></ion-icon>
     </ion-button>
-    <ion-button fill="clear">
+    <ion-button fill="clear" class="nav-button" aria-label="Search">
       <ion-icon name="search-outline"></ion-icon>
     </ion-button>
-    <ion-button fill="clear">
+    <ion-button fill="clear" class="nav-button add-button" aria-label="New post">
       <ion-icon name="add-circle" class="tab-add"></ion-icon>
     </ion-button>
-    <ion-button fill="clear">
+    <ion-button fill="clear" class="nav-button" aria-label="Favorites">
       <ion-icon name="heart-outline"></ion-icon>
     </ion-button>
-    <ion-button fill="clear">
+    <ion-button fill="clear" class="nav-button" aria-label="Profile">
       <ion-icon name="person-outline"></ion-icon>
-    </ion-button> 
-  </ion-toolbar> 
-</ion-footer> 
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

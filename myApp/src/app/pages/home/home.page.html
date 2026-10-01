@@ -1,5 +1,6 @@
 <ion-header class="home-header ion-no-border">
   <ion-toolbar>
+    <div class="toolbar-brand">Tali</div>
     <ion-buttons slot="end">
       <ion-button fill="clear" class="search-button" aria-label="Search" routerLink="/search">
         <ion-icon slot="icon-only" name="search-outline"></ion-icon>
@@ -9,62 +10,71 @@
 </ion-header>
 
 <ion-content class="home-content" [fullscreen]="true">
-  <div class="logo-row">
-    <img class="home-logo" src="assets/logo.svg" alt="Tali logo" />
-  </div>
-
-  <section class="profile-panel">
-    <ion-avatar class="profile-avatar">
-      <ion-icon name="person-circle-outline"></ion-icon>
-    </ion-avatar>
-    <div class="profile-copy">
-      <h1>{{ accountService.selectedAccount()?.name || 'Welcome to Tali' }}</h1>
-      <p>{{ accountService.selectedAccount()?.username || 'Start a conversation that matters.' }}</p>
-    </div>
-  </section>
-
-  <div class="feed-heading">
-    <h2>For you</h2>
-  </div>
-
-  @if (postService.posts().length === 0) {
-    <section class="feed-empty">
-      <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
-      <h3>No posts yet</h3>
-      <p>Posts from you and other accounts will appear here.</p>
-      <ion-button fill="clear" routerLink="/add-post">
-        <ion-icon slot="start" name="add-circle"></ion-icon>
-        Create a post
-      </ion-button>
-    </section>
-  }
-
-  @for (post of postService.posts(); track post.id) {
-    <article class="post-card">
-      <div class="post-topline">
-        <ion-avatar class="post-avatar"><ion-icon name="person-circle-outline"></ion-icon></ion-avatar>
-        <div>
-          <strong>{{ post.authorName }}</strong>
-          <span>{{ post.authorUsername }} · {{ post.createdAt | date:'short' }}</span>
-        </div>
+  <div class="screen-shell">
+    <section class="profile-panel">
+      <ion-avatar class="profile-avatar">
+        <ion-icon name="person-circle-outline"></ion-icon>
+      </ion-avatar>
+      <div class="profile-copy">
+        <h1>{{ accountService.selectedAccount()?.name || 'Welcome to Tali' }}</h1>
+        <p>{{ accountService.selectedAccount()?.username || 'Start a conversation that matters.' }}</p>
       </div>
-      @if (post.body) { <p>{{ post.body }}</p> }
-      @for (attachment of post.attachments; track $index) {
-        @if (attachment.type.startsWith('image/')) {
-          <img class="post-media" [src]="attachment.dataUrl" [alt]="attachment.name" />
-        } @else if (attachment.type.startsWith('video/')) {
-          <video class="post-media" controls playsinline preload="metadata" [attr.aria-label]="attachment.name">
-            <source [src]="attachment.dataUrl" [type]="attachment.type" />
-          </video>
-        } @else {
-          <a class="post-file" [href]="attachment.dataUrl" [download]="attachment.name">
-            <ion-icon name="document-outline" aria-hidden="true"></ion-icon>
-            <span>{{ attachment.name }}</span>
-          </a>
+    </section>
+
+    <div class="feed-heading">
+      <h2>For you</h2>
+    </div>
+
+    @if (postService.posts().length === 0) {
+      <section class="feed-empty">
+        <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
+        <h3>No posts yet</h3>
+        <p>Posts from you and other accounts will appear here.</p>
+        <ion-button fill="clear" routerLink="/add-post">
+          <ion-icon slot="start" name="add-circle"></ion-icon>
+          Create a post
+        </ion-button>
+      </section>
+    }
+
+    @for (post of postService.posts(); track post.id) {
+      <article class="post-card">
+        <div class="post-topline">
+          <ion-avatar class="post-avatar"><ion-icon name="person-circle-outline"></ion-icon></ion-avatar>
+          <div class="post-user-details">
+            <strong>{{ post.authorName }}</strong>
+            <span>{{ post.authorUsername }} · {{ post.createdAt | date:'short' }}</span>
+          </div>
+          <ion-button fill="clear" class="post-more" aria-label="More options">
+            <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
+          </ion-button>
+        </div>
+
+        @if (post.body) { <p>{{ post.body }}</p> }
+
+        @for (attachment of post.attachments; track $index) {
+          @if (attachment.type.startsWith('image/')) {
+            <img class="post-media" [src]="attachment.dataUrl" [alt]="attachment.name" />
+          } @else if (attachment.type.startsWith('video/')) {
+            <video class="post-media" controls playsinline preload="metadata" [attr.aria-label]="attachment.name">
+              <source [src]="attachment.dataUrl" [type]="attachment.type" />
+            </video>
+          } @else {
+            <a class="post-file" [href]="attachment.dataUrl" [download]="attachment.name">
+              <ion-icon name="document-outline" aria-hidden="true"></ion-icon>
+              <span>{{ attachment.name }}</span>
+            </a>
+          }
         }
-      }
-    </article>
-  }
+
+        <div class="post-actions">
+          <span class="action-pill"><ion-icon name="chatbubble-outline"></ion-icon> 14</span>
+          <span class="action-pill"><ion-icon name="heart-outline"></ion-icon> 23</span>
+          <span class="action-pill"><ion-icon name="search-outline"></ion-icon> 4</span>
+        </div>
+      </article>
+    }
+  </div>
 </ion-content>
 
 <ion-footer class="home-footer ion-no-border">
