@@ -1,0 +1,77 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login" text=""></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="create-account-content" [fullscreen]="true">
+  <div class="create-account-wrapper">
+    <ion-avatar class="create-account-avatar">
+      <img src="assets/logo.svg" alt="Tali logo" />
+    </ion-avatar>
+
+    <div class="create-account-card">
+      <div class="create-account-heading">
+        <span class="create-account-eyebrow">JOIN THE CIRCLE</span>
+        <h1>Create your account</h1>
+        <p>Set up your Tali profile to get started.</p>
+      </div>
+
+    <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !firstName.trim()">
+      <ion-input
+        label="First name"
+        labelPlacement="floating"
+        [(ngModel)]="firstName"
+        placeholder="Enter your first name"
+        required
+      ></ion-input>
+    </ion-item>
+
+    <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !lastName.trim()">
+      <ion-input
+        label="Last name"
+        labelPlacement="floating"
+        [(ngModel)]="lastName"
+        placeholder="Enter your last name"
+        required
+      ></ion-input>
+    </ion-item>
+
+    <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !emailOrNumber.trim()">
+      <ion-input
+        label="Email or number"
+        labelPlacement="floating"
+        [(ngModel)]="emailOrNumber"
+        placeholder="Enter your email or number"
+        required
+      ></ion-input>
+    </ion-item>
+
+    <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !password.trim()">
+      <ion-input
+        label="Password"
+        labelPlacement="floating"
+        type="password"
+        [(ngModel)]="password"
+        placeholder="Create a password"
+        required
+      ></ion-input>
+    </ion-item>
+
+    @if (submitted && (!firstName.trim() || !lastName.trim() || !emailOrNumber.trim() || !password.trim())) {
+      <p class="create-account-error">Please fill in all fields to continue.</p>
+    }
+
+      <ion-button expand="block" shape="round" class="create-account-button" (click)="createAccount()">
+        Create account
+      </ion-button>
+    </div>
+
+    <p class="create-account-footer">
+      Already have an account?
+      <a (click)="goToLogin()">Log in</a>
+    </p>
+  </div>
+</ion-content>

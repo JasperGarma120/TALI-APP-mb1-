@@ -1,0 +1,47 @@
+<ion-content class="login-content" [fullscreen]="true">
+  <div class="login-wrapper">
+    <ion-avatar class="login-avatar">
+      <img src="assets/logo.svg" alt="Tali logo" />
+    </ion-avatar>
+
+    <ion-item class="login-field" lines="none" [class.field-invalid]="submitted && !username.trim()">
+      <ion-input
+        label="Username or email"
+        labelPlacement="floating"
+        [(ngModel)]="username"
+        placeholder="Enter username/email/number"
+      ></ion-input>
+    </ion-item>
+
+    <ion-item class="login-field" lines="none" [class.field-invalid]="submitted && !password.trim()">
+      <ion-input
+        label="Password"
+        labelPlacement="floating"
+        type="password"
+        [(ngModel)]="password"
+        placeholder="Enter password"
+      ></ion-input>
+    </ion-item>
+
+    @if (submitted && (!username.trim() || !password.trim())) {
+      <p class="login-error">Please fill in both fields to continue.</p>
+    }
+
+    @if (submitted && username.trim() && password.trim() && !accountService.authenticate(username, password)) {
+      <p class="login-error">That account does not exist or the password is incorrect.</p>
+    }
+
+    <ion-button expand="block" shape="round" class="login-button" (click)="logIn()">
+      Log in
+    </ion-button>
+
+    <div class="login-links">
+      <ion-button fill="clear" class="login-link-button" (click)="goToSelectAccount()">
+        Select Account
+      </ion-button>
+      <ion-button fill="clear" class="login-link-button" (click)="goToCreateAccount()">
+        Create Account
+      </ion-button>
+    </div>
+  </div>
+</ion-content>

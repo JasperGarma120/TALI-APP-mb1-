@@ -1,0 +1,48 @@
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  {
+    path: 'login',
+    loadComponent: () => import('./pages/login/login.page').then((m) => m.LoginPage),
+  },
+  {
+    path: 'create-account',
+    loadComponent: () =>
+      import('./pages/create-account/create-account.page').then((m) => m.CreateAccountPage),
+  },
+  {
+    path: 'select-account',
+    loadComponent: () =>
+      import('./pages/select-account/select-account.page').then((m) => m.SelectAccountPage),
+  },
+  {
+    path: 'more-accounts',
+    loadComponent: () =>
+      import('./pages/more-accounts/more-accounts.page').then((m) => m.MoreAccountsPage),
+  },
+  {
+    path: 'home',
+    loadComponent: () => import('./pages/home/home.page').then((m) => m.HomePage),
+  },
+  {
+    path: 'search',
+    loadComponent: () => import('./pages/search/search.page').then((m) => m.SearchPage),
+  },
+  {
+    path: 'messages',
+    loadComponent: () => import('./pages/messages/messages.page').then((m) => m.MessagesPage),
+  },
+  {
+    path: 'add-post',
+    loadComponent: () => import('./pages/add-post/add-post.page').then((m) => m.AddPostPage),
+  },
+  {
+    path: 'suggestions',
+    loadComponent: () => import('./pages/suggestions/suggestions.page').then((m) => m.SuggestionsPage),
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./pages/profile/profile.page').then((m) => m.ProfilePage),
+  },
+];

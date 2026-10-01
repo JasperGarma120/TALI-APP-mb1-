@@ -1,0 +1,207 @@
+.home-content {
+  --background: #101313;
+}
+
+.home-header,
+.home-footer {
+  --background: #101313;
+  --border-color: rgba(237, 241, 239, 0.12);
+}
+
+.home-header ion-toolbar {
+  min-height: 42px;
+  --background: #101313;
+}
+
+.search-button {
+  width: 48px;
+  height: 48px;
+  margin-right: 6px;
+  --color: #edf1ef;
+  font-size: 1.7rem;
+}
+
+.logo-row {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 4px;
+}
+
+.home-logo {
+  width: 54px;
+  height: 54px;
+  border: 3px solid rgba(237, 241, 239, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px rgba(141, 170, 160, 0.12), 0 8px 22px rgba(0, 0, 0, 0.28);
+}
+
+.profile-panel {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 6px 18px 0;
+  padding: 14px 0 18px;
+  border-bottom: 1px solid rgba(237, 241, 239, 0.12);
+}
+
+.profile-avatar,
+.post-avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  background: #d9d9d9;
+  color: #101313;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border: 2px solid #edf1ef;
+}
+
+.profile-avatar ion-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.profile-copy h1 {
+  margin: 0 0 4px;
+  color: #edf1ef;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.profile-copy p,
+.post-topline span {
+  margin: 0;
+  color: #929b99;
+  font-size: 0.78rem;
+}
+
+.feed-heading {
+  padding: 16px 18px 8px;
+}
+
+.feed-heading h2 {
+  margin: 0;
+  color: #edf1ef;
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.feed-empty {
+  display: flex;
+  min-height: 34vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+}
+
+.feed-empty > ion-icon {
+  width: 42px;
+  height: 42px;
+  color: #a9c9bd;
+}
+
+.feed-empty h3 { margin: 14px 0 6px; color: #edf1ef; font-size: 1rem; }
+.feed-empty p { margin: 0; color: #929b99; font-size: .82rem; }
+.feed-empty ion-button { margin-top: 10px; --color: #a9c9bd; }
+
+.post-card {
+  margin: 0 18px;
+  padding: 14px 0 16px;
+  border-bottom: 1px solid rgba(237, 241, 239, 0.12);
+}
+
+.post-topline {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.post-avatar {
+  width: 44px;
+  height: 44px;
+  border: 2px solid #8daaa0;
+}
+
+.post-topline strong,
+.post-topline span {
+  display: block;
+}
+
+.post-topline strong {
+  color: #edf1ef;
+  font-size: 0.84rem;
+}
+
+.post-topline span {
+  margin-top: 3px;
+  font-size: 0.7rem;
+}
+
+.post-more {
+  min-height: 30px;
+  margin-left: auto;
+  --color: #929b99;
+  font-size: 1.15rem;
+}
+
+.post-card > p {
+  margin: 10px 0 10px 53px;
+  color: #d7dfdc;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.post-media {
+  display: block;
+  width: calc(100% - 53px);
+  max-height: 480px;
+  margin-left: 53px;
+  border-radius: 12px;
+  object-fit: contain;
+  background: #202020;
+}
+
+.post-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 53px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #202020;
+  color: #d7dfdc;
+  text-decoration: none;
+}
+
+.post-file ion-icon { flex: 0 0 22px; font-size: 1.4rem; }
+.post-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.home-footer ion-toolbar {
+  display: flex;
+  justify-content: space-around;
+  min-height: 70px;
+  padding: 4px 10px;
+  --background: #101313;
+}
+
+.home-footer ion-button {
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  --color: #929b99;
+  font-size: 1.45rem;
+}
+
+.home-footer .active-tab,
+.home-footer .compose-button {
+  --color: #edf1ef;
+}
+
+.home-footer .compose-button {
+  font-size: 1.9rem;
+}

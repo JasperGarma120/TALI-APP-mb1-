@@ -1,0 +1,41 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/login" text=""></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="select-content" [fullscreen]="true">
+  <div class="select-header">
+    <ion-avatar class="profile-avatar">
+      <ion-icon name="person-circle-outline"></ion-icon>
+    </ion-avatar>
+  </div>
+
+  <ion-list class="account-list" lines="none">
+    @for (account of previewAccounts; track account.username) {
+      <ion-item button="true" (click)="chooseAccount(account)">
+        <ion-avatar slot="start" class="account-avatar">
+          <ion-icon name="person-circle-outline"></ion-icon>
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ account.name }}</h2>
+          <p>{{ account.username }}</p>
+        </ion-label>
+      </ion-item>
+    }
+  </ion-list>
+
+  @if (!previewAccounts.length) {
+    <div class="empty-state">
+      <h1>No accounts yet</h1>
+      <p>Create an account first, then it will appear here.</p>
+    </div>
+  }
+
+  <div class="more-link" (click)="goToMoreAccounts()">
+    <span>More accounts</span>
+    <ion-icon name="chevron-forward-outline"></ion-icon>
+  </div>
+</ion-content>

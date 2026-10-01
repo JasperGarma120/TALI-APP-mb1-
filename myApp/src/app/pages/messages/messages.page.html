@@ -1,0 +1,44 @@
+<ion-header class="page-header ion-no-border">
+  <ion-toolbar>
+    <h1>Messages</h1>
+    <ion-button fill="clear" slot="end" aria-label="New message">
+      <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="page-content" [fullscreen]="true">
+  <ion-searchbar placeholder="Search" aria-label="Search messages"></ion-searchbar>
+
+  <div class="message-tabs" role="tablist" aria-label="Message folders">
+    <ion-button fill="clear" class="filter-button" aria-label="Filter messages" [class.selected-filter]="showFilters" (click)="showFilters = !showFilters">
+      <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
+    </ion-button>
+    <ion-button fill="clear" role="tab" [attr.aria-selected]="activeTab === 'inbox'" [class.active-tab]="activeTab === 'inbox'" (click)="activeTab = 'inbox'">Inbox</ion-button>
+    <ion-button fill="clear" role="tab" [attr.aria-selected]="activeTab === 'requests'" [class.active-tab]="activeTab === 'requests'" (click)="activeTab = 'requests'">Requests</ion-button>
+  </div>
+
+  @if (showFilters) {
+    <div class="filter-menu" aria-label="Message filters">
+      @for (filter of filters; track filter) {
+        <button type="button" [class.selected-option]="activeFilter === filter" (click)="activeFilter = filter; showFilters = false">
+          @if (activeFilter === filter) { <ion-icon name="checkmark-outline"></ion-icon> }
+          {{ filter }}
+        </button>
+      }
+    </div>
+  }
+
+  <section class="empty-state" aria-live="polite">
+    <div class="empty-icon"><ion-icon [name]="activeTab === 'inbox' ? 'chatbubble-outline' : 'paper-plane-outline'"></ion-icon></div>
+    <h2>{{ activeTab === 'inbox' ? 'No messages yet' : 'No message requests yet' }}</h2>
+    <p>{{ activeTab === 'inbox' ? 'When you start a conversation, it will appear here.' : 'Messages from people you don’t follow will appear here.' }}</p>
+  </section>
+</ion-content>
+<ion-footer class="page-footer ion-no-border"><ion-toolbar>
+  <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
+  <ion-button fill="clear" class="active-tab" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
+  <ion-button fill="clear" class="compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
+  <ion-button fill="clear" routerLink="/suggestions" aria-label="Suggestions"><ion-icon slot="icon-only" name="trending-up-outline"></ion-icon></ion-button>
+  <ion-button fill="clear" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
+</ion-toolbar></ion-footer>

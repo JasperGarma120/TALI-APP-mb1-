@@ -1,0 +1,24 @@
+.page-content { --background: #101313; }
+.page-header, .page-footer { --background: #101313; --border-color: rgba(237, 241, 239, .12); }
+.page-header ion-toolbar { --background: #101313; padding: 8px 18px; }
+.page-header h1 { margin: 0; color: #edf1ef; font-size: 1.2rem; font-weight: 650; }
+.page-header ion-button { --color: #a9c9bd; }
+.profile-top { display: flex; flex-direction: column; align-items: center; padding: 26px 18px 22px; text-align: center; }
+.profile-top ion-avatar { display: grid; width: 92px; height: 92px; place-items: center; border: 2px solid #a9c9bd; background: #d9d9d9; color: #101313; }
+.profile-top ion-avatar ion-icon { width: 70px; height: 70px; }
+.profile-top h2 { margin: 14px 0 4px; color: #edf1ef; font-size: 1.05rem; }
+.profile-top p { margin: 0 0 12px; color: #929b99; font-size: .8rem; }
+.profile-top ion-button { --color: #a9c9bd; --border-color: #627d73; font-size: .74rem; }
+.stats-row { display: flex; justify-content: space-evenly; padding: 16px 0; border-top: 1px solid rgba(237, 241, 239, .12); border-bottom: 1px solid rgba(237, 241, 239, .12); }
+.stats-row div { display: grid; gap: 3px; text-align: center; }
+.stats-row strong { color: #edf1ef; font-size: .9rem; }
+.stats-row span { color: #929b99; font-size: .72rem; }
+.profile-posts { padding: 18px; }
+.profile-posts h2 { margin: 0; color: #edf1ef; font-size: .9rem; }
+.empty-profile { display: grid; justify-items: center; padding: 54px 10px; color: #929b99; text-align: center; }
+.empty-profile ion-icon { color: #8daaa0; font-size: 1.8rem; }
+.empty-profile p { font-size: .78rem; }
+.page-footer ion-toolbar { display: flex; justify-content: space-around; min-height: 70px; padding: 4px 10px; --background: #101313; }
+.page-footer ion-button { width: 48px; height: 48px; margin: 0; --color: #929b99; font-size: 1.45rem; }
+.page-footer .active-tab, .page-footer .compose-button { --color: #edf1ef; }
+.page-footer .compose-button { font-size: 1.9rem; }

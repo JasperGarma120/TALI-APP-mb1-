@@ -1,0 +1,30 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/select-account" text=""></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="more-content" [fullscreen]="true">
+  <ion-list lines="none">
+    @for (account of accountService.accounts(); track account.username) {
+      <ion-item button="true" (click)="chooseAccount(account)">
+        <ion-avatar slot="start" class="account-avatar">
+          <ion-icon name="person-circle-outline"></ion-icon>
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ account.name }}</h2>
+          <p>{{ account.username }}</p>
+        </ion-label>
+      </ion-item>
+    }
+  </ion-list>
+
+  @if (!accountService.accounts().length) {
+    <div class="empty-state">
+      <h1>No accounts yet</h1>
+      <p>Create an account first, then it will appear here.</p>
+    </div>
+  }
+</ion-content>

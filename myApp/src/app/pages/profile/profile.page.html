@@ -1,0 +1,18 @@
+<ion-header class="page-header ion-no-border"><ion-toolbar><h1>Profile</h1><ion-button fill="clear" slot="end" aria-label="Settings"><ion-icon slot="icon-only" name="settings-outline"></ion-icon></ion-button></ion-toolbar></ion-header>
+<ion-content class="page-content" [fullscreen]="true">
+  <section class="profile-top">
+    <ion-avatar><ion-icon name="person-circle-outline"></ion-icon></ion-avatar>
+    <h2>{{ accountService.selectedAccount()?.name || 'Your profile' }}</h2>
+    <p>{{ accountService.selectedAccount()?.username || '@your.username' }}</p>
+    <ion-button fill="outline" size="small"><ion-icon slot="start" name="create-outline"></ion-icon>Edit profile</ion-button>
+  </section>
+  <div class="stats-row"><div><strong>0</strong><span>Posts</span></div><div><strong>0</strong><span>Followers</span></div><div><strong>0</strong><span>Following</span></div></div>
+  <section class="profile-posts"><h2>Your posts</h2><div class="empty-profile"><ion-icon name="create-outline"></ion-icon><p>Your shared thoughts will appear here.</p></div></section>
+</ion-content>
+<ion-footer class="page-footer ion-no-border"><ion-toolbar>
+  <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
+  <ion-button fill="clear" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
+  <ion-button fill="clear" class="compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
+  <ion-button fill="clear" routerLink="/suggestions" aria-label="Suggestions"><ion-icon slot="icon-only" name="trending-up-outline"></ion-icon></ion-button>
+  <ion-button fill="clear" class="active-tab" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
+</ion-toolbar></ion-footer>

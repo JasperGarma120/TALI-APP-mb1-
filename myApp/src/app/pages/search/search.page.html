@@ -1,0 +1,39 @@
+<ion-header class="page-header ion-no-border">
+  <ion-toolbar><h1>Search</h1></ion-toolbar>
+</ion-header>
+<ion-content class="page-content" [fullscreen]="true">
+  <ion-searchbar [(ngModel)]="query" placeholder="Search people and topics" [debounce]="100" aria-label="Search people and topics"></ion-searchbar>
+  @if (!query.trim()) {
+    <section class="section-block">
+      <h2>Trending topics</h2>
+      @for (topic of topics; track topic) {
+        <button class="topic-row" (click)="query = topic"><ion-icon name="trending-up-outline"></ion-icon><span>{{ topic }}</span><ion-icon name="search-outline"></ion-icon></button>
+      }
+    </section>
+  }
+  <section class="section-block">
+    <h2>People</h2>
+    @for (person of filteredPeople; track person.username) {
+      <div class="person-row"><ion-avatar><ion-icon [name]="person.icon"></ion-icon></ion-avatar><div><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div><ion-button fill="outline" size="small">View</ion-button></div>
+    } @empty {
+      <p class="empty-state">No people match your search.</p>
+    }
+  </section>
+  @if (query.trim()) {
+    <section class="section-block">
+      <h2>Topics</h2>
+      @for (topic of filteredTopics; track topic) {
+        <button class="topic-row" (click)="query = topic"><ion-icon name="trending-up-outline"></ion-icon><span>{{ topic }}</span><ion-icon name="search-outline"></ion-icon></button>
+      } @empty {
+        <p class="empty-state">No topics match your search.</p>
+      }
+    </section>
+  }
+</ion-content>
+<ion-footer class="page-footer ion-no-border"><ion-toolbar>
+  <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
+  <ion-button fill="clear" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
+  <ion-button fill="clear" class="compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
+  <ion-button fill="clear" routerLink="/suggestions" aria-label="Suggestions"><ion-icon slot="icon-only" name="trending-up-outline"></ion-icon></ion-button>
+  <ion-button fill="clear" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
+</ion-toolbar></ion-footer>

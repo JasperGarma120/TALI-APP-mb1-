@@ -1,0 +1,50 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Tali</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        <ion-icon slot="icon-only" name="person-circle-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="feed-content">
+  @for (post of posts; track post) {
+  <div class="post">
+    <ion-avatar class="post-avatar">
+      <ion-icon name="person-circle-outline"></ion-icon>
+    </ion-avatar>
+    <div class="post-body">
+      <div class="post-header">
+        <span class="post-name">{{ post.name }}</span>
+        <span class="post-username">{{ post.username }}</span>
+      </div>
+      <p class="post-text">{{ post.text }}</p>
+      @if (post.hasImage) {
+      <div class="post-image"></div>
+      }
+    </div>
+  </div>
+  }
+</ion-content>
+
+<ion-footer class="ion-no-border">
+  <ion-toolbar class="tab-bar">
+    <ion-button fill="clear">
+      <ion-icon name="home-sharp" color="primary"></ion-icon>
+    </ion-button>
+    <ion-button fill="clear">
+      <ion-icon name="search-outline"></ion-icon>
+    </ion-button>
+    <ion-button fill="clear">
+      <ion-icon name="add-circle" class="tab-add"></ion-icon>
+    </ion-button>
+    <ion-button fill="clear">
+      <ion-icon name="heart-outline"></ion-icon>
+    </ion-button>
+    <ion-button fill="clear">
+      <ion-icon name="person-outline"></ion-icon>
+    </ion-button>
+  </ion-toolbar>
+</ion-footer> 
