@@ -14,9 +14,9 @@
   <section class="section-block">
     <h2>People</h2>
     @for (person of filteredPeople; track person.username) {
-      <div class="person-row"><ion-avatar><ion-icon [name]="person.icon"></ion-icon></ion-avatar><div><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div><ion-button fill="outline" size="small">View</ion-button></div>
+      <div class="person-row"><ion-avatar><ion-icon name="person-circle-outline"></ion-icon></ion-avatar><div><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div><ion-button fill="outline" size="small">View</ion-button></div>
     } @empty {
-      <p class="empty-state">No people match your search.</p>
+      <p class="empty-state">{{ query.trim() ? 'No people match your search.' : 'No people to show yet.' }}</p>
     }
   </section>
   @if (query.trim()) {

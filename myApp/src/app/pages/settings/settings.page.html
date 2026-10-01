@@ -1,0 +1,88 @@
+<ion-header class="settings-header ion-no-border">
+  <ion-toolbar>
+    <ion-button fill="clear" routerLink="/profile" aria-label="Back to profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
+    <h1>Settings</h1>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="settings-content" [fullscreen]="true">
+  <div class="settings-layout">
+    <nav class="settings-categories" aria-label="Settings categories">
+      @for (section of sections; track section.id) {
+        <button type="button" [class.active]="activeSection === section.id" (click)="activeSection = section.id">
+          <ion-icon [name]="section.icon" aria-hidden="true"></ion-icon><span>{{ section.label }}</span>
+        </button>
+      }
+      <button type="button" class="logout-category" (click)="logout()"><ion-icon name="log-out-outline"></ion-icon><span>Log Out</span></button>
+    </nav>
+
+    <section class="settings-detail">
+      @if (activeSection === 'account') {
+        <h2>Account Center</h2>
+        <div class="account-identity"><ion-icon name="person-circle-outline"></ion-icon><div><strong>{{ accountService.selectedAccount()?.name || 'No active account' }}</strong><span>{{ accountService.selectedAccount()?.username || 'Choose an account to continue' }}</span></div></div>
+        @if (accountService.selectedAccount()) { <p class="detail-copy">{{ accountService.selectedAccount()?.contact }}</p><p class="detail-copy">{{ accountService.selectedAccount()?.bio || 'No profile bio added.' }}</p> }
+        <ion-button fill="outline" size="small" routerLink="/profile">Profile details</ion-button>
+        <ion-button fill="clear" size="small" routerLink="/create-account"><ion-icon slot="start" name="person-add-outline"></ion-icon>Add account</ion-button>
+      }
+      @if (activeSection === 'privacy') {
+        <h2>Privacy</h2>
+        <ion-item lines="none"><ion-label><strong>Private account</strong><p>Save your account visibility preference.</p></ion-label><ion-toggle slot="end" [(ngModel)]="privateAccount" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+        <ion-item lines="none"><ion-label><strong>Activity status</strong><p>Save whether your active status is shown.</p></ion-label><ion-toggle slot="end" [(ngModel)]="activityStatus" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+      }
+      @if (activeSection === 'security') {
+        <h2>Security</h2><p class="detail-copy">Change the password for the active account.</p>
+        <ion-input label="Current password" labelPlacement="stacked" type="password" [(ngModel)]="currentPassword"></ion-input>
+        <ion-input label="New password" labelPlacement="stacked" type="password" [(ngModel)]="newPassword"></ion-input>
+        <ion-button [disabled]="!currentPassword || !newPassword" (click)="updatePassword()">Update password</ion-button>
+        @if (passwordMessage) { <p class="detail-copy" role="status">{{ passwordMessage }}</p> }
+      }
+      @if (activeSection === 'notifications') {
+        <h2>Notifications</h2><ion-item lines="none"><ion-label>Push notifications</ion-label><ion-toggle slot="end" [(ngModel)]="notifications" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+      }
+      @if (activeSection === 'messages') {
+        <h2>Messages and Calls</h2>
+        <ion-item lines="none"><ion-label>Message alerts</ion-label><ion-toggle slot="end" [(ngModel)]="messageAlerts" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+        <ion-item lines="none"><ion-label>Call alerts</ion-label><ion-toggle slot="end" [(ngModel)]="callAlerts" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+        <ion-item lines="none"><ion-label>Read receipts</ion-label><ion-toggle slot="end" [(ngModel)]="readReceipts" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+      }
+      @if (activeSection === 'content') {
+        <h2>Content Preferences</h2>
+        <ion-item lines="none"><ion-label>Show sensitive content</ion-label><ion-toggle slot="end" [(ngModel)]="sensitiveContent" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+        <ion-item lines="none"><ion-label>Autoplay videos</ion-label><ion-toggle slot="end" [(ngModel)]="autoplayVideos" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+      }
+      @if (activeSection === 'connections') {
+        <h2>Followers and Following</h2>
+        <h3>Followers · {{ followers.length }}</h3>
+        @for (person of followers; track person.id) { <div class="connection-row"><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div> } @empty { <p class="detail-copy">No followers yet.</p> }
+        <h3>Following · {{ following.length }}</h3>
+        @for (person of following; track person.id) { <div class="connection-row"><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div> } @empty { <p class="detail-copy">Not following anyone yet.</p> }
+      }
+      @if (activeSection === 'activity') {
+        <h2>Your Activity</h2><p class="detail-copy">{{ ownPosts.length }} posts from this account.</p>
+        @for (post of ownPosts; track post.id) { <article class="activity-post"><p>{{ post.body || 'Media post' }}</p><time>{{ post.createdAt | date:'medium' }}</time></article> } @empty { <p class="detail-copy">No activity to show yet.</p> }
+      }
+      @if (activeSection === 'appearance') {
+        <h2>Appearance</h2><ion-item lines="none"><ion-label>Dark mode</ion-label><ion-toggle slot="end" [(ngModel)]="darkMode" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+      }
+      @if (activeSection === 'accessibility') {
+        <h2>Accessibility</h2>
+        <ion-item lines="none"><ion-label>Larger text</ion-label><ion-toggle slot="end" [(ngModel)]="largerText" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+        <ion-item lines="none"><ion-label>Reduce motion</ion-label><ion-toggle slot="end" [(ngModel)]="reduceMotion" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+      }
+      @if (activeSection === 'language') {
+        <h2>Language</h2><ion-item lines="none"><ion-label>App language</ion-label><ion-select [(ngModel)]="language" (ionChange)="savePreferences()"><ion-select-option value="en">English</ion-select-option><ion-select-option value="fil">Filipino</ion-select-option></ion-select></ion-item>
+      }
+      @if (activeSection === 'data') {
+        <h2>Data and Storage</h2><p class="detail-copy">Accounts in this session: {{ accountService.accounts().length }}</p><p class="detail-copy">Posts in this session: {{ postService.posts().length }}</p><ion-item lines="none"><ion-label>Data saver preference</ion-label><ion-toggle slot="end" [(ngModel)]="dataSaver" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+      }
+      @if (activeSection === 'permissions') {
+        <h2>Permissions</h2><p class="detail-copy">These app preferences do not replace device-level permissions.</p><ion-item lines="none"><ion-label>Allow media attachments</ion-label><ion-toggle slot="end" [(ngModel)]="mediaPermission" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+      }
+      @if (activeSection === 'ads') {
+        <h2>Ads &amp; Recommendations</h2><ion-item lines="none"><ion-label>Personalized recommendations</ion-label><ion-toggle slot="end" [(ngModel)]="personalizedRecommendations" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+      }
+      @if (activeSection === 'payments') { <h2>Subscriptions &amp; Payments</h2><p class="detail-copy">No subscriptions or payment methods are connected.</p> }
+      @if (activeSection === 'help') { <h2>Help &amp; Support</h2><p class="detail-copy">Need help with your account?</p><ion-button fill="outline" (click)="showHelp()"><ion-icon slot="start" name="help-circle-outline"></ion-icon>Contact support</ion-button> }
+      @if (activeSection === 'about') { <h2>About</h2><p class="detail-copy">Tali · Version 0.0.1</p><p class="detail-copy">A space for people and communities to connect.</p> }
+    </section>
+  </div>
+</ion-content>

@@ -33,4 +33,10 @@ export class PostService {
     this.posts.update((posts) => [publishedPost, ...posts]);
     return publishedPost;
   }
+
+  updateAuthor(accountId: number, authorName: string, authorUsername: string) {
+    this.posts.update((posts) => posts.map((post) => post.authorId === accountId
+      ? { ...post, authorName, authorUsername }
+      : post));
+  }
 }

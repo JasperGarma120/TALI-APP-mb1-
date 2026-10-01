@@ -52,3 +52,330 @@ ion-toolbar {
 ion-toolbar {
 	--color: var(--ion-text-color);
 }
+
+html.app-light {
+	color-scheme: light;
+	--ion-background-color: #e8eeea;
+	--ion-text-color: #202a25;
+	--ion-color-primary: #426b59;
+	--ion-color-primary-rgb: 66, 107, 89;
+	--ion-color-primary-contrast: #ffffff;
+	--ion-color-primary-contrast-rgb: 255, 255, 255;
+	--ion-color-primary-shade: #3a5e4e;
+	--ion-color-primary-tint: #557a68;
+	--ion-color-medium: #5c6b63;
+	--ion-toolbar-background: #e2e9e4;
+	--ion-item-background: transparent;
+}
+
+html.app-light body,
+html.app-light ion-app {
+	background: #e8eeea;
+}
+
+html.app-light ion-content,
+html.app-light .home-content,
+html.app-light .page-content,
+html.app-light .settings-content,
+html.app-light .more-content,
+html.app-light .select-content {
+	--background: radial-gradient(circle at 92% 0%, rgba(112, 151, 130, .13), transparent 34%),
+		linear-gradient(155deg, #e7eee9 0%, #edf2ee 54%, #e5ece7 100%);
+	--color: #202a25;
+}
+
+html.app-light ion-header,
+html.app-light ion-footer,
+html.app-light ion-toolbar,
+html.app-light .home-header,
+html.app-light .home-footer,
+html.app-light .page-header,
+html.app-light .page-footer,
+html.app-light .settings-header {
+	--background: #e2e9e4;
+	--border-color: rgba(32, 42, 37, .16);
+	--color: #202a25;
+}
+
+html.app-light .profile-top h2,
+html.app-light .profile-posts h2,
+html.app-light .stats-row strong,
+html.app-light .page-header h1,
+html.app-light .settings-header h1,
+html.app-light .settings-section h2,
+html.app-light .suggestion-copy strong,
+html.app-light .intro h2,
+html.app-light .suggestion-post,
+html.app-light .feed-heading h2,
+html.app-light .profile-copy h1,
+html.app-light .feed-empty h3,
+html.app-light .post-topline strong,
+html.app-light .account-identity,
+html.app-light .edit-dialog h2 {
+	color: #202a25;
+}
+
+html.app-light .profile-top p,
+html.app-light .stats-row span,
+html.app-light .profile-post span,
+html.app-light .intro p,
+html.app-light .suggestion-copy span,
+html.app-light .suggestion-copy p,
+html.app-light .empty-suggestions,
+html.app-light .feed-empty p,
+html.app-light .profile-copy p,
+html.app-light .post-topline span {
+	color: #66716c;
+}
+
+html.app-light .post-card,
+html.app-light .profile-post,
+html.app-light .suggestion-row,
+html.app-light .suggestion-post,
+html.app-light .stats-row,
+html.app-light .intro,
+html.app-light .suggestion-tabs {
+	border-color: rgba(32, 40, 37,  .14);
+}
+
+html.app-light .post-card > p,
+html.app-light .suggestion-post p,
+html.app-light .composer-identity,
+html.app-light .composer ion-textarea,
+html.app-light .settings-section ion-item,
+html.app-light .edit-dialog ion-input,
+html.app-light .edit-dialog ion-textarea {
+	color: #202a25;
+}
+
+html.app-light .edit-dialog,
+html.app-light .attachment-preview {
+	background: #f1f5f1;
+	color: #202a25;
+}
+
+html.app-light .suggestion-tabs button.active {
+	color: #202825;
+}
+
+html.app-light .settings-detail,
+html.app-light .settings-detail h2,
+html.app-light .settings-detail h3,
+html.app-light .settings-categories button.active,
+html.app-light .connection-row,
+html.app-light .activity-post p {
+	color: #202825;
+}
+
+html.app-light .settings-categories button {
+	color: #52615a;
+}
+
+html.app-light .settings-detail ion-item,
+html.app-light .settings-detail ion-input {
+	--color: #202a25;
+	color: #202a25;
+}
+
+html.app-light .settings-categories,
+html.app-light .settings-detail {
+	border-color: rgba(32, 40, 37, .14);
+}
+
+html.app-light .settings-detail .detail-copy,
+html.app-light .settings-detail ion-label p,
+html.app-light .connection-row span,
+html.app-light .activity-post time {
+	color: #66716c;
+}
+
+html.app-light ion-header,
+html.app-light ion-footer,
+html.app-light ion-toolbar,
+html.app-light .home-header ion-toolbar,
+html.app-light .home-footer ion-toolbar,
+html.app-light .page-header ion-toolbar,
+html.app-light .page-footer ion-toolbar,
+html.app-light .settings-header ion-toolbar {
+	--background: #e2e9e4;
+	--color: #202a25;
+	--border-color: rgba(32, 42, 37, .16);
+}
+
+html.app-light .section-block h2,
+html.app-light .topic-row,
+html.app-light .person-row,
+html.app-light .suggestion-tabs button.active,
+html.app-light .intro h2,
+html.app-light .suggestion-post,
+html.app-light .profile-post,
+html.app-light .post-card > p,
+html.app-light .settings-detail .activity-post p {
+	color: #202a25;
+}
+
+html.app-light .topic-row,
+html.app-light .person-row,
+html.app-light .suggestion-tabs,
+html.app-light .intro,
+html.app-light .suggestion-row,
+html.app-light .suggestion-post,
+html.app-light .profile-post,
+html.app-light .stats-row,
+html.app-light .post-card,
+html.app-light .account-center,
+html.app-light .settings-section,
+html.app-light .connection-row {
+	border-color: rgba(32, 42, 37, .14);
+}
+
+html.app-light .suggestion-tabs button,
+html.app-light .intro p,
+html.app-light .suggestion-copy span,
+html.app-light .suggestion-copy p,
+html.app-light .suggestion-post span,
+html.app-light .empty-suggestions,
+html.app-light .empty-state,
+html.app-light .profile-top p,
+html.app-light .profile-post span,
+html.app-light .account-contact,
+html.app-light .account-bio,
+html.app-light .settings-section ion-label p,
+html.app-light .detail-copy,
+html.app-light .settings-detail ion-label p,
+html.app-light .connection-row span,
+html.app-light .activity-post time {
+	color: #5c6b63;
+}
+
+html.app-light ion-searchbar,
+html.app-light .filter-menu,
+html.app-light .edit-dialog,
+html.app-light .attachment-preview,
+html.app-light .empty-state {
+	--background: #f1f5f1;
+	background: #f1f5f1;
+	color: #202a25;
+}
+
+html.app-light ion-searchbar {
+	--color: #202a25;
+	--placeholder-color: #65736b;
+	--icon-color: #426b59;
+}
+
+html.app-light .topic-row ion-icon,
+html.app-light .suggestion-post a,
+html.app-light .profile-top ion-button,
+html.app-light .settings-section ion-item ion-icon,
+html.app-light .settings-header ion-button {
+	--color: #426b59;
+	color: #426b59;
+}
+
+html.app-light .person-row ion-button,
+html.app-light .suggestion-row ion-button,
+html.app-light .profile-top ion-button,
+html.app-light .account-center ion-button {
+	--color: #365c4b;
+	--border-color: #789383;
+}
+
+html.app-light .page-footer ion-button,
+html.app-light .home-footer ion-button {
+	--color: #52635a;
+}
+
+html.app-light .page-footer .active-tab,
+html.app-light .page-footer .compose-button,
+html.app-light .home-footer .active-tab,
+html.app-light .home-footer .compose-button {
+	--color: #365c4b;
+}
+
+html.app-light .settings-categories button.active {
+	background: rgba(66, 107, 89, .12);
+	color: #202a25;
+}
+
+html.app-light .settings-categories button,
+html.app-light .settings-detail,
+html.app-light .settings-detail h2,
+html.app-light .settings-detail h3,
+html.app-light .settings-categories button.active,
+html.app-light .connection-row {
+	color: #202a25;
+}
+
+html.app-light .settings-detail ion-item,
+html.app-light .settings-section ion-item,
+html.app-light .settings-detail ion-input,
+html.app-light .settings-detail ion-textarea,
+html.app-light .composer ion-textarea,
+html.app-light .edit-dialog ion-input,
+html.app-light .edit-dialog ion-textarea {
+	--color: #202a25;
+	color: #202a25;
+}
+
+html.app-light .message-tabs ion-button,
+html.app-light .message-tabs .filter-button {
+	--color: #365c4b;
+}
+
+html.app-light .filter-menu button {
+	color: #202a25;
+}
+
+html.app-light .settings-section ion-select {
+	color: #365c4b;
+}
+
+html.app-light body .page-header,
+html.app-light body .page-footer,
+html.app-light body .home-header,
+html.app-light body .home-footer,
+html.app-light body .settings-header {
+	--background: #e2e9e4 !important;
+	--border-color: rgba(32, 42, 37, .16) !important;
+}
+
+html.app-light body .page-header ion-toolbar,
+html.app-light body .page-footer ion-toolbar,
+html.app-light body .home-header ion-toolbar,
+html.app-light body .home-footer ion-toolbar,
+html.app-light body .settings-header ion-toolbar {
+	--background: #e2e9e4 !important;
+	--color: #202a25 !important;
+}
+
+html.app-light body .page-header h1,
+html.app-light body .settings-header h1,
+html.app-light body .section-block h2 {
+	color: #202a25 !important;
+}
+
+html.app-light body .page-footer ion-button,
+html.app-light body .home-footer ion-button {
+	--color: #52635a !important;
+}
+
+html.app-light body .page-footer .active-tab,
+html.app-light body .page-footer .compose-button,
+html.app-light body .home-footer .active-tab,
+html.app-light body .home-footer .compose-button {
+	--color: #365c4b !important;
+}
+
+html.app-large-text {
+	font-size: 112.5%;
+}
+
+html.app-reduce-motion *,
+html.app-reduce-motion *::before,
+html.app-reduce-motion *::after {
+	scroll-behavior: auto !important;
+	animation-duration: .01ms !important;
+	animation-iteration-count: 1 !important;
+	transition-duration: .01ms !important;
+}

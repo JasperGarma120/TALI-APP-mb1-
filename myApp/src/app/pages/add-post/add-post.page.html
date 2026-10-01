@@ -2,8 +2,9 @@
 <ion-content class="page-content" [fullscreen]="true">
   <div class="composer">
     <div class="composer-identity"><ion-icon name="person-circle-outline"></ion-icon><span>{{ accountService.selectedAccount()?.name || 'Your account' }}</span></div>
+    @if (!accountService.selectedAccount()) { <p class="media-error" role="alert">Select an individual account before creating a post. <a routerLink="/select-account">Choose account</a></p> }
     <ion-textarea [(ngModel)]="message" placeholder="What would you like to share?" [autoGrow]="true" [maxlength]="500" aria-label="Write your post"></ion-textarea>
-    <input #mediaInput class="media-input" type="file" multiple (change)="onFilesSelected($event)" aria-label="Choose photos, videos, or files" />
+    <input #mediaInput class="media-input" type="file" multiple [disabled]="!mediaPermissionEnabled" (change)="onFilesSelected($event)" aria-label="Choose photos, videos, or files" />
     @if (pendingAttachments.length) {
       <div class="attachment-list">
         @for (attachment of pendingAttachments; track $index) {
@@ -24,7 +25,7 @@
       </div>
     }
     @if (mediaError) { <p class="media-error" role="alert">{{ mediaError }}</p> }
-    <div class="composer-tools"><ion-button fill="clear" aria-label="Attach photos, videos, or files" (click)="mediaInput.click()"><ion-icon slot="icon-only" name="attach-outline"></ion-icon></ion-button><span>{{ message.length }}/500</span></div>
+    <div class="composer-tools"><ion-button fill="clear" aria-label="Attach photos, videos, or files" [disabled]="!mediaPermissionEnabled" (click)="mediaInput.click()"><ion-icon slot="icon-only" name="attach-outline"></ion-icon></ion-button><span>{{ message.length }}/500</span></div>
   </div>
 </ion-content>
 <ion-footer class="page-footer ion-no-border"><ion-toolbar>

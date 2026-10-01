@@ -2,8 +2,10 @@
 .page-header, .page-footer { --background: #101313; --border-color: rgba(237, 241, 239, .12); }
 .page-header ion-toolbar { --background: #101313; padding: 8px 18px; }
 .page-header h1 { margin: 0; color: #edf1ef; font-size: 1.2rem; font-weight: 650; }
-.intro { padding: 22px 18px 18px; border-bottom: 1px solid rgba(237, 241, 239, .12); }
-.intro > span { color: #a9c9bd; font-size: .68rem; font-weight: 700; }
+.suggestion-tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid rgba(237, 241, 239, .12); }
+.suggestion-tabs button { min-height: 48px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: #929b99; font: inherit; }
+.suggestion-tabs button.active { border-bottom-color: #a9c9bd; color: #edf1ef; }
+.intro { padding: 20px 18px 14px; border-bottom: 1px solid rgba(237, 241, 239, .12); }
 .intro h2 { margin: 6px 0; color: #edf1ef; font-size: 1.05rem; }
 .intro p { margin: 0; color: #929b99; font-size: .82rem; line-height: 1.5; }
 .suggestion-row { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-bottom: 1px solid rgba(237, 241, 239, .1); }
@@ -15,6 +17,13 @@
 .suggestion-copy span, .suggestion-copy p { color: #929b99; font-size: .72rem; }
 .suggestion-copy p { margin: 5px 0 0; }
 .suggestion-row ion-button { --color: #a9c9bd; --border-color: #627d73; font-size: .72rem; }
+.empty-suggestions { margin: 0; padding: 28px 18px; color: #929b99; font-size: .82rem; text-align: center; }
+.suggestion-post { display: grid; gap: 5px; padding: 16px 18px; border-bottom: 1px solid rgba(237, 241, 239, .1); color: #edf1ef; }
+.suggestion-post strong { font-size: .83rem; }
+.suggestion-post span { color: #929b99; font-size: .72rem; }
+.suggestion-post p { margin: 6px 0 0; color: #d7dfdc; font-size: .84rem; line-height: 1.45; }
+.suggestion-post img, .suggestion-post video { display: block; width: 100%; max-height: 360px; margin-top: 8px; object-fit: contain; }
+.suggestion-post a { color: #a9c9bd; font-size: .8rem; }
 .page-footer ion-toolbar { display: flex; justify-content: space-around; min-height: 70px; padding: 4px 10px; --background: #101313; }
 .page-footer ion-button { width: 48px; height: 48px; margin: 0; --color: #929b99; font-size: 1.45rem; }
 .page-footer .active-tab, .page-footer .compose-button { --color: #edf1ef; }

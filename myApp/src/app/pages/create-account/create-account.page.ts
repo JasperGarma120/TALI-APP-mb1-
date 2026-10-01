@@ -27,10 +27,12 @@ import { AccountService } from '../../services/account.service';
 export class CreateAccountPage {
   firstName = '';
   lastName = '';
+  username = '';
   emailOrNumber = '';
   password = '';
   submitted = false;
   accountError = '';
+  created = false;
 
   private readonly router = inject(Router);
   private readonly accountService = inject(AccountService);
@@ -38,12 +40,34 @@ export class CreateAccountPage {
   createAccount() {
     this.submitted = true;
 
-    if (!this.firstName.trim() || !this.lastName.trim() || !this.emailOrNumber.trim() || !this.password.trim()) {
+    if (!this.firstName.trim() || !this.lastName.trim() || !this.username.trim() || !this.emailOrNumber.trim() || !this.password.trim()) {
       return;
     }
 
-    this.accountService.createAccount(this.firstName, this.lastName, this.emailOrNumber, this.password);
-    this.router.navigateByUrl('/home');
+    const username = this.username.trim().replace(/^@+/, '');
+    if (!/^[a-zA-Z0-9._]{3,24}$/.test(username)) {
+      this.accountError = 'Username must be 3-24 characters using letters, numbers, periods, or underscores.';
+      return;
+    }
+
+    const contact = this.emailOrNumber.trim();
+    if (!this.isValidContact(contact)) {
+      this.accountError = 'Enter a valid email address or phone number.';
+      return;
+    }
+
+    const account = this.accountService.createAccount(this.firstName, this.lastName, username, contact, this.password);
+    if (!account) {
+      this.accountError = 'That username or email/number is already in use.';
+      return;
+    }
+    this.created = true;
+  }
+
+  private isValidContact(contact: string) {
+    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) return true;
+    const digits = contact.replace(/\D/g, '');
+    return /^\+?[\d\s().-]+$/.test(contact) && digits.length >= 7 && digits.length <= 15;
   }
 
   goToLogin() {

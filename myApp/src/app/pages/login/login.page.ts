@@ -13,7 +13,7 @@ import { AccountService } from '../../services/account.service';
   imports: [CommonModule, FormsModule, IonContent, IonItem, IonInput, IonButton, IonAvatar],
 })
 export class LoginPage implements OnInit {
-  username = '';
+  identifier = '';
   password = '';
   submitted = false;
 
@@ -23,18 +23,19 @@ export class LoginPage implements OnInit {
   ngOnInit() {
     const account = this.accountService.selectedAccount();
     if (account) {
-      this.username = account.username;
+      this.identifier = account.contact;
+      this.password = account.password;
     }
   }
 
   logIn() {
     this.submitted = true;
 
-    if (!this.username.trim() || !this.password.trim()) {
+    if (!this.identifier.trim() || !this.password.trim()) {
       return;
     }
 
-    const account = this.accountService.authenticate(this.username, this.password);
+    const account = this.accountService.authenticate(this.identifier, this.password);
     if (!account) {
       return;
     }

@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonSearchbar, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addCircle, chatbubbleOutline, homeOutline, personCircleOutline, searchOutline, trendingUpOutline } from 'ionicons/icons';
+import { AccountService } from '../../services/account.service';
 
 @Component({
   selector: 'app-search',
@@ -13,12 +14,8 @@ import { addCircle, chatbubbleOutline, homeOutline, personCircleOutline, searchO
   imports: [FormsModule, RouterLink, IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonSearchbar, IonToolbar],
 })
 export class SearchPage {
+  readonly accountService = inject(AccountService);
   query = '';
-  readonly people = [
-    { name: 'Jordan Cruz', username: '@jordan.cruz', icon: 'person-circle-outline' },
-    { name: 'Mika Santos', username: '@mika.santos', icon: 'person-circle-outline' },
-    { name: 'Ari Mendoza', username: '@ari.mendoza', icon: 'person-circle-outline' },
-  ];
   readonly topics = ['Good questions', 'Creative practice', 'Daily reflections', 'Community care'];
 
   constructor() {
@@ -27,7 +24,10 @@ export class SearchPage {
 
   get filteredPeople() {
     const query = this.query.trim().toLowerCase();
-    return this.people.filter((person) => `${person.name} ${person.username}`.toLowerCase().includes(query));
+    const selectedId = this.accountService.selectedAccount()?.id;
+    return this.accountService.accounts()
+      .filter((person) => person.id !== selectedId)
+      .filter((person) => `${person.name} ${person.username}`.toLowerCase().includes(query));
   }
 
   get filteredTopics() {

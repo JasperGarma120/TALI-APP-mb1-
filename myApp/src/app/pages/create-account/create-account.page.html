@@ -13,6 +13,14 @@
     </ion-avatar>
 
     <div class="create-account-card">
+      @if (created) {
+        <div class="create-account-heading" role="status">
+          <span class="create-account-eyebrow">ACCOUNT READY</span>
+          <h1>Account successfully created</h1>
+          <p>Your account is ready. Continue to log in.</p>
+        </div>
+        <ion-button expand="block" shape="round" class="create-account-button" (click)="goToLogin()">Continue to log in</ion-button>
+      } @else {
       <div class="create-account-heading">
         <span class="create-account-eyebrow">JOIN THE CIRCLE</span>
         <h1>Create your account</h1>
@@ -39,6 +47,16 @@
       ></ion-input>
     </ion-item>
 
+    <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !username.trim()">
+      <ion-input
+        label="Username"
+        labelPlacement="floating"
+        [(ngModel)]="username"
+        placeholder="Choose a username"
+        required
+      ></ion-input>
+    </ion-item>
+
     <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !emailOrNumber.trim()">
       <ion-input
         label="Email or number"
@@ -60,18 +78,20 @@
       ></ion-input>
     </ion-item>
 
-    @if (submitted && (!firstName.trim() || !lastName.trim() || !emailOrNumber.trim() || !password.trim())) {
+    @if (submitted && (!firstName.trim() || !lastName.trim() || !username.trim() || !emailOrNumber.trim() || !password.trim())) {
       <p class="create-account-error">Please fill in all fields to continue.</p>
     }
+    @if (accountError) { <p class="create-account-error">{{ accountError }}</p> }
 
       <ion-button expand="block" shape="round" class="create-account-button" (click)="createAccount()">
         Create account
       </ion-button>
+      }
     </div>
 
-    <p class="create-account-footer">
+    @if (!created) { <p class="create-account-footer">
       Already have an account?
       <a (click)="goToLogin()">Log in</a>
-    </p>
+    </p> }
   </div>
 </ion-content>

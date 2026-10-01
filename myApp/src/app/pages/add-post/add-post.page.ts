@@ -28,10 +28,15 @@ export class AddPostPage {
   }
 
   get canPublish() {
-    return Boolean(this.message.trim() || this.pendingAttachments.length);
+    return Boolean(this.accountService.selectedAccount() && (this.message.trim() || this.pendingAttachments.length));
+  }
+
+  get mediaPermissionEnabled() {
+    return typeof localStorage === 'undefined' || localStorage.getItem('tali-setting-mediaPermission') !== 'false';
   }
 
   async onFilesSelected(event: Event) {
+    if (!this.mediaPermissionEnabled) return;
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files ?? []);
     input.value = '';
@@ -50,11 +55,12 @@ export class AddPostPage {
   publish() {
     if (!this.canPublish) return;
     const account = this.accountService.selectedAccount();
+    if (!account) return;
 
     this.postService.addPost({
-      authorId: account?.id ?? null,
-      authorName: account?.name ?? 'Community member',
-      authorUsername: account?.username ?? '@community',
+      authorId: account.id,
+      authorName: account.name,
+      authorUsername: account.username,
       body: this.message.trim(),
       attachments: [...this.pendingAttachments],
     });

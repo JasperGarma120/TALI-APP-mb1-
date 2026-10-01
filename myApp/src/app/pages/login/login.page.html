@@ -4,12 +4,12 @@
       <img src="assets/logo.svg" alt="Tali logo" />
     </ion-avatar>
 
-    <ion-item class="login-field" lines="none" [class.field-invalid]="submitted && !username.trim()">
+    <ion-item class="login-field" lines="none" [class.field-invalid]="submitted && !identifier.trim()">
       <ion-input
-        label="Username or email"
+        label="Email or number"
         labelPlacement="floating"
-        [(ngModel)]="username"
-        placeholder="Enter username/email/number"
+        [(ngModel)]="identifier"
+        placeholder="Enter your email or number"
       ></ion-input>
     </ion-item>
 
@@ -23,11 +23,11 @@
       ></ion-input>
     </ion-item>
 
-    @if (submitted && (!username.trim() || !password.trim())) {
+    @if (submitted && (!identifier.trim() || !password.trim())) {
       <p class="login-error">Please fill in both fields to continue.</p>
     }
 
-    @if (submitted && username.trim() && password.trim() && !accountService.authenticate(username, password)) {
+    @if (submitted && identifier.trim() && password.trim() && !accountService.authenticate(identifier, password)) {
       <p class="login-error">That account does not exist or the password is incorrect.</p>
     }
 

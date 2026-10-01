@@ -1,12 +1,35 @@
 <ion-header class="page-header ion-no-border"><ion-toolbar><h1>Suggestions</h1></ion-toolbar></ion-header>
 <ion-content class="page-content" [fullscreen]="true">
-  <section class="intro"><span>GOOD COMPANY</span><h2>People to meet</h2><p>Find voices that make your community feel a little bigger.</p></section>
-  @for (person of people; track person.username) {
-    <article class="suggestion-row">
-      <ion-avatar><ion-icon name="person-circle-outline"></ion-icon></ion-avatar>
-      <div class="suggestion-copy"><strong>{{ person.name }}</strong><span>{{ person.username }}</span><p>{{ person.note }}</p></div>
-      <ion-button [fill]="person.following ? 'clear' : 'outline'" size="small" (click)="toggleFollow(person)"><ion-icon slot="start" [name]="person.following ? 'person-circle-outline' : 'person-add-outline'"></ion-icon>{{ person.following ? 'Following' : 'Follow' }}</ion-button>
-    </article>
+  <nav class="suggestion-tabs" aria-label="Suggestion categories">
+    <button type="button" [class.active]="selectedCategory === 'people'" (click)="selectedCategory = 'people'">People</button>
+    <button type="button" [class.active]="selectedCategory === 'posts'" (click)="selectedCategory = 'posts'">Posts</button>
+    <button type="button" [class.active]="selectedCategory === 'groups'" (click)="selectedCategory = 'groups'">Groups</button>
+  </nav>
+  @if (selectedCategory === 'people') {
+    <section class="intro"><h2>People to meet</h2></section>
+    @for (person of people; track person.id) {
+      <article class="suggestion-row">
+        <ion-avatar><ion-icon name="person-circle-outline"></ion-icon></ion-avatar>
+        <div class="suggestion-copy"><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div>
+        <ion-button [fill]="isFollowing(person) ? 'clear' : 'outline'" size="small" (click)="toggleFollow(person)"><ion-icon slot="start" [name]="isFollowing(person) ? 'person-circle-outline' : 'person-add-outline'"></ion-icon>{{ isFollowing(person) ? 'Following' : 'Follow' }}</ion-button>
+      </article>
+    } @empty { <p class="empty-suggestions">No other accounts to suggest yet.</p> }
+  }
+  @if (selectedCategory === 'posts') {
+    <section class="intro"><h2>Posts to explore</h2></section>
+    @for (post of posts; track post.id) {
+      <article class="suggestion-post"><strong>{{ post.authorName }}</strong><span>{{ post.authorUsername }}</span>@if (post.body) { <p>{{ post.body }}</p> }
+        @for (attachment of post.attachments; track $index) {
+          @if (attachment.type.startsWith('image/')) { <img [src]="attachment.dataUrl" [alt]="attachment.name" /> }
+          @else if (attachment.type.startsWith('video/')) { <video controls playsinline preload="metadata" [attr.aria-label]="attachment.name"><source [src]="attachment.dataUrl" [type]="attachment.type" /></video> }
+          @else { <a [href]="attachment.dataUrl" [download]="attachment.name">{{ attachment.name }}</a> }
+        }
+      </article>
+    } @empty { <p class="empty-suggestions">No posts to suggest yet.</p> }
+  }
+  @if (selectedCategory === 'groups') {
+    <section class="intro"><h2>Community groups</h2></section>
+    <p class="empty-suggestions">No community groups are available yet.</p>
   }
 </ion-content>
 <ion-footer class="page-footer ion-no-border"><ion-toolbar>

@@ -1,14 +1,59 @@
-<ion-header class="page-header ion-no-border"><ion-toolbar><h1>Profile</h1><ion-button fill="clear" slot="end" aria-label="Settings"><ion-icon slot="icon-only" name="settings-outline"></ion-icon></ion-button></ion-toolbar></ion-header>
+<ion-header class="page-header ion-no-border"><ion-toolbar><h1>Profile</h1><ion-button fill="clear" slot="end" routerLink="/settings" aria-label="Settings"><ion-icon slot="icon-only" name="settings-outline"></ion-icon></ion-button></ion-toolbar></ion-header>
 <ion-content class="page-content" [fullscreen]="true">
   <section class="profile-top">
-    <ion-avatar><ion-icon name="person-circle-outline"></ion-icon></ion-avatar>
+    <ion-avatar>
+      @if (accountService.selectedAccount()?.profileImage) {
+        <img [src]="accountService.selectedAccount()?.profileImage" alt="Profile photo" />
+      } @else {
+        <ion-icon name="person-circle-outline"></ion-icon>
+      }
+    </ion-avatar>
     <h2>{{ accountService.selectedAccount()?.name || 'Your profile' }}</h2>
     <p>{{ accountService.selectedAccount()?.username || '@your.username' }}</p>
-    <ion-button fill="outline" size="small"><ion-icon slot="start" name="create-outline"></ion-icon>Edit profile</ion-button>
+    @if (accountService.selectedAccount()?.bio) { <p class="profile-bio">{{ accountService.selectedAccount()?.bio }}</p> }
+    <ion-button fill="outline" size="small" (click)="openProfileEditor()"><ion-icon slot="start" name="create-outline"></ion-icon>Edit profile</ion-button>
   </section>
-  <div class="stats-row"><div><strong>0</strong><span>Posts</span></div><div><strong>0</strong><span>Followers</span></div><div><strong>0</strong><span>Following</span></div></div>
-  <section class="profile-posts"><h2>Your posts</h2><div class="empty-profile"><ion-icon name="create-outline"></ion-icon><p>Your shared thoughts will appear here.</p></div></section>
+  <div class="stats-row"><div><strong>{{ ownPosts.length }}</strong><span>Posts</span></div><button type="button" (click)="connectionsView = 'followers'"><strong>{{ followers.length }}</strong><span>Followers</span></button><button type="button" (click)="connectionsView = 'following'"><strong>{{ following.length }}</strong><span>Following</span></button></div>
+  <section class="profile-posts"><h2>Your posts</h2>
+    @if (!ownPosts.length) { <div class="empty-profile"><ion-icon name="create-outline"></ion-icon><p>Your shared thoughts will appear here.</p></div> }
+    @for (post of ownPosts; track post.id) { <article class="profile-post"><p>{{ post.body }}</p><span>{{ post.createdAt | date:'short' }}</span></article> }
+  </section>
 </ion-content>
+@if (editingProfile) {
+  <div class="edit-backdrop" role="presentation" (click)="editingProfile = false">
+    <section class="edit-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-profile-title" (click)="$event.stopPropagation()">
+      <h2 id="edit-profile-title">Edit profile</h2>
+      <ion-avatar class="edit-profile-avatar">
+        @if (editProfileImage) {
+          <img [src]="editProfileImage" alt="Profile photo preview" />
+        } @else {
+          <ion-icon name="person-circle-outline"></ion-icon>
+        }
+      </ion-avatar>
+      <input #profilePhotoInput class="profile-photo-input" type="file" accept="image/*" (change)="onProfileImageSelected($event)" aria-label="Choose profile photo" />
+      <div class="profile-photo-actions">
+        <ion-button fill="outline" size="small" (click)="profilePhotoInput.click()">Upload photo</ion-button>
+        @if (editProfileImage) { <ion-button fill="clear" size="small" (click)="removeProfileImage()">Remove photo</ion-button> }
+      </div>
+      @if (profileImageError) { <p class="profile-photo-error" role="alert">{{ profileImageError }}</p> }
+      <ion-input label="Name" labelPlacement="stacked" [(ngModel)]="editName" maxlength="80"></ion-input>
+      <ion-input label="Username" labelPlacement="stacked" [(ngModel)]="editUsername" maxlength="30"></ion-input>
+      <ion-textarea label="Bio" labelPlacement="stacked" [(ngModel)]="editBio" maxlength="160" [autoGrow]="true"></ion-textarea>
+      <div class="edit-actions"><ion-button fill="clear" (click)="editingProfile = false">Cancel</ion-button><ion-button [disabled]="!editName.trim() || !editUsername.trim()" (click)="saveProfile()">Save</ion-button></div>
+    </section>
+  </div>
+}
+@if (connectionsView) {
+  <div class="edit-backdrop" role="presentation" (click)="connectionsView = null">
+    <section class="edit-dialog connections-dialog" role="dialog" aria-modal="true" [attr.aria-label]="connectionsView === 'followers' ? 'Followers' : 'Following'" (click)="$event.stopPropagation()">
+      <h2>{{ connectionsView === 'followers' ? 'Followers' : 'Following' }}</h2>
+      @for (person of (connectionsView === 'followers' ? followers : following); track person.id) {
+        <div class="connection-row"><ion-icon name="person-circle-outline"></ion-icon><div><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div></div>
+      } @empty { <p class="connection-empty">No {{ connectionsView }} yet.</p> }
+      <div class="edit-actions"><ion-button fill="clear" (click)="connectionsView = null">Close</ion-button></div>
+    </section>
+  </div>
+}
 <ion-footer class="page-footer ion-no-border"><ion-toolbar>
   <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
   <ion-button fill="clear" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
