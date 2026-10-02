@@ -1,13 +1,14 @@
 .more-content {
-  --background: radial-gradient(circle at 50% 0%, rgba(141, 170, 160, 0.08), transparent 30%),
-    linear-gradient(145deg, #101313 0%, #151b1a 55%, #0d1010 100%);
+  --background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--ion-color-primary) 8%, transparent), transparent 30%),
+    linear-gradient(145deg, var(--page-bg) 0%, var(--page-surface) 55%, var(--page-bg) 100%);
 }
 
 ion-item {
   --background: var(--ion-color-step-100);
+  --color: var(--page-text);
   --border-radius: 14px;
   margin: 0 16px 10px;
-  border: 1px solid rgba(141, 170, 160, 0.12);
+  border: 1px solid var(--page-border);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
   --inner-padding-end: 14px;
   --min-height: 68px;
@@ -22,9 +23,10 @@ ion-item {
 .empty-state {
   margin: 34px 24px;
   padding: 28px 22px;
-  border: 1px solid rgba(141, 170, 160, 0.14);
+  border: 1px solid var(--page-border);
   border-radius: 18px;
-  background: rgba(28, 34, 33, 0.58);
+  background: var(--page-surface);
+  color: var(--page-text);
   text-align: center;
 
   h1 {
@@ -35,7 +37,7 @@ ion-item {
 
   p {
     margin: 8px 0 0;
-    color: var(--ion-color-medium);
+    color: var(--page-muted);
     font-size: 0.85rem;
   }
 }

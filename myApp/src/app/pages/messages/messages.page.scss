@@ -1,21 +1,21 @@
-.page-content { --background: #101010; }
-.page-header, .page-footer { --background: #101010; --border-color: rgba(255, 255, 255, .1); }
-.page-header ion-toolbar { --background: #101010; padding: 8px 16px; }
-.page-header h1 { margin: 0; color: #f5f5f5; font-size: 1.75rem; font-weight: 700; }
-.page-header ion-button { --color: #f5f5f5; font-size: 1.35rem; }
-.page-content ion-searchbar { padding: 4px 16px 8px; --background: #202020; --border-radius: 14px; --color: #f5f5f5; --icon-color: #858585; --placeholder-color: #858585; }
+.page-content { --background: var(--page-bg); --color: var(--page-text); }
+.page-header, .page-footer { --background: var(--page-bg); --border-color: var(--page-border); }
+.page-header ion-toolbar { --background: var(--page-bg); padding: 8px 16px; }
+.page-header h1 { margin: 0; color: var(--page-text); font-size: 1.75rem; font-weight: 700; }
+.page-header ion-button { --color: var(--ion-color-primary); font-size: 1.35rem; }
+.page-content ion-searchbar { padding: 4px 16px 8px; --background: var(--page-surface); --border-radius: 14px; --color: var(--page-text); --icon-color: var(--ion-color-primary); --placeholder-color: var(--page-muted); }
 .message-tabs { display: flex; align-items: center; gap: 8px; padding: 0 16px 12px; }
-.message-tabs ion-button { min-height: 38px; margin: 0; border: 1px solid rgba(255, 255, 255, .12); border-radius: 20px; --color: #d2d2d2; font-size: .85rem; }
-.message-tabs .filter-button { width: 42px; --color: #d2d2d2; }
-.message-tabs ion-button.active-tab, .message-tabs ion-button.selected-filter { background: #292929; --color: #fff; }
-.filter-menu { position: absolute; z-index: 2; top: 154px; left: 16px; display: grid; width: min(230px, calc(100vw - 32px)); border: 1px solid #383838; border-radius: 10px; background: #171717; }
-.filter-menu button { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 0 14px; border: 0; background: transparent; color: #f2f2f2; }
+.message-tabs ion-button { min-height: 38px; margin: 0; border: 1px solid var(--page-border); border-radius: 20px; --color: var(--page-muted); font-size: .85rem; }
+.message-tabs .filter-button { width: 42px; --color: var(--page-muted); }
+.message-tabs ion-button.active-tab, .message-tabs ion-button.selected-filter { background: var(--page-surface); --color: var(--page-text); }
+.filter-menu { position: absolute; z-index: 2; top: 154px; left: 16px; display: grid; width: min(230px, calc(100vw - 32px)); border: 1px solid var(--page-border); border-radius: 10px; background: var(--page-surface); }
+.filter-menu button { display: flex; min-height: 44px; align-items: center; gap: 10px; padding: 0 14px; border: 0; background: transparent; color: var(--page-text); }
 .empty-state { display: flex; min-height: min(58vh, 470px); flex-direction: column; align-items: center; justify-content: center; padding: 24px 30px 56px; text-align: center; }
-.empty-icon { display: grid; width: 76px; height: 76px; margin-bottom: 22px; place-items: center; border: 1px solid #505050; border-radius: 18px; color: #d7d7d7; }
+.empty-icon { display: grid; width: 76px; height: 76px; margin-bottom: 22px; place-items: center; border: 1px solid var(--page-border); border-radius: 18px; color: var(--page-muted); }
 .empty-icon ion-icon { width: 40px; height: 40px; }
-.empty-state h2 { margin: 0 0 8px; color: #f5f5f5; font-size: 1.25rem; font-weight: 700; }
-.empty-state p { max-width: 300px; margin: 0; color: #8e8e8e; font-size: .9rem; }
-.page-footer ion-toolbar { display: flex; justify-content: space-around; min-height: 70px; padding: 4px 10px; --background: #101010; }
-.page-footer ion-button { width: 48px; height: 48px; margin: 0; --color: #969696; font-size: 1.45rem; }
-.page-footer .active-tab, .page-footer .compose-button { --color: #f5f5f5; }
+.empty-state h2 { margin: 0 0 8px; color: var(--page-text); font-size: 1.25rem; font-weight: 700; }
+.empty-state p { max-width: 300px; margin: 0; color: var(--page-muted); font-size: .9rem; }
+.page-footer ion-toolbar { display: flex; justify-content: space-around; min-height: 70px; padding: 4px 10px; --background: var(--page-bg); }
+.page-footer ion-button { width: 48px; height: 48px; margin: 0; --color: var(--page-muted); font-size: 1.45rem; }
+.page-footer .active-tab, .page-footer .compose-button { --color: var(--page-text); }
 .page-footer .compose-button { font-size: 1.9rem; }

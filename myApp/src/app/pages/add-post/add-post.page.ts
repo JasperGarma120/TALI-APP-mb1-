@@ -4,9 +4,9 @@ import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
 import { IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonTextarea, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addCircle, attachOutline, chatbubbleOutline, closeCircleOutline, documentOutline, homeOutline, personCircleOutline, trendingUpOutline } from 'ionicons/icons';
+import { addCircle, attachOutline, chatbubbleOutline, checkmarkOutline, closeCircleOutline, closeOutline, documentOutline, ellipsisVertical, homeOutline, micOutline, personCircleOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
 import { AccountService } from '../../services/account.service';
-import { PostAttachment, PostService } from '../../services/post.service';
+import { PostAttachment, PostAudience, PostService } from '../../services/post.service';
 
 @Component({
   selector: 'app-add-post',
@@ -22,13 +22,53 @@ export class AddPostPage {
   message = '';
   pendingAttachments: PostAttachment[] = [];
   mediaError = '';
+  showAudienceMenu = false;
+  showAudiencePicker = false;
+  audience: PostAudience = 'public';
+  audienceAccountIds: number[] = [];
+  readonly audienceOptions: { value: PostAudience; label: string }[] = [
+    { value: 'public', label: 'Public' },
+    { value: 'friends', label: 'Friends' },
+    { value: 'friends-of-friends', label: 'Friends of Friends' },
+    { value: 'selected-friends', label: 'Select Friends' },
+    { value: 'hide-from', label: 'Hide From' },
+    { value: 'only-me', label: 'Only Me' },
+  ];
 
   constructor() {
-    addIcons({ addCircle, attachOutline, chatbubbleOutline, closeCircleOutline, documentOutline, homeOutline, personCircleOutline, trendingUpOutline });
+    addIcons({ addCircle, attachOutline, chatbubbleOutline, checkmarkOutline, closeCircleOutline, closeOutline, documentOutline, ellipsisVertical, homeOutline, micOutline, personCircleOutline, trendingUpOutline, videocamOutline });
   }
 
   get canPublish() {
-    return Boolean(this.accountService.selectedAccount() && (this.message.trim() || this.pendingAttachments.length));
+    const hasContent = this.message.trim() || this.pendingAttachments.length;
+    const hasSelectedAudience = this.audience !== 'selected-friends' || this.audienceAccountIds.length > 0;
+    return Boolean(this.accountService.selectedAccount() && hasContent && hasSelectedAudience);
+  }
+
+  get audienceAccounts() {
+    const selectedId = this.accountService.selectedAccount()?.id;
+    return this.accountService.accounts().filter((account) => account.id !== selectedId);
+  }
+
+  get audienceAccountPrompt() {
+    return this.audience === 'hide-from' ? 'Choose who to hide this post from' : 'Choose friends who can see this post';
+  }
+
+  get selectedAudienceLabel() {
+    return this.audienceOptions.find((option) => option.value === this.audience)?.label ?? 'Public';
+  }
+
+  selectAudience(audience: PostAudience) {
+    if (this.audience !== audience) this.audienceAccountIds = [];
+    this.audience = audience;
+    this.showAudienceMenu = false;
+    this.showAudiencePicker = audience === 'selected-friends' || audience === 'hide-from';
+  }
+
+  toggleAudienceAccount(accountId: number) {
+    this.audienceAccountIds = this.audienceAccountIds.includes(accountId)
+      ? this.audienceAccountIds.filter((id) => id !== accountId)
+      : [...this.audienceAccountIds, accountId];
   }
 
   get mediaPermissionEnabled() {
@@ -63,6 +103,8 @@ export class AddPostPage {
       authorUsername: account.username,
       body: this.message.trim(),
       attachments: [...this.pendingAttachments],
+      audience: this.audience,
+      audienceAccountIds: [...this.audienceAccountIds],
     });
     void this.router.navigateByUrl('/home');
   }

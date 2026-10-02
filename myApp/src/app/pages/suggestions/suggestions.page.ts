@@ -24,8 +24,11 @@ export class SuggestionsPage {
   }
 
   get posts() {
-    const selectedId = this.accountService.selectedAccount()?.id;
-    return this.postService.posts().filter((post) => post.authorId !== selectedId);
+    const viewer = this.accountService.selectedAccount();
+    const accounts = this.accountService.accounts();
+    return this.postService.posts().filter((post) =>
+      post.authorId !== viewer?.id && this.postService.canViewPost(post, viewer, accounts),
+    );
   }
 
   constructor() {

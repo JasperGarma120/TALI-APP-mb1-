@@ -1,37 +1,111 @@
-<ion-header class="page-header ion-no-border"><ion-toolbar><ion-button fill="clear" routerLink="/home" aria-label="Cancel"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button><h1>New post</h1><ion-button slot="end" class="publish-button" [disabled]="!canPublish" (click)="publish()">Post</ion-button></ion-toolbar></ion-header>
-<ion-content class="page-content" [fullscreen]="true">
-  <div class="composer">
-    <div class="composer-identity"><ion-icon name="person-circle-outline"></ion-icon><span>{{ accountService.selectedAccount()?.name || 'Your account' }}</span></div>
-    @if (!accountService.selectedAccount()) { <p class="media-error" role="alert">Select an individual account before creating a post. <a routerLink="/select-account">Choose account</a></p> }
-    <ion-textarea [(ngModel)]="message" placeholder="What would you like to share?" [autoGrow]="true" [maxlength]="500" aria-label="Write your post"></ion-textarea>
-    <input #mediaInput class="media-input" type="file" multiple [disabled]="!mediaPermissionEnabled" (change)="onFilesSelected($event)" aria-label="Choose photos, videos, or files" />
-    @if (pendingAttachments.length) {
-      <div class="attachment-list">
-        @for (attachment of pendingAttachments; track $index) {
-          <div class="attachment-preview">
-            @if (attachment.type.startsWith('image/')) {
-              <img [src]="attachment.dataUrl" [alt]="attachment.name" />
-            } @else if (attachment.type.startsWith('video/')) {
-              <video controls playsinline preload="metadata" [attr.aria-label]="attachment.name"><source [src]="attachment.dataUrl" [type]="attachment.type" /></video>
-            } @else {
-              <ion-icon name="document-outline" aria-hidden="true"></ion-icon>
-              <span>{{ attachment.name }}</span>
-            }
-            <ion-button fill="clear" class="remove-attachment" (click)="removeAttachment($index)" [attr.aria-label]="'Remove ' + attachment.name">
-              <ion-icon slot="icon-only" name="close-circle-outline"></ion-icon>
-            </ion-button>
+<ion-header class="page-header ion-no-border">
+  <ion-toolbar>
+    <h1>Create Post</h1>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="page-content">
+  <div class="composer-stage">
+    <article class="composer-card" aria-label="Create a post">
+      <header class="composer-header">
+        @if (accountService.selectedAccount(); as account) {
+          <div class="composer-identity">
+            <div class="author-avatar">
+              @if (account.profileImage; as profileImage) {
+                <img [src]="profileImage" alt="" />
+              } @else {
+                <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+              }
+            </div>
+            <div class="author-copy">
+              <strong>{{ account.name }}</strong>
+              <span>{{ account.username }}</span>
+            </div>
           </div>
         }
-      </div>
-    }
-    @if (mediaError) { <p class="media-error" role="alert">{{ mediaError }}</p> }
-    <div class="composer-tools"><ion-button fill="clear" aria-label="Attach photos, videos, or files" [disabled]="!mediaPermissionEnabled" (click)="mediaInput.click()"><ion-icon slot="icon-only" name="attach-outline"></ion-icon></ion-button><span>{{ message.length }}/500</span></div>
+        <a class="close-button" routerLink="/home" aria-label="Close composer" title="Close">
+          <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+        </a>
+      </header>
+
+      <ion-textarea [(ngModel)]="message" placeholder="What's new?" [autoGrow]="true" [maxlength]="500" aria-label="Write your post"></ion-textarea>
+
+      <input #mediaInput class="media-input" type="file" multiple [disabled]="!mediaPermissionEnabled" (change)="onFilesSelected($event)" aria-label="Choose photos, videos, or files" />
+      @if (pendingAttachments.length) {
+        <div class="attachment-list">
+          @for (attachment of pendingAttachments; track $index) {
+            <div class="attachment-preview">
+              @if (attachment.type.startsWith('image/')) {
+                <img [src]="attachment.dataUrl" [alt]="attachment.name" />
+              } @else if (attachment.type.startsWith('video/')) {
+                <video controls playsinline preload="metadata" [attr.aria-label]="attachment.name"><source [src]="attachment.dataUrl" [type]="attachment.type" /></video>
+              } @else {
+                <ion-icon name="document-outline" aria-hidden="true"></ion-icon>
+                <span>{{ attachment.name }}</span>
+              }
+              <button class="remove-attachment" type="button" (click)="removeAttachment($index)" [attr.aria-label]="'Remove ' + attachment.name">
+                <ion-icon name="close-circle-outline" aria-hidden="true"></ion-icon>
+              </button>
+            </div>
+          }
+        </div>
+      }
+      @if (mediaError) { <p class="media-error" role="alert">{{ mediaError }}</p> }
+
+      @if (showAudiencePicker) {
+        <section class="audience-picker" [attr.aria-label]="audienceAccountPrompt">
+          <h2>{{ audienceAccountPrompt }}</h2>
+          @for (account of audienceAccounts; track account.id) {
+            <label class="audience-person">
+              <input type="checkbox" [checked]="audienceAccountIds.includes(account.id)" (change)="toggleAudienceAccount(account.id)" />
+              <span><strong>{{ account.name }}</strong><small>{{ account.username }}</small></span>
+            </label>
+          } @empty {
+            <p>No other accounts are available to select.</p>
+          }
+        </section>
+      }
+
+      <footer class="composer-tools">
+        <div class="tool-actions">
+          <button class="tool-button" type="button" disabled aria-label="Voice recording unavailable" title="Voice recording unavailable">
+            <ion-icon name="mic-outline" aria-hidden="true"></ion-icon>
+          </button>
+          <button class="tool-button" type="button" [disabled]="!mediaPermissionEnabled" (click)="mediaInput.click()" aria-label="Add a photo or video" title="Add a photo or video">
+            <ion-icon name="videocam-outline" aria-hidden="true"></ion-icon>
+          </button>
+          <button class="tool-button" type="button" [disabled]="!mediaPermissionEnabled" (click)="mediaInput.click()" aria-label="Attach a file" title="Attach a file">
+            <ion-icon name="attach-outline" aria-hidden="true"></ion-icon>
+          </button>
+          <button class="tool-button" type="button" aria-haspopup="menu" [attr.aria-expanded]="showAudienceMenu" (click)="showAudienceMenu = !showAudienceMenu" [attr.aria-label]="'Choose audience. Current audience: ' + selectedAudienceLabel" [title]="'Audience: ' + selectedAudienceLabel">
+            <ion-icon name="ellipsis-vertical" aria-hidden="true"></ion-icon>
+          </button>
+        </div>
+        @if (message.length > 0) { <span class="character-count">{{ message.length }}/500</span> }
+        @if (showAudienceMenu) {
+          <div class="audience-menu" role="menu" aria-label="Who can see this post">
+            @for (option of audienceOptions; track option.value) {
+              <button type="button" role="menuitemradio" [attr.aria-checked]="audience === option.value" [class.is-selected]="audience === option.value" (click)="selectAudience(option.value)">
+                <span>{{ option.label }}</span>
+                @if (audience === option.value) { <ion-icon name="checkmark-outline" aria-hidden="true"></ion-icon> }
+              </button>
+            }
+          </div>
+        }
+        <button class="publish-button" type="button" [disabled]="!canPublish" (click)="publish()">Publish</button>
+      </footer>
+    </article>
   </div>
 </ion-content>
-<ion-footer class="page-footer ion-no-border"><ion-toolbar>
-  <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
-  <ion-button fill="clear" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
-  <ion-button fill="clear" class="active-tab compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
-  <ion-button fill="clear" routerLink="/suggestions" aria-label="Suggestions"><ion-icon slot="icon-only" name="trending-up-outline"></ion-icon></ion-button>
-  <ion-button fill="clear" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
-</ion-toolbar></ion-footer>
+
+<ion-footer class="page-footer ion-no-border">
+  <ion-toolbar>
+    <nav class="page-nav add-post-nav" aria-label="Main navigation">
+      <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
+      <ion-button fill="clear" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
+      <ion-button fill="solid" class="active-tab compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
+      <ion-button fill="clear" routerLink="/suggestions" aria-label="Suggestions"><ion-icon slot="icon-only" name="trending-up-outline"></ion-icon></ion-button>
+      <ion-button fill="clear" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
+    </nav>
+  </ion-toolbar>
+</ion-footer>
