@@ -20,6 +20,7 @@ export class AddPostPage {
   private readonly postService = inject(PostService);
   private readonly router = inject(Router);
   message = '';
+  publishError = '';
   pendingAttachments: PostAttachment[] = [];
   mediaError = '';
   showAudienceMenu = false;
@@ -59,6 +60,7 @@ export class AddPostPage {
   }
 
   selectAudience(audience: PostAudience) {
+    this.publishError = '';
     if (this.audience !== audience) this.audienceAccountIds = [];
     this.audience = audience;
     this.showAudienceMenu = false;
@@ -66,6 +68,7 @@ export class AddPostPage {
   }
 
   toggleAudienceAccount(accountId: number) {
+    this.publishError = '';
     this.audienceAccountIds = this.audienceAccountIds.includes(accountId)
       ? this.audienceAccountIds.filter((id) => id !== accountId)
       : [...this.audienceAccountIds, accountId];
@@ -81,6 +84,7 @@ export class AddPostPage {
     const files = Array.from(input.files ?? []);
     input.value = '';
     this.mediaError = '';
+    this.publishError = '';
 
     const results = await Promise.all(files.map((file) => this.readFile(file).catch(() => null)));
     const attachments = results.filter((result): result is PostAttachment => result !== null);
@@ -90,13 +94,25 @@ export class AddPostPage {
 
   removeAttachment(index: number) {
     this.pendingAttachments = this.pendingAttachments.filter((_, attachmentIndex) => attachmentIndex !== index);
+    this.publishError = '';
   }
 
   publish() {
-    if (!this.canPublish) return;
     const account = this.accountService.selectedAccount();
-    if (!account) return;
+    if (!account) {
+      this.publishError = 'Select an account before publishing.';
+      return;
+    }
+    if (!this.message.trim() && this.pendingAttachments.length === 0) {
+      this.publishError = 'Write something or attach a photo, video, or file.';
+      return;
+    }
+    if (this.audience === 'selected-friends' && this.audienceAccountIds.length === 0) {
+      this.publishError = 'Select at least one account for this audience.';
+      return;
+    }
 
+    this.publishError = '';
     this.postService.addPost({
       authorId: account.id,
       authorName: account.name,

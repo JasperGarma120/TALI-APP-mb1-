@@ -28,7 +28,7 @@
         </a>
       </header>
 
-      <ion-textarea [(ngModel)]="message" placeholder="What's new?" [autoGrow]="true" [maxlength]="500" aria-label="Write your post"></ion-textarea>
+      <ion-textarea [(ngModel)]="message" (ngModelChange)="publishError = ''" placeholder="What's new?" [autoGrow]="true" [maxlength]="500" aria-label="Write your post"></ion-textarea>
 
       <input #mediaInput class="media-input" type="file" multiple [disabled]="!mediaPermissionEnabled" (change)="onFilesSelected($event)" aria-label="Choose photos, videos, or files" />
       @if (pendingAttachments.length) {
@@ -92,8 +92,9 @@
             }
           </div>
         }
-        <button class="publish-button" type="button" [disabled]="!canPublish" (click)="publish()">Publish</button>
+        <button class="publish-button" type="button" [attr.aria-disabled]="!canPublish" (click)="publish()">Publish</button>
       </footer>
+      @if (publishError) { <p class="publish-error" role="alert">{{ publishError }}</p> }
     </article>
   </div>
 </ion-content>

@@ -10,7 +10,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="home-content" [fullscreen]="true">
+<ion-content class="home-content">
   <div class="screen-shell">
     @if (accountService.selectedAccount(); as account) {
       <section class="home-account-row" aria-label="Current account">
@@ -41,62 +41,7 @@
     }
 
     @for (post of feedPosts; track post.id) {
-      <article class="post-card">
-        <div class="post-topline">
-          <ion-avatar class="post-avatar">
-            @if (profileImageFor(post.authorId); as profileImage) {
-              <img [src]="profileImage" alt="" />
-            } @else {
-              <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
-            }
-          </ion-avatar>
-          <div class="post-user-details">
-            <div class="identity-row">
-              <strong>{{ post.authorName }}</strong>
-              <span class="post-time">{{ post.createdAt | date:'short' }}</span>
-            </div>
-            <span class="post-handle">{{ post.authorUsername }}</span>
-          </div>
-          <ion-button fill="clear" class="post-more" aria-label="More options">
-            <ion-icon slot="icon-only" name="ellipsis-horizontal"></ion-icon>
-          </ion-button>
-        </div>
-
-        @if (post.body) { <p>{{ post.body }}</p> }
-
-        @for (attachment of post.attachments; track $index) {
-          @if (attachment.type.startsWith('image/')) {
-            <img class="post-media" [src]="attachment.dataUrl" [alt]="attachment.name" />
-          } @else if (attachment.type.startsWith('video/')) {
-            <video class="post-media" controls playsinline preload="metadata" [attr.aria-label]="attachment.name">
-              <source [src]="attachment.dataUrl" [type]="attachment.type" />
-            </video>
-          } @else {
-            <a class="post-file" [href]="attachment.dataUrl" [download]="attachment.name">
-              <ion-icon name="document-outline" aria-hidden="true"></ion-icon>
-              <span>{{ attachment.name }}</span>
-            </a>
-          }
-        }
-
-        <div class="post-actions">
-          <button class="action-button" type="button" aria-label="Reply">
-            <ion-icon name="chatbubble-outline"></ion-icon>
-            <span>4</span>
-          </button>
-          <button class="action-button" type="button" aria-label="Like">
-            <ion-icon name="heart-outline"></ion-icon>
-            <span>12</span>
-          </button>
-          <button class="action-button" type="button" aria-label="Repost">
-            <ion-icon name="repeat-outline"></ion-icon>
-            <span>3</span>
-          </button>
-          <button class="action-button" type="button" aria-label="Share">
-            <ion-icon name="share-outline"></ion-icon>
-          </button>
-        </div>
-      </article>
+      <app-post-card [post]="post"></app-post-card>
     }
   </div>
 </ion-content>

@@ -45,8 +45,8 @@ export class CreateAccountPage {
     }
 
     const username = this.username.trim().replace(/^@+/, '');
-    if (!/^[a-zA-Z0-9._]{3,24}$/.test(username)) {
-      this.accountError = 'Username must be 3-24 characters using letters, numbers, periods, or underscores.';
+    if (!username) {
+      this.accountError = 'Enter a username.';
       return;
     }
 

@@ -18,12 +18,10 @@
 .stats-row span { color: var(--page-muted); font-size: .72rem; }
 .profile-posts { padding: 18px; }
 .profile-posts h2 { margin: 0; color: var(--page-text); font-size: .9rem; }
+.profile-posts-feed { display: grid; gap: 12px; margin-top: 14px; }
 .empty-profile { display: grid; justify-items: center; padding: 54px 10px; color: var(--page-muted); text-align: center; }
 .empty-profile ion-icon { color: var(--ion-color-primary); font-size: 1.8rem; }
 .empty-profile p { font-size: .78rem; }
-.profile-post { padding: 14px 0; border-bottom: 1px solid var(--page-border); color: var(--page-text); }
-.profile-post p { margin: 0 0 8px; font-size: .84rem; line-height: 1.5; }
-.profile-post span { color: var(--page-muted); font-size: .72rem; }
 .edit-backdrop { position: fixed; z-index: 20; inset: 0; display: grid; align-items: center; padding: 20px; background: rgba(0, 0, 0, .68); }
 .edit-dialog { width: min(100%, 440px); margin: auto; padding: 20px; border: 1px solid var(--page-border); border-radius: 8px; background: var(--page-surface); color: var(--page-text); }
 .edit-dialog h2 { margin: 0 0 18px; color: var(--page-text); font-size: 1.05rem; }

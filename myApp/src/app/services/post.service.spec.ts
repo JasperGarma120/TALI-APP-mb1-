@@ -44,6 +44,32 @@ describe('PostService audience visibility', () => {
     expect(service.canViewPost(makePost('only-me'), author, accounts)).toBe(true);
     expect(service.canViewPost(makePost('only-me'), friend, accounts)).toBe(false);
   });
+
+  it('starts engagement at zero and toggles likes and reposts per account', () => {
+    const post = service.addPost(makeNewPost(author));
+    expect(post.likes).toEqual([]);
+    expect(post.comments).toEqual([]);
+    expect(post.reposts).toEqual([]);
+
+    service.toggleLike(post.id, friend.id);
+    service.toggleRepost(post.id, friend.id);
+    expect(service.posts()[0].likes).toEqual([friend.id]);
+    expect(service.posts()[0].reposts).toEqual([friend.id]);
+
+    service.toggleLike(post.id, friend.id);
+    service.toggleRepost(post.id, friend.id);
+    expect(service.posts()[0].likes).toEqual([]);
+    expect(service.posts()[0].reposts).toEqual([]);
+  });
+
+  it('adds comments with the active account identity', () => {
+    const post = service.addPost(makeNewPost(author));
+    const comment = service.addComment(post.id, friend, '  Nice post!  ');
+
+    expect(comment.body).toBe('Nice post!');
+    expect(service.posts()[0].comments).toEqual([comment]);
+    expect(comment.authorId).toBe(friend.id);
+  });
 });
 
 function makeAccount(id: number, followingIds: number[] = [], followersIds: number[] = []): Account {
@@ -69,6 +95,21 @@ function makePost(audience: PostAudience, audienceAccountIds: number[] = []): Po
     attachments: [],
     audience,
     audienceAccountIds,
+    likes: [],
+    comments: [],
+    reposts: [],
     createdAt: new Date(),
+  };
+}
+
+function makeNewPost(account: Account) {
+  return {
+    authorId: account.id,
+    authorName: account.name,
+    authorUsername: account.username,
+    body: 'Post body',
+    attachments: [],
+    audience: 'public' as const,
+    audienceAccountIds: [],
   };
 }

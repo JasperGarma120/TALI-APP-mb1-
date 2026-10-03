@@ -9,6 +9,15 @@ export interface PostAttachment {
   dataUrl: string;
 }
 
+export interface PostComment {
+  id: string;
+  authorId: number;
+  authorName: string;
+  authorUsername: string;
+  body: string;
+  createdAt: Date;
+}
+
 export interface Post {
   id: string;
   authorId: number | null;
@@ -18,25 +27,67 @@ export interface Post {
   attachments: PostAttachment[];
   audience: PostAudience;
   audienceAccountIds: number[];
+  likes: number[];
+  comments: PostComment[];
+  reposts: number[];
   createdAt: Date;
 }
 
-export type NewPost = Omit<Post, 'id' | 'createdAt'>;
+export type NewPost = Omit<Post, 'id' | 'createdAt' | 'likes' | 'comments' | 'reposts'>;
 
 @Injectable({ providedIn: 'root' })
 export class PostService {
   readonly posts = signal<Post[]>([]);
   private nextId = 0;
+  private nextCommentId = 0;
 
   addPost(post: NewPost) {
     const publishedPost: Post = {
       ...post,
       id: `${Date.now()}-${++this.nextId}`,
+      likes: [],
+      comments: [],
+      reposts: [],
       createdAt: new Date(),
     };
 
     this.posts.update((posts) => [publishedPost, ...posts]);
     return publishedPost;
+  }
+
+  toggleLike(postId: string, accountId: number) {
+    this.posts.update((posts) => posts.map((post) => {
+      if (post.id !== postId) return post;
+      const likes = post.likes.includes(accountId)
+        ? post.likes.filter((id) => id !== accountId)
+        : [...post.likes, accountId];
+      return { ...post, likes };
+    }));
+  }
+
+  addComment(postId: string, account: Pick<Account, 'id' | 'name' | 'username'>, body: string) {
+    const comment: PostComment = {
+      id: `${Date.now()}-${++this.nextCommentId}`,
+      authorId: account.id,
+      authorName: account.name,
+      authorUsername: account.username,
+      body: body.trim(),
+      createdAt: new Date(),
+    };
+    this.posts.update((posts) => posts.map((post) =>
+      post.id === postId ? { ...post, comments: [...post.comments, comment] } : post,
+    ));
+    return comment;
+  }
+
+  toggleRepost(postId: string, accountId: number) {
+    this.posts.update((posts) => posts.map((post) => {
+      if (post.id !== postId) return post;
+      const reposts = post.reposts.includes(accountId)
+        ? post.reposts.filter((id) => id !== accountId)
+        : [...post.reposts, accountId];
+      return { ...post, reposts };
+    }));
   }
 
   canViewPost(post: Post, viewer: Account | null, accounts: Account[]) {

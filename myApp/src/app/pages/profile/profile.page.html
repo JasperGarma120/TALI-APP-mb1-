@@ -16,7 +16,9 @@
   <div class="stats-row"><div><strong>{{ ownPosts.length }}</strong><span>Posts</span></div><button type="button" (click)="connectionsView = 'followers'"><strong>{{ followers.length }}</strong><span>Followers</span></button><button type="button" (click)="connectionsView = 'following'"><strong>{{ following.length }}</strong><span>Following</span></button></div>
   <section class="profile-posts"><h2>Your posts</h2>
     @if (!ownPosts.length) { <div class="empty-profile"><ion-icon name="create-outline"></ion-icon><p>Your shared thoughts will appear here.</p></div> }
-    @for (post of ownPosts; track post.id) { <article class="profile-post"><p>{{ post.body }}</p><span>{{ post.createdAt | date:'short' }}</span></article> }
+    <div class="profile-posts-feed">
+      @for (post of ownPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }
+    </div>
   </section>
 </ion-content>
 @if (editingProfile) {

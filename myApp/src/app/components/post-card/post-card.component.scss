@@ -1,0 +1,121 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.post-card {
+  min-width: 0;
+  padding: 14px 18px 12px;
+  border: 1px solid color-mix(in srgb, var(--page-border) 85%, transparent);
+  border-radius: 14px;
+  background: var(--page-surface);
+  color: var(--page-text);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+}
+
+.post-topline,
+.identity-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.post-topline { gap: 10px; }
+
+.post-avatar {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  overflow: hidden;
+  place-items: center;
+  border: 2px solid var(--page-surface);
+  border-radius: 50%;
+  background: linear-gradient(145deg, #d7e0de, #b4bfc4);
+  box-shadow: 0 0 0 1px var(--page-border);
+}
+
+.post-avatar img,
+.post-avatar ion-icon { width: 100%; height: 100%; object-fit: cover; }
+
+.post-user-details { flex: 1; min-width: 0; }
+.identity-row { gap: 8px; }
+.identity-row strong { overflow: hidden; color: var(--page-text); font-size: .82rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.post-time,
+.post-handle { color: var(--page-muted); font-size: .7rem; }
+.post-handle { display: block; margin-top: 3px; }
+
+.post-more {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--page-muted);
+  cursor: pointer;
+}
+
+.post-more ion-icon { font-size: 1.15rem; }
+.post-body { margin: 10px 0 0 48px; color: var(--page-text); font-size: .86rem; line-height: 1.5; overflow-wrap: anywhere; }
+
+.post-media {
+  display: block;
+  width: min(calc(100% - 48px), 720px);
+  max-width: calc(100% - 48px);
+  max-height: min(62vh, 520px);
+  margin: 10px 0 0 48px;
+  border: 1px solid var(--page-border);
+  border-radius: 12px;
+  background: var(--page-bg);
+  object-fit: contain;
+}
+
+.post-file { display: flex; width: min(calc(100% - 48px), 720px); align-items: center; gap: 10px; margin: 10px 0 0 48px; padding: 10px 12px; border: 1px solid var(--page-border); border-radius: 10px; background: var(--page-bg); color: var(--page-text); text-decoration: none; }
+.post-file ion-icon { flex: 0 0 auto; font-size: 1.2rem; }
+.post-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.post-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 6vw, 40px);
+  margin: 12px 0 0 48px;
+  padding-top: 10px;
+  border-top: 1px solid var(--page-border);
+}
+
+.action-button { display: inline-flex; min-width: 28px; min-height: 32px; align-items: center; gap: 5px; padding: 0; border: 0; background: transparent; color: var(--page-muted); font: inherit; font-size: .72rem; cursor: pointer; }
+.action-button ion-icon { font-size: 1.08rem; }
+.action-button.is-active { color: var(--ion-color-primary); }
+.action-button:first-child.is-active { color: #e24d61; }
+.action-button:focus-visible,
+.post-more:focus-visible,
+.comment-form button:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: 2px; }
+
+.post-comments { display: grid; gap: 10px; margin: 8px 0 0 48px; }
+.post-comment { padding: 9px 11px; border-radius: 10px; background: var(--page-bg); }
+.post-comment strong { margin-right: 6px; color: var(--page-text); font-size: .76rem; }
+.post-comment span { color: var(--page-muted); font-size: .68rem; }
+.post-comment p { margin: 5px 0 0; color: var(--page-text); font-size: .8rem; line-height: 1.45; overflow-wrap: anywhere; }
+
+.comment-form { display: flex; align-items: flex-end; gap: 8px; }
+.comment-form textarea { width: 100%; min-height: 38px; max-height: 110px; resize: vertical; padding: 9px 10px; border: 1px solid var(--page-border); border-radius: 10px; background: var(--page-surface); color: var(--page-text); font: inherit; font-size: .8rem; }
+.comment-form textarea::placeholder { color: var(--page-muted); }
+.comment-form button { display: grid; width: 36px; height: 36px; flex: 0 0 36px; place-items: center; border: 0; border-radius: 50%; background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); cursor: pointer; }
+.comment-form button:disabled { opacity: .45; cursor: not-allowed; }
+.comment-form button ion-icon { font-size: 1rem; }
+.action-message { margin: 8px 0 0 48px; color: var(--page-muted); font-size: .74rem; }
+
+@media (max-width: 380px) {
+  .post-card { padding-inline: 12px; }
+  .post-body,
+  .post-media,
+  .post-file,
+  .post-actions,
+  .post-comments,
+  .action-message { margin-left: 42px; }
+  .post-media,
+  .post-file { width: calc(100% - 42px); }
+}

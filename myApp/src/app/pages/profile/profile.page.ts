@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonTextarea, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addCircle, chatbubbleOutline, createOutline, homeOutline, personCircleOutline, settingsOutline, trendingUpOutline } from 'ionicons/icons';
+import { PostCardComponent } from '../../components/post-card/post-card.component';
 import { AccountService } from '../../services/account.service';
 import { PostService } from '../../services/post.service';
 
@@ -13,7 +14,7 @@ import { PostService } from '../../services/post.service';
   standalone: true,
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  imports: [CommonModule, FormsModule, RouterLink, IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonTextarea, IonToolbar],
+  imports: [CommonModule, FormsModule, RouterLink, IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonTextarea, IonToolbar, PostCardComponent],
 })
 export class ProfilePage {
   readonly accountService = inject(AccountService);

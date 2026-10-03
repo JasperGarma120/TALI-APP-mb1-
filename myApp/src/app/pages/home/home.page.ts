@@ -7,12 +7,13 @@ import { PostService } from '../../services/post.service';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { addCircle, chatbubbleOutline, documentOutline, ellipsisHorizontal, heartOutline, homeSharp, personCircleOutline, personOutline, repeatOutline, searchOutline, shareOutline } from 'ionicons/icons';
+import { PostCardComponent } from '../../components/post-card/post-card.component';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.page.html',
   styleUrls: ['./home.page.scss'],
-  imports: [IonContent, IonHeader, IonToolbar, IonButton, IonIcon, IonAvatar, IonFooter, CommonModule, FormsModule, RouterLink]
+  imports: [IonContent, IonHeader, IonToolbar, IonButton, IonIcon, IonAvatar, IonFooter, CommonModule, FormsModule, RouterLink, PostCardComponent]
 })
 export class HomePage {
   readonly accountService = inject(AccountService);

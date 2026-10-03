@@ -1,0 +1,77 @@
+<article class="post-card" [attr.id]="'post-' + post.id">
+  <div class="post-topline">
+    <div class="post-avatar">
+      @if (authorImage; as profileImage) {
+        <img [src]="profileImage" alt="" />
+      } @else {
+        <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+      }
+    </div>
+    <div class="post-user-details">
+      <div class="identity-row">
+        <strong>{{ post.authorName }}</strong>
+        <span class="post-time">{{ post.createdAt | date:'short' }}</span>
+      </div>
+      <span class="post-handle">{{ post.authorUsername }}</span>
+    </div>
+    <button class="post-more" type="button" aria-label="More post options">
+      <ion-icon name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
+    </button>
+  </div>
+
+  @if (post.body) { <p class="post-body">{{ post.body }}</p> }
+
+  @for (attachment of post.attachments; track $index) {
+    @if (attachment.type.startsWith('image/')) {
+      <img class="post-media" [src]="attachment.dataUrl" [alt]="attachment.name" />
+    } @else if (attachment.type.startsWith('video/')) {
+      <video class="post-media" controls playsinline preload="metadata" [attr.aria-label]="attachment.name">
+        <source [src]="attachment.dataUrl" [type]="attachment.type" />
+      </video>
+    } @else {
+      <a class="post-file" [href]="attachment.dataUrl" [download]="attachment.name">
+        <ion-icon name="document-outline" aria-hidden="true"></ion-icon>
+        <span>{{ attachment.name }}</span>
+      </a>
+    }
+  }
+
+  <div class="post-actions" aria-label="Post actions">
+    <button class="action-button" [class.is-active]="isLiked" type="button" [attr.aria-pressed]="isLiked" [attr.aria-label]="isLiked ? 'Unlike post' : 'Like post'" (click)="toggleLike()">
+      <ion-icon [name]="isLiked ? 'heart' : 'heart-outline'" aria-hidden="true"></ion-icon>
+      <span>{{ post.likes.length }}</span>
+    </button>
+    <button class="action-button" type="button" [attr.aria-expanded]="commentOpen" aria-label="Comment on post" (click)="toggleComments()">
+      <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
+      <span>{{ post.comments.length }}</span>
+    </button>
+    <button class="action-button" [class.is-active]="isReposted" type="button" [attr.aria-pressed]="isReposted" [attr.aria-label]="isReposted ? 'Undo repost' : 'Repost'" (click)="toggleRepost()">
+      <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
+      <span>{{ post.reposts.length }}</span>
+    </button>
+    <button class="action-button" type="button" aria-label="Share post" (click)="sharePost()">
+      <ion-icon name="share-outline" aria-hidden="true"></ion-icon>
+    </button>
+  </div>
+
+  @if (post.comments.length || commentOpen) {
+    <section class="post-comments" aria-label="Comments">
+      @for (comment of post.comments; track comment.id) {
+        <article class="post-comment">
+          <strong>{{ comment.authorName }}</strong>
+          <span>{{ comment.authorUsername }}</span>
+          <p>{{ comment.body }}</p>
+        </article>
+      }
+      @if (commentOpen) {
+        <form class="comment-form" (ngSubmit)="submitComment()">
+          <textarea name="comment" [(ngModel)]="commentDraft" maxlength="500" placeholder="Write a comment" aria-label="Write a comment"></textarea>
+          <button type="submit" [disabled]="!commentDraft.trim()" aria-label="Post comment">
+            <ion-icon name="send-outline" aria-hidden="true"></ion-icon>
+          </button>
+        </form>
+      }
+    </section>
+  }
+  @if (actionMessage) { <p class="action-message" role="status">{{ actionMessage }}</p> }
+</article>
