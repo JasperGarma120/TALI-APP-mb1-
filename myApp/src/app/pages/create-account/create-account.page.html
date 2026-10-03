@@ -8,9 +8,7 @@
 
 <ion-content class="create-account-content" [fullscreen]="true">
   <div class="create-account-wrapper">
-    <ion-avatar class="create-account-avatar">
-      <img src="assets/logo.svg" alt="Tali logo" />
-    </ion-avatar>
+    <img class="create-account-logo" src="assets/talilogo.png" alt="Tali logo" />
 
     <div class="create-account-card">
       @if (created) {
@@ -27,56 +25,30 @@
         <p>Set up your Tali profile to get started.</p>
       </div>
 
-    <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !firstName.trim()">
-      <ion-input
-        label="First name"
-        labelPlacement="floating"
-        [(ngModel)]="firstName"
-        placeholder="Enter your first name"
-        required
-      ></ion-input>
-    </ion-item>
+    <label class="create-account-field" [class.field-invalid]="submitted && !firstName.trim()">
+      <span>First name</span>
+      <input type="text" autocomplete="off" [(ngModel)]="firstName" placeholder="Enter your first name" required />
+    </label>
 
-    <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !lastName.trim()">
-      <ion-input
-        label="Last name"
-        labelPlacement="floating"
-        [(ngModel)]="lastName"
-        placeholder="Enter your last name"
-        required
-      ></ion-input>
-    </ion-item>
+    <label class="create-account-field" [class.field-invalid]="submitted && !lastName.trim()">
+      <span>Last name</span>
+      <input type="text" autocomplete="off" [(ngModel)]="lastName" placeholder="Enter your last name" required />
+    </label>
 
-    <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !username.trim()">
-      <ion-input
-        label="Username"
-        labelPlacement="floating"
-        [(ngModel)]="username"
-        placeholder="Choose a username"
-        required
-      ></ion-input>
-    </ion-item>
+    <label class="create-account-field" [class.field-invalid]="submitted && !username.trim()">
+      <span>Username</span>
+      <input type="text" autocomplete="off" [(ngModel)]="username" placeholder="Choose a username" required />
+    </label>
 
-    <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !emailOrNumber.trim()">
-      <ion-input
-        label="Email or number"
-        labelPlacement="floating"
-        [(ngModel)]="emailOrNumber"
-        placeholder="Enter your email or number"
-        required
-      ></ion-input>
-    </ion-item>
+    <label class="create-account-field" [class.field-invalid]="submitted && !emailOrNumber.trim()">
+      <span>Email or number</span>
+      <input type="text" autocomplete="off" [(ngModel)]="emailOrNumber" placeholder="Enter your email or number" required />
+    </label>
 
-    <ion-item class="create-account-field" lines="none" [class.field-invalid]="submitted && !password.trim()">
-      <ion-input
-        label="Password"
-        labelPlacement="floating"
-        type="password"
-        [(ngModel)]="password"
-        placeholder="Create a password"
-        required
-      ></ion-input>
-    </ion-item>
+    <label class="create-account-field" [class.field-invalid]="submitted && !password.trim()">
+      <span>Password</span>
+      <input type="password" autocomplete="new-password" [(ngModel)]="password" placeholder="Create a password" required />
+    </label>
 
     @if (submitted && (!firstName.trim() || !lastName.trim() || !username.trim() || !emailOrNumber.trim() || !password.trim())) {
       <p class="create-account-error">Please fill in all fields to continue.</p>

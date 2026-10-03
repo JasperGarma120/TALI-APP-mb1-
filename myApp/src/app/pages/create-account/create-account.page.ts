@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonAvatar, IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonInput, IonItem, IonToolbar } from '@ionic/angular';
+import { IonBackButton, IonButton, IonButtons, IonContent, IonHeader, IonToolbar } from '@ionic/angular';
 import { AccountService } from '../../services/account.service';
 
 @Component({
@@ -14,10 +14,7 @@ import { AccountService } from '../../services/account.service';
     CommonModule,
     FormsModule,
     IonContent,
-    IonItem,
-    IonInput,
     IonButton,
-    IonAvatar,
     IonHeader,
     IonToolbar,
     IonButtons,

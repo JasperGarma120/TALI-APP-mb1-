@@ -35,16 +35,13 @@
   height: 40px;
   place-items: center;
   justify-self: center;
-  overflow: hidden;
-  border-radius: 50%;
-  background: var(--page-surface);
 }
 
 .home-brand-mark img {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .search-button {

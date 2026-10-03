@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { IonContent, IonItem, IonInput, IonButton, IonAvatar } from '@ionic/angular';
+import { IonContent, IonItem, IonInput, IonButton } from '@ionic/angular';
 import { AccountService } from '../../services/account.service';
 
 @Component({
@@ -10,7 +10,7 @@ import { AccountService } from '../../services/account.service';
   standalone: true,
   templateUrl: './login.page.html',
   styleUrls: ['./login.page.scss'],
-  imports: [CommonModule, FormsModule, IonContent, IonItem, IonInput, IonButton, IonAvatar],
+  imports: [CommonModule, FormsModule, IonContent, IonItem, IonInput, IonButton],
 })
 export class LoginPage implements OnInit {
   identifier = '';
