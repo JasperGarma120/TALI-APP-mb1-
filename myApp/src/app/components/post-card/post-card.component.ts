@@ -1,6 +1,7 @@
 import { Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { IonIcon } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { chatbubbleOutline, documentOutline, ellipsisHorizontal, heart, heartOutline, personCircleOutline, repeatOutline, sendOutline, shareOutline } from 'ionicons/icons';
@@ -12,7 +13,7 @@ import { Post, PostService } from '../../services/post.service';
   standalone: true,
   templateUrl: './post-card.component.html',
   styleUrls: ['./post-card.component.scss'],
-  imports: [CommonModule, FormsModule, IonIcon],
+  imports: [CommonModule, FormsModule, RouterLink, IonIcon],
 })
 export class PostCardComponent {
   @Input({ required: true }) post!: Post;

@@ -16,9 +16,17 @@
 .stats-row button { display: grid; gap: 3px; padding: 0 10px; border: 0; background: transparent; text-align: center; }
 .stats-row strong { color: var(--page-text); font-size: .9rem; }
 .stats-row span { color: var(--page-muted); font-size: .72rem; }
+.profile-sections { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--page-border); }
+.profile-sections button { min-height: 48px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--page-muted); font: inherit; font-size: .8rem; }
+.profile-sections button.active { border-bottom-color: var(--ion-color-primary); color: var(--page-text); }
+.profile-sections button:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: -2px; }
 .profile-posts { padding: 18px; }
 .profile-posts h2 { margin: 0; color: var(--page-text); font-size: .9rem; }
 .profile-posts-feed { display: grid; gap: 12px; margin-top: 14px; }
+.profile-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 3px; padding: 3px; }
+.profile-gallery img, .profile-gallery video { display: block; width: 100%; aspect-ratio: 1; background: var(--page-surface); object-fit: cover; }
+.profile-video-gallery video { object-fit: contain; }
+.profile-gallery .empty-profile { grid-column: 1 / -1; }
 .empty-profile { display: grid; justify-items: center; padding: 54px 10px; color: var(--page-muted); text-align: center; }
 .empty-profile ion-icon { color: var(--ion-color-primary); font-size: 1.8rem; }
 .empty-profile p { font-size: .78rem; }
@@ -33,7 +41,7 @@
 .edit-dialog ion-input, .edit-dialog ion-textarea { margin-bottom: 12px; --color: var(--page-text); --highlight-color-focused: var(--ion-color-primary); }
 .edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 .connections-dialog h2 { margin-bottom: 14px; }
-.connection-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--page-border); color: var(--page-text); }
+.connection-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--page-border); color: var(--page-text); text-decoration: none; }
 .connection-row ion-icon { flex: 0 0 34px; width: 34px; height: 34px; color: var(--ion-color-primary); }
 .connection-row strong, .connection-row span { display: block; }
 .connection-row strong { font-size: .82rem; }

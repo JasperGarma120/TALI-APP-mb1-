@@ -1,19 +1,21 @@
 <article class="post-card" [attr.id]="'post-' + post.id">
   <div class="post-topline">
-    <div class="post-avatar">
-      @if (authorImage; as profileImage) {
-        <img [src]="profileImage" alt="" />
-      } @else {
-        <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
-      }
-    </div>
-    <div class="post-user-details">
-      <div class="identity-row">
-        <strong>{{ post.authorName }}</strong>
-        <span class="post-time">{{ post.createdAt | date:'short' }}</span>
+    <a class="post-profile-link" [routerLink]="post.authorId === null ? null : ['/profile', post.authorId]">
+      <div class="post-avatar">
+        @if (authorImage; as profileImage) {
+          <img [src]="profileImage" alt="" />
+        } @else {
+          <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+        }
       </div>
-      <span class="post-handle">{{ post.authorUsername }}</span>
-    </div>
+      <div class="post-user-details">
+        <div class="identity-row">
+          <strong>{{ post.authorName }}</strong>
+          <span class="post-time">{{ post.createdAt | date:'short' }}</span>
+        </div>
+        <span class="post-handle">{{ post.authorUsername }}</span>
+      </div>
+    </a>
     <button class="post-more" type="button" aria-label="More post options">
       <ion-icon name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
     </button>
@@ -58,7 +60,7 @@
     <section class="post-comments" aria-label="Comments">
       @for (comment of post.comments; track comment.id) {
         <article class="post-comment">
-          <strong>{{ comment.authorName }}</strong>
+          <a [routerLink]="['/profile', comment.authorId]">{{ comment.authorName }}</a>
           <span>{{ comment.authorUsername }}</span>
           <p>{{ comment.body }}</p>
         </article>

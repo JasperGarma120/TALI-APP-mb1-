@@ -9,8 +9,10 @@
     <section class="intro"><h2>People to meet</h2></section>
     @for (person of people; track person.id) {
       <article class="suggestion-row">
-        <ion-avatar><ion-icon name="person-circle-outline"></ion-icon></ion-avatar>
-        <div class="suggestion-copy"><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div>
+        <a class="person-profile-link" [routerLink]="['/profile', person.id]">
+          <ion-avatar><ion-icon name="person-circle-outline"></ion-icon></ion-avatar>
+          <div class="suggestion-copy"><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div>
+        </a>
         <ion-button [fill]="isFollowing(person) ? 'clear' : 'outline'" size="small" (click)="toggleFollow(person)"><ion-icon slot="start" [name]="isFollowing(person) ? 'person-circle-outline' : 'person-add-outline'"></ion-icon>{{ isFollowing(person) ? 'Following' : 'Follow' }}</ion-button>
       </article>
     } @empty { <p class="empty-suggestions">No other accounts to suggest yet.</p> }
@@ -18,7 +20,7 @@
   @if (selectedCategory === 'posts') {
     <section class="intro"><h2>Posts to explore</h2></section>
     @for (post of posts; track post.id) {
-      <article class="suggestion-post"><strong>{{ post.authorName }}</strong><span>{{ post.authorUsername }}</span>@if (post.body) { <p>{{ post.body }}</p> }
+      <article class="suggestion-post"><a class="suggestion-post-author" [routerLink]="['/profile', post.authorId]"><strong>{{ post.authorName }}</strong><span>{{ post.authorUsername }}</span></a>@if (post.body) { <p>{{ post.body }}</p> }
         @for (attachment of post.attachments; track $index) {
           @if (attachment.type.startsWith('image/')) { <img [src]="attachment.dataUrl" [alt]="attachment.name" /> }
           @else if (attachment.type.startsWith('video/')) { <video controls playsinline preload="metadata" [attr.aria-label]="attachment.name"><source [src]="attachment.dataUrl" [type]="attachment.type" /></video> }

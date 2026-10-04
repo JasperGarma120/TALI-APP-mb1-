@@ -12,14 +12,25 @@ export interface Account {
   followingIds: number[];
 }
 
+const accountsStorageKey = 'tali-accounts';
+const activeAccountStorageKey = 'tali-active-account';
+
 @Injectable({ providedIn: 'root' })
 export class AccountService {
   accounts = signal<Account[]>([]);
 
   selectedAccount = signal<Account | null>(null);
 
+  constructor() {
+    const accounts = this.loadAccounts();
+    const activeAccountId = this.loadActiveAccountId();
+    this.accounts.set(accounts);
+    this.selectedAccount.set(accounts.find((account) => account.id === activeAccountId) ?? null);
+  }
+
   selectAccount(account: Account) {
     this.selectedAccount.set(account);
+    this.persistActiveAccount();
   }
 
   createAccount(firstName: string, lastName: string, username: string, contact: string, password: string) {
@@ -42,6 +53,8 @@ export class AccountService {
 
     this.accounts.update((accounts) => [...accounts, account]);
     this.selectedAccount.set(account);
+    this.persistAccounts();
+    this.persistActiveAccount();
     return account;
   }
 
@@ -58,11 +71,14 @@ export class AccountService {
     };
     this.accounts.update((accounts) => accounts.map((account) => account.id === selected.id ? updated : account));
     this.selectedAccount.set(updated);
+    this.persistAccounts();
+    this.persistActiveAccount();
     return updated;
   }
 
   logout() {
     this.selectedAccount.set(null);
+    this.persistActiveAccount();
   }
 
   changePassword(currentPassword: string, newPassword: string) {
@@ -71,6 +87,8 @@ export class AccountService {
     const updated = { ...selected, password: newPassword };
     this.accounts.update((accounts) => accounts.map((account) => account.id === selected.id ? updated : account));
     this.selectedAccount.set(updated);
+    this.persistAccounts();
+    this.persistActiveAccount();
     return true;
   }
 
@@ -88,6 +106,8 @@ export class AccountService {
       account.id === selected.id ? updatedSelected : account.id === targetId ? updatedTarget : account,
     ));
     this.selectedAccount.set(updatedSelected);
+    this.persistAccounts();
+    this.persistActiveAccount();
   }
 
   unfollowAccount(targetId: number) {
@@ -105,6 +125,8 @@ export class AccountService {
       return account;
     }));
     this.selectedAccount.set(updatedSelected);
+    this.persistAccounts();
+    this.persistActiveAccount();
   }
 
   getFollowers(accountId: number) {
@@ -124,4 +146,60 @@ export class AccountService {
         account.password === password,
     ) ?? null;
   }
+
+  private loadAccounts(): Account[] {
+    if (typeof localStorage === 'undefined') return [];
+    try {
+      const stored = JSON.parse(localStorage.getItem(accountsStorageKey) ?? '[]') as unknown;
+      return Array.isArray(stored) ? stored.filter(isStoredAccount) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  private loadActiveAccountId(): number | null {
+    if (typeof localStorage === 'undefined') return null;
+    try {
+      const stored = localStorage.getItem(activeAccountStorageKey);
+      if (stored === null) return null;
+      const accountId = Number(stored);
+      return Number.isSafeInteger(accountId) ? accountId : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private persistAccounts() {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(accountsStorageKey, JSON.stringify(this.accounts()));
+    } catch {
+      return;
+    }
+  }
+
+  private persistActiveAccount() {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      const account = this.selectedAccount();
+      if (account) localStorage.setItem(activeAccountStorageKey, String(account.id));
+      else localStorage.removeItem(activeAccountStorageKey);
+    } catch {
+      return;
+    }
+  }
+}
+
+function isStoredAccount(value: unknown): value is Account {
+  if (typeof value !== 'object' || value === null) return false;
+  const account = value as Partial<Account>;
+  return Number.isSafeInteger(account.id) &&
+    typeof account.name === 'string' &&
+    typeof account.username === 'string' &&
+    typeof account.contact === 'string' &&
+    typeof account.password === 'string' &&
+    typeof account.bio === 'string' &&
+    (account.profileImage === undefined || typeof account.profileImage === 'string') &&
+    Array.isArray(account.followersIds) && account.followersIds.every(Number.isSafeInteger) &&
+    Array.isArray(account.followingIds) && account.followingIds.every(Number.isSafeInteger);
 }

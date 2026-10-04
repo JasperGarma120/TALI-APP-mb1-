@@ -1,25 +1,62 @@
-<ion-header class="page-header ion-no-border"><ion-toolbar><h1>Profile</h1><ion-button fill="clear" slot="end" routerLink="/settings" aria-label="Settings"><ion-icon slot="icon-only" name="settings-outline"></ion-icon></ion-button></ion-toolbar></ion-header>
+<ion-header class="page-header ion-no-border"><ion-toolbar><h1>Profile</h1>@if (isOwnProfile) { <ion-button fill="clear" slot="end" routerLink="/settings" aria-label="Settings"><ion-icon slot="icon-only" name="settings-outline"></ion-icon></ion-button> }</ion-toolbar></ion-header>
 <ion-content class="page-content" [fullscreen]="true">
-  <section class="profile-top">
-    <ion-avatar>
-      @if (accountService.selectedAccount()?.profileImage) {
-        <img [src]="accountService.selectedAccount()?.profileImage" alt="Profile photo" />
+  @if (profileAccount; as profile) {
+    <section class="profile-top">
+      <ion-avatar>
+        @if (profile.profileImage) {
+          <img [src]="profile.profileImage" alt="Profile photo" />
+        } @else {
+          <ion-icon name="person-circle-outline"></ion-icon>
+        }
+      </ion-avatar>
+      <h2>{{ profile.name }}</h2>
+      <p>{{ profile.username }}</p>
+      @if (profile.bio) { <p class="profile-bio">{{ profile.bio }}</p> }
+      @if (isOwnProfile) {
+        <ion-button fill="outline" size="small" (click)="openProfileEditor()"><ion-icon slot="start" name="create-outline"></ion-icon>Edit profile</ion-button>
       } @else {
-        <ion-icon name="person-circle-outline"></ion-icon>
+        <ion-button fill="outline" size="small" (click)="toggleFollowProfile()">{{ isFollowingProfile ? 'Following' : 'Follow' }}</ion-button>
       }
-    </ion-avatar>
-    <h2>{{ accountService.selectedAccount()?.name || 'Your profile' }}</h2>
-    <p>{{ accountService.selectedAccount()?.username || '@your.username' }}</p>
-    @if (accountService.selectedAccount()?.bio) { <p class="profile-bio">{{ accountService.selectedAccount()?.bio }}</p> }
-    <ion-button fill="outline" size="small" (click)="openProfileEditor()"><ion-icon slot="start" name="create-outline"></ion-icon>Edit profile</ion-button>
-  </section>
-  <div class="stats-row"><div><strong>{{ ownPosts.length }}</strong><span>Posts</span></div><button type="button" (click)="connectionsView = 'followers'"><strong>{{ followers.length }}</strong><span>Followers</span></button><button type="button" (click)="connectionsView = 'following'"><strong>{{ following.length }}</strong><span>Following</span></button></div>
-  <section class="profile-posts"><h2>Your posts</h2>
-    @if (!ownPosts.length) { <div class="empty-profile"><ion-icon name="create-outline"></ion-icon><p>Your shared thoughts will appear here.</p></div> }
-    <div class="profile-posts-feed">
-      @for (post of ownPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }
-    </div>
-  </section>
+    </section>
+    <div class="stats-row"><div><strong>{{ ownPosts.length }}</strong><span>Posts</span></div><button type="button" (click)="connectionsView = 'followers'"><strong>{{ followers.length }}</strong><span>Followers</span></button><button type="button" (click)="connectionsView = 'following'"><strong>{{ following.length }}</strong><span>Following</span></button></div>
+    <nav class="profile-sections" aria-label="Profile content">
+      <button type="button" [class.active]="activeSection === 'posts'" [attr.aria-pressed]="activeSection === 'posts'" (click)="activeSection = 'posts'">Posts</button>
+      <button type="button" [class.active]="activeSection === 'photos'" [attr.aria-pressed]="activeSection === 'photos'" (click)="activeSection = 'photos'">Photos</button>
+      <button type="button" [class.active]="activeSection === 'videos'" [attr.aria-pressed]="activeSection === 'videos'" (click)="activeSection = 'videos'">Videos</button>
+      <button type="button" [class.active]="activeSection === 'reposts'" [attr.aria-pressed]="activeSection === 'reposts'" (click)="activeSection = 'reposts'">Reposts</button>
+    </nav>
+    @if (activeSection === 'posts') {
+      <section class="profile-posts"><h2>{{ isOwnProfile ? 'Your posts' : 'Posts' }}</h2>
+        @if (!ownPosts.length) { <div class="empty-profile"><ion-icon name="create-outline"></ion-icon><p>{{ isOwnProfile ? 'Your shared thoughts will appear here.' : 'No posts shared yet.' }}</p></div> }
+        <div class="profile-posts-feed">
+          @for (post of ownPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }
+        </div>
+      </section>
+    }
+    @if (activeSection === 'photos') {
+      <section class="profile-gallery" aria-label="Photos">
+        @for (photo of profilePhotos; track $index) { <img [src]="photo.source" [alt]="photo.name" /> }
+        @empty { <div class="empty-profile"><ion-icon name="image-outline"></ion-icon><p>No photos shared yet.</p></div> }
+      </section>
+    }
+    @if (activeSection === 'videos') {
+      <section class="profile-gallery profile-video-gallery" aria-label="Videos">
+        @for (video of profileVideos; track $index) {
+          <video controls playsinline preload="metadata" [attr.aria-label]="video.name"><source [src]="video.source" [type]="video.type" /></video>
+        } @empty { <div class="empty-profile"><ion-icon name="videocam-outline"></ion-icon><p>No videos shared yet.</p></div> }
+      </section>
+    }
+    @if (activeSection === 'reposts') {
+      <section class="profile-posts"><h2>Reposts</h2>
+        @if (!repostedPosts.length) { <div class="empty-profile"><ion-icon name="repeat-outline"></ion-icon><p>No reposts yet.</p></div> }
+        <div class="profile-posts-feed">
+          @for (post of repostedPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }
+        </div>
+      </section>
+    }
+  } @else {
+    <div class="empty-profile"><ion-icon name="person-circle-outline"></ion-icon><p>This profile is unavailable.</p></div>
+  }
 </ion-content>
 @if (editingProfile) {
   <div class="edit-backdrop" role="presentation" (click)="editingProfile = false">
@@ -50,7 +87,7 @@
     <section class="edit-dialog connections-dialog" role="dialog" aria-modal="true" [attr.aria-label]="connectionsView === 'followers' ? 'Followers' : 'Following'" (click)="$event.stopPropagation()">
       <h2>{{ connectionsView === 'followers' ? 'Followers' : 'Following' }}</h2>
       @for (person of (connectionsView === 'followers' ? followers : following); track person.id) {
-        <div class="connection-row"><ion-icon name="person-circle-outline"></ion-icon><div><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div></div>
+        <a class="connection-row" [routerLink]="['/profile', person.id]" (click)="connectionsView = null"><ion-icon name="person-circle-outline"></ion-icon><div><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div></a>
       } @empty { <p class="connection-empty">No {{ connectionsView }} yet.</p> }
       <div class="edit-actions"><ion-button fill="clear" (click)="connectionsView = null">Close</ion-button></div>
     </section>

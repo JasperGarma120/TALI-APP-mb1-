@@ -35,11 +35,17 @@ export interface Post {
 
 export type NewPost = Omit<Post, 'id' | 'createdAt' | 'likes' | 'comments' | 'reposts'>;
 
+const postsStorageKey = 'tali-posts';
+
 @Injectable({ providedIn: 'root' })
 export class PostService {
   readonly posts = signal<Post[]>([]);
   private nextId = 0;
   private nextCommentId = 0;
+
+  constructor() {
+    this.posts.set(this.loadPosts());
+  }
 
   addPost(post: NewPost) {
     const publishedPost: Post = {
@@ -52,6 +58,7 @@ export class PostService {
     };
 
     this.posts.update((posts) => [publishedPost, ...posts]);
+  this.persistPosts();
     return publishedPost;
   }
 
@@ -63,6 +70,7 @@ export class PostService {
         : [...post.likes, accountId];
       return { ...post, likes };
     }));
+    this.persistPosts();
   }
 
   addComment(postId: string, account: Pick<Account, 'id' | 'name' | 'username'>, body: string) {
@@ -77,6 +85,7 @@ export class PostService {
     this.posts.update((posts) => posts.map((post) =>
       post.id === postId ? { ...post, comments: [...post.comments, comment] } : post,
     ));
+    this.persistPosts();
     return comment;
   }
 
@@ -88,6 +97,7 @@ export class PostService {
         : [...post.reposts, accountId];
       return { ...post, reposts };
     }));
+    this.persistPosts();
   }
 
   canViewPost(post: Post, viewer: Account | null, accounts: Account[]) {
@@ -121,5 +131,46 @@ export class PostService {
     this.posts.update((posts) => posts.map((post) => post.authorId === accountId
       ? { ...post, authorName, authorUsername }
       : post));
+    this.persistPosts();
   }
+
+  private loadPosts(): Post[] {
+    if (typeof localStorage === 'undefined') return [];
+    try {
+      const stored = JSON.parse(localStorage.getItem(postsStorageKey) ?? '[]') as unknown;
+      if (!Array.isArray(stored)) return [];
+      return stored.filter(isStoredPost).map((post) => ({
+        ...post,
+        createdAt: new Date(post.createdAt),
+        comments: post.comments.map((comment) => ({ ...comment, createdAt: new Date(comment.createdAt) })),
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  private persistPosts() {
+    if (typeof localStorage === 'undefined') return;
+    try {
+      localStorage.setItem(postsStorageKey, JSON.stringify(this.posts()));
+    } catch {
+      return;
+    }
+  }
+}
+
+function isStoredPost(value: unknown): value is Post {
+  if (typeof value !== 'object' || value === null) return false;
+  const post = value as Partial<Post>;
+  return typeof post.id === 'string' &&
+    (typeof post.authorId === 'number' || post.authorId === null) &&
+    typeof post.authorName === 'string' &&
+    typeof post.authorUsername === 'string' &&
+    typeof post.body === 'string' &&
+    Array.isArray(post.attachments) &&
+    Array.isArray(post.audienceAccountIds) &&
+    Array.isArray(post.likes) &&
+    Array.isArray(post.comments) &&
+    Array.isArray(post.reposts) &&
+    (typeof post.createdAt === 'string' || post.createdAt instanceof Date);
 }
