@@ -1,4 +1,4 @@
-<ion-header class="ion-no-border">
+<ion-header class="ion-no-border auth-header">
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/select-account" text=""></ion-back-button>
@@ -6,7 +6,11 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="more-content" [fullscreen]="true">
+<ion-content class="more-content auth-screen" [fullscreen]="true">
+  <div class="more-heading">
+    <h1>More accounts</h1>
+    <p>Choose an account to continue</p>
+  </div>
   <ion-list lines="none">
     @for (account of accountService.accounts(); track account.username) {
       <ion-item button="true" (click)="chooseAccount(account)">

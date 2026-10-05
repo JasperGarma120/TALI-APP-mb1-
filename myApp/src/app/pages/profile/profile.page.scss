@@ -3,6 +3,7 @@
 .page-header ion-toolbar { --background: var(--page-bg); padding: 8px 18px; }
 .page-header h1 { margin: 0; color: var(--page-text); font-size: 1.2rem; font-weight: 650; }
 .page-header ion-button { --color: var(--ion-color-primary); }
+.page-header ion-back-button { --color: var(--page-text); }
 .profile-top { display: flex; flex-direction: column; align-items: center; padding: 26px 18px 22px; text-align: center; }
 .profile-top ion-avatar { display: grid; width: 92px; height: 92px; place-items: center; border: 2px solid #a9c9bd; background: #d9d9d9; color: #101313; }
 .profile-top ion-avatar ion-icon { width: 70px; height: 70px; }
@@ -16,15 +17,16 @@
 .stats-row button { display: grid; gap: 3px; padding: 0 10px; border: 0; background: transparent; text-align: center; }
 .stats-row strong { color: var(--page-text); font-size: .9rem; }
 .stats-row span { color: var(--page-muted); font-size: .72rem; }
-.profile-sections { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-bottom: 1px solid var(--page-border); }
-.profile-sections button { min-height: 48px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--page-muted); font: inherit; font-size: .8rem; }
-.profile-sections button.active { border-bottom-color: var(--ion-color-primary); color: var(--page-text); }
-.profile-sections button:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: -2px; }
+.profile-sections { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--page-border); }
+.profile-sections button { min-height: 42px; padding: 0 12px; border: 1px solid var(--page-border); border-radius: 10px; background: var(--page-surface); color: var(--page-muted); font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; transition: background-color .16s ease, border-color .16s ease, color .16s ease; }
+.profile-sections button.active { border-color: var(--ion-color-primary); background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); }
+.profile-sections button:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: 2px; }
 .profile-posts { padding: 18px; }
 .profile-posts h2 { margin: 0; color: var(--page-text); font-size: .9rem; }
 .profile-posts-feed { display: grid; gap: 12px; margin-top: 14px; }
-.profile-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 3px; padding: 3px; }
-.profile-gallery img, .profile-gallery video { display: block; width: 100%; aspect-ratio: 1; background: var(--page-surface); object-fit: cover; }
+.profile-gallery { display: flex; gap: 16px; overflow-x: auto; padding: 16px; scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.profile-gallery::-webkit-scrollbar { display: none; }
+.profile-gallery img, .profile-gallery video { display: block; width: clamp(220px, 40vw, 720px); max-width: calc(100vw - 48px); height: auto; flex: 0 0 clamp(220px, 40vw, 720px); aspect-ratio: 1.9 / 1; max-height: min(42vh, 380px); border: 1px solid var(--page-border); border-radius: 10px; background: var(--page-surface); object-fit: contain; scroll-snap-align: start; }
 .profile-video-gallery video { object-fit: contain; }
 .profile-gallery .empty-profile { grid-column: 1 / -1; }
 .empty-profile { display: grid; justify-items: center; padding: 54px 10px; color: var(--page-muted); text-align: center; }

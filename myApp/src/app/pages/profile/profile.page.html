@@ -1,4 +1,8 @@
-<ion-header class="page-header ion-no-border"><ion-toolbar><h1>Profile</h1>@if (isOwnProfile) { <ion-button fill="clear" slot="end" routerLink="/settings" aria-label="Settings"><ion-icon slot="icon-only" name="settings-outline"></ion-icon></ion-button> }</ion-toolbar></ion-header>
+<ion-header class="page-header ion-no-border"><ion-toolbar>
+  @if (!isOwnProfile) { <ion-back-button slot="start" defaultHref="/home" text="" aria-label="Back"></ion-back-button> }
+  <h1>{{ isOwnProfile ? 'Profile' : (profileAccount?.name || 'Profile') }}</h1>
+  @if (isOwnProfile) { <ion-button fill="clear" slot="end" routerLink="/settings" aria-label="Settings"><ion-icon slot="icon-only" name="settings-outline"></ion-icon></ion-button> }
+</ion-toolbar></ion-header>
 <ion-content class="page-content" [fullscreen]="true">
   @if (profileAccount; as profile) {
     <section class="profile-top">
@@ -34,13 +38,13 @@
       </section>
     }
     @if (activeSection === 'photos') {
-      <section class="profile-gallery" aria-label="Photos">
+      <section class="profile-gallery" aria-label="Photos" (wheel)="scrollGallery($event)">
         @for (photo of profilePhotos; track $index) { <img [src]="photo.source" [alt]="photo.name" /> }
         @empty { <div class="empty-profile"><ion-icon name="image-outline"></ion-icon><p>No photos shared yet.</p></div> }
       </section>
     }
     @if (activeSection === 'videos') {
-      <section class="profile-gallery profile-video-gallery" aria-label="Videos">
+      <section class="profile-gallery profile-video-gallery" aria-label="Videos" (wheel)="scrollGallery($event)">
         @for (video of profileVideos; track $index) {
           <video controls playsinline preload="metadata" [attr.aria-label]="video.name"><source [src]="video.source" [type]="video.type" /></video>
         } @empty { <div class="empty-profile"><ion-icon name="videocam-outline"></ion-icon><p>No videos shared yet.</p></div> }
@@ -93,6 +97,7 @@
     </section>
   </div>
 }
+@if (isOwnProfile) {
 <ion-footer class="page-footer ion-no-border"><ion-toolbar>
   <nav class="page-nav profile-nav" aria-label="Main navigation">
     <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
@@ -102,3 +107,4 @@
     <ion-button fill="solid" class="active-tab" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
   </nav>
 </ion-toolbar></ion-footer>
+}

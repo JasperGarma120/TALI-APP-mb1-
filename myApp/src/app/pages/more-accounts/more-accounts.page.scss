@@ -1,43 +1,15 @@
-.more-content {
-  --background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--ion-color-primary) 8%, transparent), transparent 30%),
-    linear-gradient(145deg, var(--page-bg) 0%, var(--page-surface) 55%, var(--page-bg) 100%);
-}
-
-ion-item {
-  --background: var(--ion-color-step-100);
-  --color: var(--page-text);
-  --border-radius: 14px;
-  margin: 0 16px 10px;
-  border: 1px solid var(--page-border);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
-  --inner-padding-end: 14px;
-  --min-height: 68px;
-}
-
-.account-avatar {
-  width: 40px;
-  height: 40px;
-  color: var(--ion-color-medium);
-}
-
-.empty-state {
-  margin: 34px 24px;
-  padding: 28px 22px;
-  border: 1px solid var(--page-border);
-  border-radius: 18px;
-  background: var(--page-surface);
-  color: var(--page-text);
-  text-align: center;
-
-  h1 {
-    margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-
-  p {
-    margin: 8px 0 0;
-    color: var(--page-muted);
-    font-size: 0.85rem;
-  }
-}
+:host { --auth-ink: #0a0908; --auth-wine: #49111c; --auth-paper: #f2f4f3; --auth-taupe: #a9927d; --auth-earth: #5e503f; }
+.auth-header { --background: transparent; position: absolute; z-index: 5; width: 100%; }
+.auth-header ion-toolbar { --background: transparent !important; --color: var(--auth-paper); }
+.auth-header ion-back-button { --color: var(--auth-paper); }
+.more-content { --background: #5e503f; --color: var(--auth-paper); }
+.more-content::part(background) { background: linear-gradient(145deg, rgba(10,9,8,.58), rgba(73,17,28,.42)), url('/assets/bgdesign2.svg') center / cover fixed; }
+.more-heading { padding: 84px 20px 20px; text-align: center; }
+.more-content ion-list { width: min(calc(100% - 32px), 460px); margin: 0 auto; padding: 8px 0; border: 1px solid rgba(242,244,243,.12); border-radius: 22px; background: rgba(10,9,8,.82); box-shadow: 0 20px 54px rgba(0,0,0,.28); backdrop-filter: blur(16px); }
+ion-item { --background: transparent; --color: var(--auth-paper); --border-radius: 13px; --inner-border-width: 0; margin: 0 10px 7px; border: 1px solid rgba(242,244,243,.12); border-radius: 13px; --inner-padding-end: 14px; --min-height: 70px; }
+.account-avatar { width: 42px; height: 42px; border: 1px solid rgba(169,146,125,.28); background: rgba(73,17,28,.5); color: #d2bca7; }
+ion-label h2 { color: var(--auth-paper); font-size: .98rem; font-weight: 600; }
+ion-label p { color: rgba(242,244,243,.6) !important; }
+.empty-state { width: min(calc(100% - 32px), 460px); box-sizing: border-box; margin: 14px auto; padding: 28px 22px; border: 1px solid rgba(242,244,243,.13); border-radius: 20px; background: rgba(10,9,8,.88); color: var(--auth-paper); text-align: center; }
+.empty-state h1 { margin: 0; color: var(--auth-paper); font-size: 1.1rem; font-weight: 600; }
+.empty-state p { margin: 8px 0 0; color: rgba(242,244,243,.65); font-size: .85rem; }

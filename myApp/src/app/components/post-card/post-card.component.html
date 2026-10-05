@@ -23,19 +23,29 @@
 
   @if (post.body) { <p class="post-body">{{ post.body }}</p> }
 
-  @for (attachment of post.attachments; track $index) {
-    @if (attachment.type.startsWith('image/')) {
-      <img class="post-media" [src]="attachment.dataUrl" [alt]="attachment.name" />
-    } @else if (attachment.type.startsWith('video/')) {
-      <video class="post-media" controls playsinline preload="metadata" [attr.aria-label]="attachment.name">
-        <source [src]="attachment.dataUrl" [type]="attachment.type" />
-      </video>
-    } @else {
-      <a class="post-file" [href]="attachment.dataUrl" [download]="attachment.name">
-        <ion-icon name="document-outline" aria-hidden="true"></ion-icon>
-        <span>{{ attachment.name }}</span>
-      </a>
-    }
+  @if (post.attachments.length) {
+    <div class="post-media-carousel">
+      @if (hasMultipleImages) {
+        <button class="attachment-arrow attachment-arrow-previous" type="button" aria-label="Previous picture" (click)="scrollAttachmentBy($event, -1)"><ion-icon name="chevron-back-outline"></ion-icon></button>
+        <button class="attachment-arrow attachment-arrow-next" type="button" aria-label="Next picture" (click)="scrollAttachmentBy($event, 1)"><ion-icon name="chevron-forward-outline"></ion-icon></button>
+      }
+      <div class="post-attachments" aria-label="Post attachments" (wheel)="scrollAttachments($event)">
+        @for (attachment of post.attachments; track $index) {
+          @if (attachment.type.startsWith('image/')) {
+            <img class="post-media" [src]="attachment.dataUrl" [alt]="attachment.name" />
+          } @else if (attachment.type.startsWith('video/')) {
+            <video class="post-media" controls playsinline preload="metadata" [attr.aria-label]="attachment.name">
+              <source [src]="attachment.dataUrl" [type]="attachment.type" />
+            </video>
+          } @else {
+            <a class="post-file" [href]="attachment.dataUrl" [download]="attachment.name">
+              <ion-icon name="document-outline" aria-hidden="true"></ion-icon>
+              <span>{{ attachment.name }}</span>
+            </a>
+          }
+        }
+      </div>
+    </div>
   }
 
   <div class="post-actions" aria-label="Post actions">
@@ -43,7 +53,7 @@
       <ion-icon [name]="isLiked ? 'heart' : 'heart-outline'" aria-hidden="true"></ion-icon>
       <span>{{ post.likes.length }}</span>
     </button>
-    <button class="action-button" type="button" [attr.aria-expanded]="commentOpen" aria-label="Comment on post" (click)="toggleComments()">
+    <button class="action-button" type="button" [attr.aria-label]="'View ' + post.comments.length + ' comments'" (click)="openComments()">
       <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
       <span>{{ post.comments.length }}</span>
     </button>
@@ -56,24 +66,18 @@
     </button>
   </div>
 
-  @if (post.comments.length || commentOpen) {
-    <section class="post-comments" aria-label="Comments">
-      @for (comment of post.comments; track comment.id) {
-        <article class="post-comment">
-          <a [routerLink]="['/profile', comment.authorId]">{{ comment.authorName }}</a>
-          <span>{{ comment.authorUsername }}</span>
-          <p>{{ comment.body }}</p>
-        </article>
-      }
-      @if (commentOpen) {
-        <form class="comment-form" (ngSubmit)="submitComment()">
-          <textarea name="comment" [(ngModel)]="commentDraft" maxlength="500" placeholder="Write a comment" aria-label="Write a comment"></textarea>
-          <button type="submit" [disabled]="!commentDraft.trim()" aria-label="Post comment">
-            <ion-icon name="send-outline" aria-hidden="true"></ion-icon>
-          </button>
-        </form>
-      }
-    </section>
-  }
   @if (actionMessage) { <p class="action-message" role="status">{{ actionMessage }}</p> }
 </article>
+
+@if (commentsOpen) {
+  <ion-modal
+    [isOpen]="true"
+    [cssClass]="hasVisualAttachments ? 'post-comments-modal' : 'post-comments-modal text-only-comments-modal'"
+    [backdropDismiss]="true"
+    (didDismiss)="closeComments()"
+  >
+    <ng-template>
+      <app-comments [postId]="post.id"></app-comments>
+    </ng-template>
+  </ion-modal>
+}

@@ -1,31 +1,30 @@
 import { Component, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { IonIcon } from '@ionic/angular';
+import { IonIcon, IonModal } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { chatbubbleOutline, documentOutline, ellipsisHorizontal, heart, heartOutline, personCircleOutline, repeatOutline, sendOutline, shareOutline } from 'ionicons/icons';
+import { chatbubbleOutline, chevronBackOutline, chevronForwardOutline, documentOutline, ellipsisHorizontal, heart, heartOutline, personCircleOutline, repeatOutline, shareOutline } from 'ionicons/icons';
 import { AccountService } from '../../services/account.service';
 import { Post, PostService } from '../../services/post.service';
+import { CommentsPage } from '../../pages/comments/comments.page';
 
 @Component({
   selector: 'app-post-card',
   standalone: true,
   templateUrl: './post-card.component.html',
   styleUrls: ['./post-card.component.scss'],
-  imports: [CommonModule, FormsModule, RouterLink, IonIcon],
+  imports: [CommonModule, RouterLink, IonIcon, IonModal, CommentsPage],
 })
 export class PostCardComponent {
   @Input({ required: true }) post!: Post;
 
   readonly accountService = inject(AccountService);
   private readonly postService = inject(PostService);
-  commentOpen = false;
-  commentDraft = '';
+  commentsOpen = false;
   actionMessage = '';
 
   constructor() {
-    addIcons({ chatbubbleOutline, documentOutline, ellipsisHorizontal, heart, heartOutline, personCircleOutline, repeatOutline, sendOutline, shareOutline });
+    addIcons({ chatbubbleOutline, chevronBackOutline, chevronForwardOutline, documentOutline, ellipsisHorizontal, heart, heartOutline, personCircleOutline, repeatOutline, shareOutline });
   }
 
   get authorImage() {
@@ -42,28 +41,49 @@ export class PostCardComponent {
     return accountId !== undefined && this.post.reposts.includes(accountId);
   }
 
+  scrollAttachments(event: WheelEvent) {
+    const row = event.currentTarget as HTMLElement;
+    if (row.scrollWidth <= row.clientWidth) return;
+
+    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+    const nextScrollLeft = row.scrollLeft + delta;
+    if (nextScrollLeft >= 0 && nextScrollLeft <= row.scrollWidth - row.clientWidth) {
+      event.preventDefault();
+      row.scrollLeft = nextScrollLeft;
+    }
+  }
+
+  scrollAttachmentBy(event: MouseEvent, direction: -1 | 1) {
+    const carousel = (event.currentTarget as HTMLElement).parentElement;
+    const row = carousel?.querySelector<HTMLElement>('.post-attachments');
+    const firstItem = row?.querySelector<HTMLElement>('.post-media, .post-file');
+    if (!row || !firstItem) return;
+
+    const gap = Number.parseFloat(getComputedStyle(row).columnGap) || 0;
+    row.scrollBy({ left: direction * (firstItem.offsetWidth + gap), behavior: 'smooth' });
+  }
+
+  get hasMultipleImages() {
+    return this.post.attachments.filter((attachment) => attachment.type.startsWith('image/')).length > 1;
+  }
+
+  get hasVisualAttachments() {
+    return this.post.attachments.some((attachment) => attachment.type.startsWith('image/') || attachment.type.startsWith('video/'));
+  }
+
+  openComments() {
+    this.commentsOpen = true;
+  }
+
+  closeComments() {
+    this.commentsOpen = false;
+  }
+
   toggleLike() {
     const account = this.accountService.selectedAccount();
     if (!account) return this.requireAccount();
     this.actionMessage = '';
     this.postService.toggleLike(this.post.id, account.id);
-  }
-
-  toggleComments() {
-    if (!this.accountService.selectedAccount()) return this.requireAccount();
-    this.actionMessage = '';
-    this.commentOpen = !this.commentOpen;
-  }
-
-  submitComment() {
-    const account = this.accountService.selectedAccount();
-    if (!account) return this.requireAccount();
-    const body = this.commentDraft.trim();
-    if (!body) return;
-    this.postService.addComment(this.post.id, account, body);
-    this.commentDraft = '';
-    this.commentOpen = false;
-    this.actionMessage = '';
   }
 
   toggleRepost() {

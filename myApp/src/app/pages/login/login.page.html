@@ -1,6 +1,10 @@
-<ion-content class="login-content" [fullscreen]="true">
+<ion-content class="login-content auth-screen" [fullscreen]="true">
   <div class="login-wrapper">
-    <img class="login-logo" src="assets/talilogo.png" alt="Tali logo" />
+    <div class="login-brand">
+      <img class="login-logo" src="assets/talilogofinal123login.png" alt="Tali logo" />
+      <h1>Log in</h1>
+      <p>Log in to your account to continue</p>
+    </div>
 
     <ion-item class="login-field" lines="none" [class.field-invalid]="submitted && !identifier.trim()">
       <ion-input

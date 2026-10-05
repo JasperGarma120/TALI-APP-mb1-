@@ -1,0 +1,78 @@
+<ion-content class="comments-modal-content" [fullscreen]="true">
+  @if (post; as currentPost) {
+    <div class="comments-dialog">
+      <section class="comments-media" aria-label="Post media">
+        @if (selectedMedia; as media) {
+          @if (media.type.startsWith('image/')) {
+            <img class="comments-media-image" [src]="media.dataUrl" [alt]="media.name" />
+          } @else {
+            <video class="comments-media-image" controls playsinline [attr.aria-label]="media.name"><source [src]="media.dataUrl" [type]="media.type" /></video>
+          }
+          @if (mediaAttachments.length > 1) {
+            <button type="button" class="media-arrow media-previous" aria-label="Previous image" (click)="moveMedia(-1)"><ion-icon name="chevron-back-outline"></ion-icon></button>
+            <button type="button" class="media-arrow media-next" aria-label="Next image" (click)="moveMedia(1)"><ion-icon name="chevron-forward-outline"></ion-icon></button>
+            <span class="media-counter">{{ selectedMediaIndex + 1 }} / {{ mediaAttachments.length }}</span>
+          }
+        } @else {
+          <article class="comments-text-post">
+            <div class="comment-avatar">
+              @if (authorImage; as image) { <img [src]="image" alt="" /> }
+              @else { <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon> }
+            </div>
+            <div class="comments-text-post-copy">
+              <strong>{{ currentPost.authorName }}</strong>
+              <span>{{ currentPost.authorUsername }}</span>
+              @if (currentPost.body) { <p>{{ currentPost.body }}</p> }
+              <time>{{ currentPost.createdAt | date:'short' }}</time>
+            </div>
+          </article>
+        }
+      </section>
+
+      <section class="comments-panel" aria-label="Comments">
+        <header class="comments-author">
+          <div class="comment-avatar">
+            @if (authorImage; as image) { <img [src]="image" alt="" /> }
+            @else { <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon> }
+          </div>
+          <div class="comments-author-copy"><strong>{{ currentPost.authorName }}</strong><span>{{ currentPost.authorUsername }}</span></div>
+          <button type="button" class="comments-close" aria-label="Close comments" (click)="close()"><ion-icon name="close-outline"></ion-icon></button>
+        </header>
+
+        <h2 class="comments-heading">Comments</h2>
+        <div class="comments-scroll">
+          @if (currentPost.body && mediaAttachments.length) {
+            <article class="comment-entry post-caption">
+              <div class="comment-avatar">
+                @if (authorImage; as image) { <img [src]="image" alt="" /> }
+                @else { <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon> }
+              </div>
+              <div><strong>{{ currentPost.authorName }}</strong><p>{{ currentPost.body }}</p><time>{{ currentPost.createdAt | date:'short' }}</time></div>
+            </article>
+          }
+
+          @if (!currentPost.comments.length) {
+            <p class="comments-empty">No comments yet. Start the conversation.</p>
+          }
+          @for (comment of currentPost.comments; track comment.id) {
+            <article class="comment-entry">
+              <div class="comment-avatar">
+                @if (commentAuthorImage(comment.authorId); as image) { <img [src]="image" alt="" /> }
+                @else { <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon> }
+              </div>
+              <div class="comment-copy"><strong>{{ comment.authorName }}</strong><span>{{ comment.authorUsername }}</span><p>{{ comment.body }}</p><time>{{ comment.createdAt | date:'short' }}</time></div>
+            </article>
+          }
+        </div>
+
+        <form class="comment-composer" (ngSubmit)="submitComment()">
+          <ion-textarea name="comment" [(ngModel)]="commentDraft" maxlength="500" rows="1" [autoGrow]="true" placeholder="Add a comment..." aria-label="Add a comment"></ion-textarea>
+          <ion-button type="submit" fill="clear" [disabled]="!commentDraft.trim()">Post</ion-button>
+        </form>
+        @if (commentError) { <p class="comment-error" role="alert">{{ commentError }}</p> }
+      </section>
+    </div>
+  } @else {
+    <div class="comments-unavailable"><p>This post is unavailable.</p><ion-button fill="clear" (click)="close()">Close</ion-button></div>
+  }
+</ion-content>

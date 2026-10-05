@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonTextarea, IonToolbar } from '@ionic/angular';
+import { IonAvatar, IonBackButton, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonTextarea, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addCircle, chatbubbleOutline, createOutline, homeOutline, imageOutline, personCircleOutline, repeatOutline, settingsOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
 import { PostCardComponent } from '../../components/post-card/post-card.component';
@@ -14,7 +14,7 @@ import { PostService } from '../../services/post.service';
   standalone: true,
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
-  imports: [CommonModule, FormsModule, RouterLink, IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonTextarea, IonToolbar, PostCardComponent],
+  imports: [CommonModule, FormsModule, RouterLink, IonAvatar, IonBackButton, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonTextarea, IonToolbar, PostCardComponent],
 })
 export class ProfilePage {
   readonly accountService = inject(AccountService);
@@ -31,6 +31,18 @@ export class ProfilePage {
 
   constructor() {
     addIcons({ addCircle, chatbubbleOutline, createOutline, homeOutline, imageOutline, personCircleOutline, repeatOutline, settingsOutline, trendingUpOutline, videocamOutline });
+  }
+
+  scrollGallery(event: WheelEvent) {
+    const gallery = event.currentTarget as HTMLElement;
+    if (gallery.scrollWidth <= gallery.clientWidth) return;
+
+    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
+    const nextScrollLeft = gallery.scrollLeft + delta;
+    if (nextScrollLeft >= 0 && nextScrollLeft <= gallery.scrollWidth - gallery.clientWidth) {
+      event.preventDefault();
+      gallery.scrollLeft = nextScrollLeft;
+    }
   }
 
   get profileAccount() {

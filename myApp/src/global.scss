@@ -315,11 +315,14 @@ html.app-light .suggestion-row,
 html.app-light .suggestion-post,
 html.app-light .profile-post,
 html.app-light .stats-row,
-html.app-light .post-card,
 html.app-light .account-center,
 html.app-light .settings-section,
 html.app-light .connection-row {
 	border-color: rgba(32, 42, 37, .14);
+}
+
+html.app-light .post-card {
+	border-color: color-mix(in srgb, var(--ion-color-primary) 48%, rgba(32, 42, 37, .14));
 }
 
 html.app-light .suggestion-tabs button,
@@ -602,3 +605,57 @@ body .page-nav ion-button.compose-button:not(.active-tab) {
 .audience-person span { display: grid; gap: 2px; }
 .audience-person strong { font-size: .8rem; }
 .audience-person small { color: var(--page-muted); font-size: .7rem; }
+
+@media (min-width: 1024px) {
+	html.app-web-shell body {
+		margin: 0;
+		background: var(--page-bg);
+	}
+
+	html.app-web-shell ion-app {
+		background: var(--page-bg);
+	}
+
+	html.app-web-shell ion-router-outlet {
+		position: relative;
+		flex: 1 1 auto;
+		width: 100%;
+		max-width: none;
+		height: 100vh;
+		margin: 0;
+		background: var(--page-bg);
+		box-shadow: none;
+	}
+}
+
+ion-modal.post-comments-modal {
+	--width: min(1120px, calc(100vw - 48px));
+	--height: min(920px, calc(100vh - 36px));
+	--border-radius: 10px;
+	--backdrop-opacity: .68;
+}
+
+ion-modal.text-only-comments-modal {
+	--width: min(1410px, calc(100vw - 28px));
+	--height: min(920px, calc(100vh - 24px));
+}
+
+ion-modal.post-comments-modal::part(content) {
+	overflow: hidden;
+	background: var(--page-surface);
+	border: 3px solid #fff;
+	box-shadow: 0 0 0 2px #fff, 0 18px 56px rgba(0, 0, 0, .36);
+}
+
+html.app-light ion-modal.post-comments-modal::part(content) {
+	border-color: #000;
+	box-shadow: 0 0 0 2px #000, 0 18px 56px rgba(0, 0, 0, .2);
+}
+
+@media (max-width: 720px) {
+	ion-modal.post-comments-modal {
+		--width: 100vw;
+		--height: 100dvh;
+		--border-radius: 0;
+	}
+}

@@ -4,13 +4,23 @@
 }
 
 .post-card {
-  min-width: 0;
+	box-sizing: border-box;
+	width: min(calc(100% - 24px), 860px);
+	min-width: 0;
+	margin: 0 0 0 24px;
   padding: 14px 18px 12px;
-  border: 1px solid color-mix(in srgb, var(--page-border) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ion-color-primary) 48%, var(--page-border));
   border-radius: 14px;
   background: var(--page-surface);
   color: var(--page-text);
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.post-card:hover,
+.post-card:focus-within {
+  border-color: color-mix(in srgb, var(--ion-color-primary) 78%, var(--page-border));
+  box-shadow: 0 10px 26px rgba(0, 0, 0, .16), 0 0 0 1px color-mix(in srgb, var(--ion-color-primary) 20%, transparent);
 }
 
 .post-topline,
@@ -62,24 +72,67 @@
 .post-more ion-icon { font-size: 1.15rem; }
 .post-body { margin: 10px 0 0 48px; color: var(--page-text); font-size: .86rem; line-height: 1.5; overflow-wrap: anywhere; }
 
+.post-media-carousel {
+	position: relative;
+	min-width: 0;
+	margin: 10px 0 0 48px;
+}
+
+.post-attachments {
+	display: flex;
+	gap: 16px;
+	overflow-x: auto;
+	margin: 0;
+	padding: 0 0 6px;
+	scroll-snap-type: x proximity;
+	scrollbar-width: none;
+	-webkit-overflow-scrolling: touch;
+}
+
+.post-attachments::-webkit-scrollbar { display: none; }
+
+.attachment-arrow {
+	position: absolute;
+	top: 50%;
+	z-index: 2;
+	display: grid;
+	width: 38px;
+	height: 38px;
+	place-items: center;
+	transform: translateY(-50%);
+	border: 1px solid rgba(255, 255, 255, .22);
+	border-radius: 50%;
+	background: rgba(15, 20, 20, .78);
+	color: #fff;
+	cursor: pointer;
+}
+
+.attachment-arrow ion-icon { font-size: 1.2rem; }
+.attachment-arrow-previous { left: 10px; }
+.attachment-arrow-next { right: 10px; }
+
 .post-media {
   display: block;
-  width: min(calc(100% - 48px), 720px);
-  max-width: calc(100% - 48px);
-  max-height: min(62vh, 520px);
-  margin: 10px 0 0 48px;
+  flex: 0 0 clamp(240px, 34vw, 600px);
+  width: clamp(240px, 34vw, 600px);
+  max-width: calc(100vw - 100px);
+  aspect-ratio: 1.5 / 1;
+  max-height: min(48vh, 420px);
+  scroll-snap-align: start;
   border: 1px solid var(--page-border);
   border-radius: 12px;
   background: var(--page-bg);
   object-fit: contain;
 }
 
-.post-file { display: flex; width: min(calc(100% - 48px), 720px); align-items: center; gap: 10px; margin: 10px 0 0 48px; padding: 10px 12px; border: 1px solid var(--page-border); border-radius: 10px; background: var(--page-bg); color: var(--page-text); text-decoration: none; }
+.post-file { display: flex; min-width: 220px; max-width: calc(100vw - 100px); flex: 0 0 auto; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--page-border); border-radius: 10px; background: var(--page-bg); color: var(--page-text); text-decoration: none; }
 .post-file ion-icon { flex: 0 0 auto; font-size: 1.2rem; }
 .post-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .post-actions {
-  display: flex;
+	position: relative;
+	z-index: 1;
+	display: flex;
   align-items: center;
   gap: clamp(18px, 6vw, 40px);
   margin: 12px 0 0 48px;
@@ -95,28 +148,12 @@
 .post-more:focus-visible,
 .comment-form button:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: 2px; }
 
-.post-comments { display: grid; gap: 10px; margin: 8px 0 0 48px; }
-.post-comment { padding: 9px 11px; border-radius: 10px; background: var(--page-bg); }
-.post-comment a { margin-right: 6px; color: var(--page-text); font-size: .76rem; font-weight: 700; text-decoration: none; }
-.post-comment span { color: var(--page-muted); font-size: .68rem; }
-.post-comment p { margin: 5px 0 0; color: var(--page-text); font-size: .8rem; line-height: 1.45; overflow-wrap: anywhere; }
-
-.comment-form { display: flex; align-items: flex-end; gap: 8px; }
-.comment-form textarea { width: 100%; min-height: 38px; max-height: 110px; resize: vertical; padding: 9px 10px; border: 1px solid var(--page-border); border-radius: 10px; background: var(--page-surface); color: var(--page-text); font: inherit; font-size: .8rem; }
-.comment-form textarea::placeholder { color: var(--page-muted); }
-.comment-form button { display: grid; width: 36px; height: 36px; flex: 0 0 36px; place-items: center; border: 0; border-radius: 50%; background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); cursor: pointer; }
-.comment-form button:disabled { opacity: .45; cursor: not-allowed; }
-.comment-form button ion-icon { font-size: 1rem; }
 .action-message { margin: 8px 0 0 48px; color: var(--page-muted); font-size: .74rem; }
 
 @media (max-width: 380px) {
   .post-card { padding-inline: 12px; }
   .post-body,
-  .post-media,
-  .post-file,
   .post-actions,
-  .post-comments,
   .action-message { margin-left: 42px; }
-  .post-media,
-  .post-file { width: calc(100% - 42px); }
+  .post-media-carousel { margin-left: 42px; }
 }
