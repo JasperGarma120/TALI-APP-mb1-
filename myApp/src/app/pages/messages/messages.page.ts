@@ -8,6 +8,7 @@ import { addCircle, addOutline, arrowUpOutline, chatbubbleOutline, checkmarkOutl
 import { Account, AccountService } from '../../services/account.service';
 import { ChatAttachment, ChatMessage, Conversation, MessageService, SharedItemsType } from '../../services/message.service';
 import { NotificationService } from '../../services/notification.service';
+import { ViewStateService } from '../../services/view-state.service';
 
 @Component({
   selector: 'app-messages',
@@ -18,6 +19,8 @@ import { NotificationService } from '../../services/notification.service';
   imports: [FormsModule, RouterLink, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonSearchbar, IonToolbar],
 })
 export class MessagesPage {
+  readonly viewState = inject(ViewStateService);
+  private readonly viewStateKey = 'tali-view-messages';
   private readonly accountService = inject(AccountService);
   readonly messageService = inject(MessageService);
   readonly notificationService = inject(NotificationService);
@@ -135,16 +138,48 @@ export class MessagesPage {
 
   constructor() {
     addIcons({ addCircle, addOutline, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOutline, paperPlaneOutline, personCircleOutline, pinOutline, searchOutline, stopCircleOutline, videocamOutline });
+    const saved = this.viewState.read<Partial<{ activeTab: 'inbox' | 'requests'; activeFilter: string; searchQuery: string; activeConversationId: string | null; messageDraft: string; conversationSearch: string; showChatSettings: boolean; showSharedItems: boolean; sharedItemsType: SharedItemsType; showFilters: boolean; composeMode: 'menu' | 'direct' | 'group' | null; groupName: string; selectedMemberIds: number[] }>>(this.viewStateKey, {});
+    if (saved.activeTab) this.activeTab = saved.activeTab;
+    if (saved.activeFilter && this.filters.includes(saved.activeFilter)) this.activeFilter = saved.activeFilter;
+    this.searchQuery = saved.searchQuery ?? '';
+    this.activeConversationId = saved.activeConversationId ?? null;
+    this.messageDraft = saved.messageDraft ?? '';
+    this.conversationSearch = saved.conversationSearch ?? '';
+    this.showChatSettings = saved.showChatSettings ?? false;
+    this.showSharedItems = saved.showSharedItems ?? false;
+    this.sharedItemsType = saved.sharedItemsType ?? 'photos';
+    this.showFilters = saved.showFilters ?? false;
+    this.composeMode = saved.composeMode ?? null;
+    this.groupName = saved.groupName ?? '';
+    this.selectedMemberIds = saved.selectedMemberIds ?? [];
   }
+
+  saveViewState() {
+    this.viewState.write(this.viewStateKey, {
+      activeTab: this.activeTab, activeFilter: this.activeFilter, searchQuery: this.searchQuery,
+      activeConversationId: this.activeConversationId, messageDraft: this.messageDraft,
+      conversationSearch: this.conversationSearch, showChatSettings: this.showChatSettings,
+      showSharedItems: this.showSharedItems, sharedItemsType: this.sharedItemsType,
+      showFilters: this.showFilters, composeMode: this.composeMode, groupName: this.groupName,
+      selectedMemberIds: this.selectedMemberIds,
+    });
+  }
+
+  setMessageSearch(value: string) { this.searchQuery = value; this.saveViewState(); }
+  setConversationSearch(value: string) { this.conversationSearch = value; this.saveViewState(); }
+  setActiveTab(value: 'inbox' | 'requests') { this.activeTab = value; this.saveViewState(); }
+  selectFilter(value: string) { this.activeFilter = value; this.showFilters = false; this.saveViewState(); }
 
   openComposeMenu() {
     this.composeMode = 'menu';
+    this.saveViewState();
   }
 
   closeCompose() {
     this.composeMode = null;
     this.selectedMemberIds = [];
     this.groupName = '';
+    this.saveViewState();
   }
 
   startDirectMessage(accountId: number) {
@@ -153,12 +188,29 @@ export class MessagesPage {
     const conversation = this.messageService.openDirectConversation(account.id, accountId);
     this.closeCompose();
     this.activeConversationId = conversation.id;
+    this.saveViewState();
   }
 
   toggleGroupMember(accountId: number) {
     this.selectedMemberIds = this.selectedMemberIds.includes(accountId)
       ? this.selectedMemberIds.filter((id) => id !== accountId)
       : [...this.selectedMemberIds, accountId];
+    this.saveViewState();
+  }
+
+  setComposeMode(mode: 'menu' | 'direct' | 'group') {
+    this.composeMode = mode;
+    this.saveViewState();
+  }
+
+  setGroupName(value: string) {
+    this.groupName = value;
+    this.saveViewState();
+  }
+
+  setSharedItemsType(value: SharedItemsType) {
+    this.sharedItemsType = value;
+    this.saveViewState();
   }
 
   createGroup() {
@@ -168,6 +220,7 @@ export class MessagesPage {
     const conversation = this.messageService.createGroupConversation([account.id, ...validMembers], this.groupName);
     this.closeCompose();
     this.activeConversationId = conversation.id;
+    this.saveViewState();
   }
 
   conversationTitle(conversation: Conversation) {
@@ -176,6 +229,11 @@ export class MessagesPage {
     const otherAccount = this.accounts().find((account) => account.id === otherId);
     const nickname = this.messageService.settingsFor(conversation.id).nicknames[String(otherId)];
     return nickname?.trim() || otherAccount?.name || otherAccount?.username || 'Account unavailable';
+  }
+
+  conversationProfileImage(conversation: Conversation) {
+    const otherId = conversation.memberIds.find((id) => id !== this.selectedAccount()?.id);
+    return this.accounts().find((account) => account.id === otherId)?.profileImage ?? null;
   }
 
   messageAuthor(message: ChatMessage) {
@@ -217,6 +275,7 @@ export class MessagesPage {
     this.activeConversationId = conversationId;
     this.conversationSearch = '';
     this.reactionPickerMessageId = null;
+    this.saveViewState();
     const accountId = this.selectedAccount()?.id;
     this.messageService.purgeExpiredMessages(conversationId);
     if (accountId !== undefined) this.messageService.markRead(conversationId, accountId);
@@ -227,6 +286,7 @@ export class MessagesPage {
     this.messageDraft = '';
     this.showChatSettings = false;
     this.showSharedItems = false;
+    this.saveViewState();
   }
 
   openChatSettings() {
@@ -237,6 +297,7 @@ export class MessagesPage {
     this.settingsNotice = '';
     this.showSharedItems = false;
     this.showChatSettings = true;
+    this.saveViewState();
   }
 
   updateChatSetting(changes: Parameters<MessageService['updateSettings']>[1]) {
@@ -373,6 +434,7 @@ export class MessagesPage {
     if (!account || !conversation || (!this.messageDraft.trim() && !this.pendingAttachments.length) || this.isPreferenceEnabled('blockedFor')) return;
     this.messageService.sendMessage(conversation.id, account.id, this.messageDraft, this.pendingAttachments);
     this.messageDraft = '';
+    this.saveViewState();
     this.pendingAttachments = [];
   }
 }

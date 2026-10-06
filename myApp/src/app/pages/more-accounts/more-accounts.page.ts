@@ -6,7 +6,7 @@ import {
   IonContent, IonList, IonItem, IonAvatar, IonLabel, IonIcon,
 } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { personCircleOutline } from 'ionicons/icons';
+import { personCircleOutline, ellipsisVerticalOutline } from 'ionicons/icons';
 import { AccountService, Account } from '../../services/account.service';
 
 @Component({
@@ -19,13 +19,48 @@ import { AccountService, Account } from '../../services/account.service';
 export class MoreAccountsPage {
   public accountService = inject(AccountService);
   private router = inject(Router);
+  accountMenuId: number | null = null;
+  menuTop = 0;
+  menuLeft = 0;
 
   constructor() {
-    addIcons({ personCircleOutline });
+    addIcons({ personCircleOutline, ellipsisVerticalOutline });
   }
 
   chooseAccount(account: Account) {
     this.accountService.selectAccount(account);
     this.router.navigateByUrl('/login');
+  }
+
+  get activeMenuAccount() {
+    return this.accountService.listedAccounts().find((account) => account.id === this.accountMenuId) ?? null;
+  }
+
+  toggleAccountMenu(event: Event, accountId: number) {
+    event.stopPropagation();
+    if (this.accountMenuId === accountId) {
+      this.accountMenuId = null;
+      return;
+    }
+    const button = event.currentTarget as HTMLElement;
+    const rect = button.getBoundingClientRect();
+    const menuHeight = 104;
+    const menuWidth = 190;
+    const belowTop = rect.bottom + 6;
+    this.menuTop = belowTop + menuHeight <= window.innerHeight - 12 ? belowTop : Math.max(12, rect.top - menuHeight - 6);
+    this.menuLeft = Math.max(12, Math.min(rect.right - menuWidth, window.innerWidth - menuWidth - 12));
+    this.accountMenuId = accountId;
+  }
+
+  removePassword(event: Event, accountId: number) {
+    event.stopPropagation();
+    this.accountService.removePasswordFromChooser(accountId);
+    this.accountMenuId = null;
+  }
+
+  removeAccount(event: Event, accountId: number) {
+    event.stopPropagation();
+    this.accountService.removeAccountFromChooser(accountId);
+    this.accountMenuId = null;
   }
 }

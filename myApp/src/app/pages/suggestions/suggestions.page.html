@@ -1,8 +1,8 @@
 <ion-header class="page-header ion-no-border"><ion-toolbar><h1>Activity</h1></ion-toolbar></ion-header>
 <ion-content class="page-content" [fullscreen]="true">
   <nav class="activity-switcher" aria-label="Activity sections">
-    <button type="button" [class.active]="selectedSection === 'suggestions'" (click)="selectedSection = 'suggestions'">Suggestions</button>
-    <button type="button" [class.active]="selectedSection === 'notifications'" (click)="selectedSection = 'notifications'">
+    <button type="button" [class.active]="selectedSection === 'suggestions'" (click)="setSection('suggestions')">Suggestions</button>
+    <button type="button" [class.active]="selectedSection === 'notifications'" (click)="setSection('notifications')">
       Notifications
       @if (unreadNotifications) { <span class="notification-count">{{ unreadNotifications }}</span> }
     </button>
@@ -10,9 +10,9 @@
 
   @if (selectedSection === 'suggestions') {
     <nav class="suggestion-tabs" aria-label="Suggestion categories">
-      <button type="button" [class.active]="selectedCategory === 'people'" (click)="selectedCategory = 'people'">People</button>
-      <button type="button" [class.active]="selectedCategory === 'posts'" (click)="selectedCategory = 'posts'">Posts</button>
-      <button type="button" [class.active]="selectedCategory === 'groups'" (click)="selectedCategory = 'groups'">Groups</button>
+      <button type="button" [class.active]="selectedCategory === 'people'" (click)="setCategory('people')">People</button>
+      <button type="button" [class.active]="selectedCategory === 'posts'" (click)="setCategory('posts')">Posts</button>
+      <button type="button" [class.active]="selectedCategory === 'groups'" (click)="setCategory('groups')">Groups</button>
     </nav>
     @if (selectedCategory === 'people') {
       <section class="intro"><h2>People to meet</h2></section>
@@ -70,10 +70,10 @@
 </ion-content>
 <ion-footer class="page-footer ion-no-border"><ion-toolbar>
   <nav class="page-nav suggestions-nav" aria-label="Main navigation">
-    <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
-    <ion-button fill="clear" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
-    <ion-button fill="clear" class="compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
-    <ion-button fill="solid" class="active-tab notification-nav-button" routerLink="/activity" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
-    <ion-button fill="clear" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
+    <ion-button fill="clear" routerLink="/home" (click)="viewState.handleTabTap('/home', 'tali-view-home')" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
+    <ion-button fill="clear" routerLink="/messages" (click)="viewState.handleTabTap('/messages', 'tali-view-messages')" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
+    <ion-button fill="clear" class="compose-button" routerLink="/add-post" (click)="viewState.handleTabTap('/add-post', 'tali-post-draft')" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
+    <ion-button fill="solid" class="active-tab notification-nav-button" routerLink="/activity" (click)="viewState.handleTabTap('/activity', 'tali-view-activity')" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
+    <ion-button fill="clear" routerLink="/profile" (click)="viewState.handleTabTap('/profile', 'tali-view-profile:current')" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
   </nav>
 </ion-toolbar></ion-footer>

@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { IonIcon, IonModal } from '@ionic/angular';
@@ -15,13 +15,19 @@ import { CommentsPage } from '../../pages/comments/comments.page';
   styleUrls: ['./post-card.component.scss'],
   imports: [CommonModule, RouterLink, IonIcon, IonModal, CommentsPage],
 })
-export class PostCardComponent {
+export class PostCardComponent implements OnChanges {
   @Input({ required: true }) post!: Post;
+  @Input() focusPostOnLoad = false;
+  @Input() openCommentsOnLoad = false;
+  @Input() focusRequestId = '';
 
   readonly accountService = inject(AccountService);
   private readonly postService = inject(PostService);
   commentsOpen = false;
   actionMessage = '';
+  showMoreOptions = false;
+  editingPost = false;
+  editBody = '';
 
   constructor() {
     addIcons({ chatbubbleOutline, chevronBackOutline, chevronForwardOutline, documentOutline, ellipsisHorizontal, heart, heartOutline, personCircleOutline, repeatOutline, shareOutline });
@@ -39,6 +45,33 @@ export class PostCardComponent {
   get isReposted() {
     const accountId = this.accountService.selectedAccount()?.id;
     return accountId !== undefined && this.post.reposts.includes(accountId);
+  }
+
+  get isPostOwner() {
+    return this.post.authorId !== null && this.post.authorId === this.accountService.selectedAccount()?.id;
+  }
+
+  get trashDaysRemaining() {
+    if (!this.post.trashedAt) return 0;
+    const elapsed = Date.now() - new Date(this.post.trashedAt).getTime();
+    return Math.max(0, Math.ceil((30 * 24 * 60 * 60 * 1000 - elapsed) / (24 * 60 * 60 * 1000)));
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.post && typeof sessionStorage !== 'undefined') {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem('tali-open-comments') ?? 'null') as { postId?: string; pathname?: string } | null;
+        if (saved?.postId === this.post.id && saved.pathname === location.pathname) this.commentsOpen = true;
+      } catch { /* Ignore invalid or unavailable session state. */ }
+    }
+    if (!this.focusPostOnLoad || (!changes['focusPostOnLoad'] && !changes['focusRequestId'])) return;
+    setTimeout(() => {
+      const postElement = document.getElementById(`post-${this.post.id}`);
+      postElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      postElement?.classList.add('post-notification-focus');
+      if (this.openCommentsOnLoad) this.openComments();
+      setTimeout(() => postElement?.classList.remove('post-notification-focus'), 2200);
+    });
   }
 
   scrollAttachments(event: WheelEvent) {
@@ -73,10 +106,90 @@ export class PostCardComponent {
 
   openComments() {
     this.commentsOpen = true;
+    try { sessionStorage.setItem('tali-open-comments', JSON.stringify({ postId: this.post.id, pathname: location.pathname })); } catch { /* Modal still opens if storage is unavailable. */ }
   }
 
   closeComments() {
     this.commentsOpen = false;
+    try {
+      const saved = JSON.parse(sessionStorage.getItem('tali-open-comments') ?? 'null') as { postId?: string } | null;
+      if (saved?.postId === this.post.id) sessionStorage.removeItem('tali-open-comments');
+    } catch { /* Ignore unavailable session state. */ }
+  }
+
+  startEditingPost() {
+    if (!this.isPostOwner || this.post.trashedAt) return;
+    this.editBody = this.post.body;
+    this.editingPost = true;
+    this.showMoreOptions = false;
+  }
+
+  saveEditedPost() {
+    const ownerId = this.accountService.selectedAccount()?.id;
+    if (ownerId === undefined || (!this.editBody.trim() && this.post.attachments.length === 0)) {
+      this.actionMessage = 'Keep post text or an attachment before saving this post.';
+      return;
+    }
+    if (this.postService.updatePost(this.post.id, ownerId, this.editBody)) {
+      this.editingPost = false;
+      this.actionMessage = 'Post updated.';
+    }
+  }
+
+  togglePostNotifications() {
+    const ownerId = this.accountService.selectedAccount()?.id;
+    if (ownerId === undefined || !this.isPostOwner) return;
+    const disabled = !this.post.notificationsDisabled;
+    this.postService.setPostNotifications(this.post.id, ownerId, disabled);
+    this.actionMessage = disabled ? 'Notifications turned off for this post.' : 'Notifications turned on for this post.';
+    this.showMoreOptions = false;
+  }
+
+  togglePostArchive() {
+    const ownerId = this.accountService.selectedAccount()?.id;
+    if (ownerId === undefined || !this.isPostOwner) return;
+    if (this.post.archivedAt) {
+      this.postService.unarchivePost(this.post.id, ownerId);
+      this.actionMessage = 'Post moved back to your profile.';
+    } else {
+      this.postService.archivePost(this.post.id, ownerId);
+      this.actionMessage = 'Post moved to your archive.';
+    }
+    this.showMoreOptions = false;
+  }
+
+  movePostToTrash() {
+    const ownerId = this.accountService.selectedAccount()?.id;
+    if (ownerId === undefined || !this.isPostOwner) return;
+    this.postService.trashPost(this.post.id, ownerId);
+    this.actionMessage = 'Post moved to trash. You can restore it for 30 days.';
+    this.showMoreOptions = false;
+  }
+
+  restorePost() {
+    const ownerId = this.accountService.selectedAccount()?.id;
+    if (ownerId === undefined || !this.isPostOwner) return;
+    this.postService.restorePost(this.post.id, ownerId);
+    this.showMoreOptions = false;
+  }
+
+  deletePostPermanently() {
+    const ownerId = this.accountService.selectedAccount()?.id;
+    if (ownerId === undefined || !this.isPostOwner || !this.post.trashedAt) return;
+    this.postService.permanentlyDeletePost(this.post.id, ownerId);
+    this.showMoreOptions = false;
+  }
+
+  async copyPostLink() {
+    const postUrl = new URL('/home', window.location.origin);
+    postUrl.hash = `post-${this.post.id}`;
+    try {
+      await navigator.clipboard.writeText(postUrl.toString());
+      this.actionMessage = 'Post link copied.';
+    } catch {
+      this.actionMessage = 'Could not copy the post link in this browser.';
+    }
+    this.showMoreOptions = false;
   }
 
   toggleLike() {

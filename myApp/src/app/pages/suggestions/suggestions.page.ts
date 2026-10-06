@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -7,6 +7,7 @@ import { addCircle, atOutline, chatbubbleOutline, heartOutline, homeOutline, not
 import { Account, AccountService } from '../../services/account.service';
 import { AppNotification, NotificationService } from '../../services/notification.service';
 import { PostService } from '../../services/post.service';
+import { ViewStateService } from '../../services/view-state.service';
 
 @Component({
   selector: 'app-suggestions',
@@ -16,9 +17,12 @@ import { PostService } from '../../services/post.service';
   imports: [CommonModule, RouterLink, IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonToolbar],
 })
 export class SuggestionsPage {
+  readonly viewState = inject(ViewStateService);
+  private readonly viewStateKey = 'tali-view-activity';
   readonly accountService = inject(AccountService);
   readonly postService = inject(PostService);
   readonly notificationService = inject(NotificationService);
+  private readonly router = inject(Router);
   selectedSection: 'suggestions' | 'notifications' = 'suggestions';
   selectedCategory: 'people' | 'posts' | 'groups' = 'people';
 
@@ -37,6 +41,23 @@ export class SuggestionsPage {
 
   constructor() {
     addIcons({ addCircle, atOutline, chatbubbleOutline, heartOutline, homeOutline, notificationsOutline, personAddOutline, personCircleOutline, repeatOutline, shareOutline, trendingUpOutline });
+    const saved = this.viewState.read<Partial<{ selectedSection: 'suggestions' | 'notifications'; selectedCategory: 'people' | 'posts' | 'groups' }>>(this.viewStateKey, {});
+    if (saved.selectedSection) this.selectedSection = saved.selectedSection;
+    if (saved.selectedCategory) this.selectedCategory = saved.selectedCategory;
+  }
+
+  setSection(section: 'suggestions' | 'notifications') {
+    this.selectedSection = section;
+    this.saveViewState();
+  }
+
+  setCategory(category: 'people' | 'posts' | 'groups') {
+    this.selectedCategory = category;
+    this.saveViewState();
+  }
+
+  private saveViewState() {
+    this.viewState.write(this.viewStateKey, { selectedSection: this.selectedSection, selectedCategory: this.selectedCategory });
   }
 
   get notifications() {
@@ -62,6 +83,21 @@ export class SuggestionsPage {
 
   markNotificationRead(notification: AppNotification) {
     this.notificationService.markRead(notification.id, notification.recipientId);
+    if (notification.type === 'follow') {
+      void this.router.navigate(['/profile', notification.actorId]);
+      return;
+    }
+
+    const post = notification.postId
+      ? this.postService.posts().find((item) => item.id === notification.postId)
+      : undefined;
+    void this.router.navigate(['/home'], {
+      queryParams: {
+        postId: post?.id ?? notification.postId,
+        openComments: ['like', 'comment', 'repost'].includes(notification.type) ? 'true' : null,
+        notificationId: notification.id,
+      },
+    });
   }
 
   markAllNotificationsRead() {

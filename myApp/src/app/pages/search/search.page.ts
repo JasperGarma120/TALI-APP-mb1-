@@ -6,6 +6,7 @@ import { addIcons } from 'ionicons';
 import { addCircle, chatbubbleOutline, homeOutline, notificationsOutline, personCircleOutline, searchOutline, trendingUpOutline } from 'ionicons/icons';
 import { AccountService } from '../../services/account.service';
 import { NotificationService } from '../../services/notification.service';
+import { ViewStateService } from '../../services/view-state.service';
 
 @Component({
   selector: 'app-search',
@@ -15,8 +16,10 @@ import { NotificationService } from '../../services/notification.service';
   imports: [FormsModule, RouterLink, IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonSearchbar, IonToolbar],
 })
 export class SearchPage {
+  private readonly stateKey = 'tali-view-search';
   readonly accountService = inject(AccountService);
   readonly notificationService = inject(NotificationService);
+  readonly viewState = inject(ViewStateService);
   query = '';
   readonly topics = ['Good questions', 'Creative practice', 'Daily reflections', 'Community care'];
 
@@ -27,6 +30,12 @@ export class SearchPage {
 
   constructor() {
     addIcons({ addCircle, chatbubbleOutline, homeOutline, notificationsOutline, personCircleOutline, searchOutline, trendingUpOutline });
+    this.query = this.viewState.read(this.stateKey, '');
+  }
+
+  setQuery(query: string) {
+    this.query = query;
+    this.viewState.write(this.stateKey, query);
   }
 
   get filteredPeople() {

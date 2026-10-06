@@ -17,6 +17,12 @@
   transition: border-color .18s ease, box-shadow .18s ease;
 }
 
+.post-card.post-notification-focus { animation: post-notification-focus 2.2s ease-out; }
+@keyframes post-notification-focus {
+  0%, 45% { outline: 3px solid var(--ion-color-primary); outline-offset: 3px; }
+  100% { outline: 3px solid transparent; outline-offset: 3px; }
+}
+
 .post-card:hover,
 .post-card:focus-within {
   border-color: color-mix(in srgb, var(--ion-color-primary) 78%, var(--page-border));
@@ -30,7 +36,7 @@
   align-items: center;
 }
 
-.post-topline { gap: 10px; }
+.post-topline { position: relative; gap: 10px; }
 .post-profile-link { display: flex; flex: 1; min-width: 0; align-items: center; gap: 10px; color: inherit; text-decoration: none; }
 
 .post-avatar {
@@ -70,6 +76,16 @@
 }
 
 .post-more ion-icon { font-size: 1.15rem; }
+.post-options-menu { position: absolute; z-index: 8; top: 38px; right: 0; display: grid; width: min(290px, calc(100vw - 72px)); padding: 6px; border: 1px solid var(--page-border); border-radius: 12px; background: var(--page-surface); box-shadow: 0 14px 32px rgba(0,0,0,.3); }
+.post-options-menu button { min-height: 42px; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--page-text); font: inherit; font-size: .82rem; text-align: left; cursor: pointer; }
+.post-options-menu button:hover, .post-options-menu button:focus-visible { background: color-mix(in srgb, var(--page-text) 8%, transparent); outline: none; }
+.post-options-menu .destructive-option { color: #e78484; }
+.post-edit-form { display: grid; gap: 8px; margin: 10px 0 0 48px; }
+.post-edit-form textarea { width: 100%; min-height: 96px; padding: 10px; border: 1px solid var(--page-border); border-radius: 10px; background: var(--page-bg); color: var(--page-text); font: inherit; resize: vertical; }
+.post-edit-form > div { display: flex; justify-content: flex-end; gap: 8px; }
+.post-edit-form button { min-height: 34px; padding: 0 12px; border: 1px solid var(--page-border); border-radius: 9px; background: var(--page-surface); color: var(--page-text); cursor: pointer; }
+.post-edit-form button:last-child { border-color: var(--ion-color-primary); background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); }
+.post-trash-note { margin: 10px 0 0 48px; color: var(--page-muted); font-size: .75rem; }
 .post-body { margin: 10px 0 0 48px; color: var(--page-text); font-size: .86rem; line-height: 1.5; overflow-wrap: anywhere; }
 
 .post-media-carousel {

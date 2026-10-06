@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonButton, IonContent, IonIcon, IonTextarea, ModalController } from '@ionic/angular';
@@ -14,7 +14,7 @@ import { Post, PostAttachment, PostService } from '../../services/post.service';
   styleUrls: ['./comments.page.scss'],
   imports: [CommonModule, FormsModule, IonButton, IonContent, IonIcon, IonTextarea],
 })
-export class CommentsPage {
+export class CommentsPage implements OnChanges {
   @Input({ required: true }) postId!: string;
 
   private readonly accountService = inject(AccountService);
@@ -27,6 +27,29 @@ export class CommentsPage {
 
   constructor() {
     addIcons({ chevronBackOutline, chevronForwardOutline, closeOutline, imageOutline, personCircleOutline });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (!changes['postId'] || !this.postId) return;
+    const saved = this.readDraft();
+    this.commentDraft = saved?.commentDraft ?? '';
+    this.selectedMediaIndex = saved?.selectedMediaIndex ?? 0;
+  }
+
+  saveDraft() {
+    try {
+      sessionStorage.setItem(this.draftKey, JSON.stringify({ commentDraft: this.commentDraft, selectedMediaIndex: this.selectedMediaIndex }));
+    } catch { /* The comment box remains usable if session storage is unavailable. */ }
+  }
+
+  private get draftKey() { return `tali-comment-draft:${this.postId}`; }
+
+  private readDraft(): { commentDraft: string; selectedMediaIndex: number } | null {
+    try {
+      const value = JSON.parse(sessionStorage.getItem(this.draftKey) ?? 'null') as Partial<{ commentDraft: string; selectedMediaIndex: number }> | null;
+      return value && typeof value.commentDraft === 'string' && Number.isInteger(value.selectedMediaIndex)
+        ? value as { commentDraft: string; selectedMediaIndex: number } : null;
+    } catch { return null; }
   }
 
   get post(): Post | null {
@@ -58,6 +81,7 @@ export class CommentsPage {
     const count = this.mediaAttachments.length;
     if (!count) return;
     this.selectedMediaIndex = (this.selectedMediaIndex + direction + count) % count;
+    this.saveDraft();
   }
 
   close() {
@@ -77,5 +101,6 @@ export class CommentsPage {
     this.postService.addComment(post.id, account, body, this.accountService.accounts());
     this.commentDraft = '';
     this.commentError = '';
+    this.saveDraft();
   }
 }

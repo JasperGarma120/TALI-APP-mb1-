@@ -20,10 +20,24 @@
         </span>
       </div>
     } @else {
-      <h1>Messages</h1>
-      <ion-button fill="clear" slot="end" aria-label="New message" (click)="openComposeMenu()">
-        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
-      </ion-button>
+      <div class="message-list-header">
+        <div class="message-list-heading">
+          <h1>Messages</h1>
+          <ion-button fill="clear" aria-label="New message" (click)="openComposeMenu()">
+            <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+          </ion-button>
+        </div>
+        @if (visibleConversations.length) {
+          <div class="message-quick-chats" aria-label="Recent conversations">
+            @for (conversation of visibleConversations.slice(0, 8); track conversation.id) {
+              <button type="button" class="quick-chat-avatar" [attr.aria-label]="'Open chat with ' + conversationTitle(conversation)" (click)="openConversation(conversation.id)">
+                @if (conversationProfileImage(conversation); as image) { <img [src]="image" [alt]="conversationTitle(conversation)" /> }
+                @else { <ion-icon name="person-circle-outline"></ion-icon> }
+              </button>
+            }
+          </div>
+        }
+      </div>
     }
   </ion-toolbar>
 </ion-header>
@@ -48,7 +62,10 @@
           }
           <div class="message-content">
             @if (message.senderId !== selectedAccount()?.id) { <strong class="message-sender">{{ messageAuthorName(message) }}</strong> }
-            <p class="message-bubble">{{ message.body }}</p>
+            <div class="message-bubble-row">
+              <p class="message-bubble">{{ message.body }}</p>
+              <button type="button" class="add-reaction-button" aria-label="Add emoji reaction" (click)="reactionPickerMessageId = reactionPickerMessageId === message.id ? null : message.id"><ion-icon name="add-outline"></ion-icon></button>
+            </div>
             @for (attachment of message.attachments ?? []; track attachment.url) {
               @if (attachment.kind === 'photo' || attachment.kind === 'gif') { <img class="message-attachment" [src]="attachment.url" [alt]="attachment.name" /> }
               @if (attachment.kind === 'video') { <video class="message-attachment" [src]="attachment.url" controls playsinline></video> }
@@ -58,7 +75,6 @@
               @for (reaction of messageReactionList(message); track reaction.emoji) {
                 <button type="button" class="message-reaction" [attr.aria-label]="'React with ' + reaction.emoji" (click)="chooseMessageReaction(message, reaction.emoji)">{{ reaction.emoji }} <span>{{ reaction.count }}</span></button>
               }
-              <button type="button" class="add-reaction-button" aria-label="Add emoji reaction" (click)="reactionPickerMessageId = reactionPickerMessageId === message.id ? null : message.id"><ion-icon name="add-outline"></ion-icon></button>
               @if (reactionPickerMessageId === message.id) {
                 <emoji-picker class="message-emoji-picker" data-source="/assets/emoji-data.json" (emoji-click)="onEmojiSelected($event, message)"></emoji-picker>
               }
@@ -75,20 +91,20 @@
       <div class="blocked-notice" role="status">This chat is blocked. Unblock it in chat settings to send messages.</div>
     }
   } @else {
-    <ion-searchbar placeholder="Search" aria-label="Search messages" (ionInput)="searchQuery = $any($event).detail.value ?? ''"></ion-searchbar>
+    <ion-searchbar placeholder="Search" aria-label="Search messages" [value]="searchQuery" (ionInput)="setMessageSearch($any($event).detail.value ?? '')"></ion-searchbar>
 
     <div class="message-tabs" role="tablist" aria-label="Message folders">
-      <ion-button fill="clear" class="filter-button" aria-label="Filter messages" [class.selected-filter]="showFilters" (click)="showFilters = !showFilters">
+      <ion-button fill="clear" class="filter-button" aria-label="Filter messages" [class.selected-filter]="showFilters" (click)="showFilters = !showFilters; saveViewState()">
         <ion-icon slot="icon-only" name="filter-outline"></ion-icon>
       </ion-button>
-      <ion-button fill="clear" role="tab" [attr.aria-selected]="activeTab === 'inbox'" [class.active-tab]="activeTab === 'inbox'" (click)="activeTab = 'inbox'">Inbox</ion-button>
-      <ion-button fill="clear" role="tab" [attr.aria-selected]="activeTab === 'requests'" [class.active-tab]="activeTab === 'requests'" (click)="activeTab = 'requests'">Requests</ion-button>
+      <ion-button fill="clear" role="tab" [attr.aria-selected]="activeTab === 'inbox'" [class.active-tab]="activeTab === 'inbox'" (click)="setActiveTab('inbox')">Inbox</ion-button>
+      <ion-button fill="clear" role="tab" [attr.aria-selected]="activeTab === 'requests'" [class.active-tab]="activeTab === 'requests'" (click)="setActiveTab('requests')">Requests</ion-button>
     </div>
 
     @if (showFilters) {
       <div class="filter-menu" aria-label="Message filters">
         @for (filter of filters; track filter) {
-          <button type="button" [class.selected-option]="activeFilter === filter" (click)="activeFilter = filter; showFilters = false">
+          <button type="button" [class.selected-option]="activeFilter === filter" (click)="selectFilter(filter)">
             @if (activeFilter === filter) { <ion-icon name="checkmark-outline"></ion-icon> }
             {{ filter }}
           </button>
@@ -133,18 +149,18 @@
         </div>
 
         @if (composeMode === 'menu') {
-          <button type="button" class="compose-choice" (click)="composeMode = 'direct'">
+          <button type="button" class="compose-choice" (click)="setComposeMode('direct')">
             <strong>Add new message</strong>
             <span>Choose an account to start a chat.</span>
           </button>
-          <button type="button" class="compose-choice" (click)="composeMode = 'group'">
+          <button type="button" class="compose-choice" (click)="setComposeMode('group')">
             <strong>Create group chat</strong>
             <span>Name a group and choose its members.</span>
           </button>
         } @else {
           @if (composeMode === 'group') {
             <label class="group-name-label" for="group-name">Group name</label>
-            <ion-input id="group-name" class="group-name-input" [(ngModel)]="groupName" placeholder="Enter a group name" aria-label="Group name"></ion-input>
+            <ion-input id="group-name" class="group-name-input" [ngModel]="groupName" (ngModelChange)="setGroupName($event)" placeholder="Enter a group name" aria-label="Group name"></ion-input>
           }
 
           <div class="account-picker" aria-label="Choose accounts">
@@ -168,16 +184,16 @@
   }
 
   @if (showChatSettings && activeConversation; as settingsConversation) {
-    <div class="chat-settings-backdrop" (click)="showChatSettings = false">
+    <div class="chat-settings-backdrop" (click)="showChatSettings = false; saveViewState()">
       <section class="chat-settings-panel" role="dialog" aria-modal="true" aria-labelledby="chat-settings-title" (click)="$event.stopPropagation()">
         <header class="chat-settings-header">
           <div><h2 id="chat-settings-title">Chat settings</h2><p>{{ conversationTitle(settingsConversation) }}</p></div>
-          <button type="button" aria-label="Close chat settings" (click)="showChatSettings = false"><ion-icon name="close-outline"></ion-icon></button>
+          <button type="button" aria-label="Close chat settings" (click)="showChatSettings = false; saveViewState()"><ion-icon name="close-outline"></ion-icon></button>
         </header>
         @if (activeChatSettings; as chatSettings) {
           <section class="settings-block">
             <h3>Search in conversation</h3>
-            <label class="chat-search-field"><ion-icon name="search-outline"></ion-icon><input type="search" [(ngModel)]="conversationSearch" placeholder="Search messages" aria-label="Search in conversation" /></label>
+            <label class="chat-search-field"><ion-icon name="search-outline"></ion-icon><input type="search" [(ngModel)]="conversationSearch" (ngModelChange)="saveViewState()" placeholder="Search messages" aria-label="Search in conversation" /></label>
             @if (conversationSearch.trim()) {
               <div class="chat-search-results">
                 @for (message of visibleMessages; track message.id) { <p><strong>{{ messageAuthorName(message) }}</strong> {{ message.body }}</p> }
@@ -225,11 +241,11 @@
 
           <section class="settings-block">
             <h3>Photos &amp; videos / Links / Files / Voice messages</h3>
-            <button type="button" class="settings-action-button" (click)="showSharedItems = !showSharedItems">{{ showSharedItems ? 'Hide shared items' : 'View shared items' }}</button>
+            <button type="button" class="settings-action-button" (click)="showSharedItems = !showSharedItems; saveViewState()">{{ showSharedItems ? 'Hide shared items' : 'View shared items' }}</button>
             @if (showSharedItems) {
               <div class="choice-chips media-type-chips">
                 @for (type of ['photos', 'links', 'files', 'voice messages']; track type) {
-                  <button type="button" [class.selected]="sharedItemsType === type" (click)="sharedItemsType = $any(type)">{{ type }}</button>
+                  <button type="button" [class.selected]="sharedItemsType === type" (click)="setSharedItemsType($any(type))">{{ type }}</button>
                 }
               </div>
               @if (sharedItemsType === 'links' && sharedLinks().length) {
@@ -278,7 +294,7 @@
           <ion-button fill="clear" aria-label="Upload GIF" (click)="gifPicker.click()"><ion-icon slot="icon-only" name="happy-outline"></ion-icon></ion-button>
           <ion-button fill="clear" [attr.aria-label]="recordingVoice ? 'Stop voice recording' : 'Record voice message'" (click)="toggleVoiceRecording()"><ion-icon slot="icon-only" [name]="recordingVoice ? 'stop-circle-outline' : 'mic-outline'"></ion-icon></ion-button>
         </div>
-        <ion-input [(ngModel)]="messageDraft" placeholder="Write a message" aria-label="Write a message" [disabled]="isPreferenceEnabled('blockedFor')" (keyup.enter)="sendMessage()"></ion-input>
+        <ion-input [(ngModel)]="messageDraft" (ngModelChange)="saveViewState()" placeholder="Write a message" aria-label="Write a message" [disabled]="isPreferenceEnabled('blockedFor')" (keyup.enter)="sendMessage()"></ion-input>
         <ion-button fill="solid" aria-label="Send message" [disabled]="!messageDraft.trim() || isPreferenceEnabled('blockedFor')" (click)="sendMessage()"><ion-icon slot="icon-only" name="arrow-up-outline"></ion-icon></ion-button>
       </div>
     </ion-toolbar>
@@ -286,11 +302,11 @@
 } @else {
   <ion-footer class="page-footer ion-no-border"><ion-toolbar>
     <nav class="page-nav messages-nav" aria-label="Main navigation">
-      <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
-      <ion-button fill="solid" class="active-tab" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
-      <ion-button fill="clear" class="compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
-      <ion-button fill="clear" class="notification-nav-button" routerLink="/activity" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
-      <ion-button fill="clear" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
+      <ion-button fill="clear" routerLink="/home" (click)="viewState.handleTabTap('/home', 'tali-view-home')" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
+      <ion-button fill="solid" class="active-tab" routerLink="/messages" (click)="viewState.handleTabTap('/messages', 'tali-view-messages')" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
+      <ion-button fill="clear" class="compose-button" routerLink="/add-post" (click)="viewState.handleTabTap('/add-post', 'tali-post-draft')" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
+      <ion-button fill="clear" class="notification-nav-button" routerLink="/activity" (click)="viewState.handleTabTap('/activity', 'tali-view-activity')" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
+      <ion-button fill="clear" routerLink="/profile" (click)="viewState.handleTabTap('/profile', 'tali-view-profile:current')" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
     </nav>
   </ion-toolbar></ion-footer>
 }

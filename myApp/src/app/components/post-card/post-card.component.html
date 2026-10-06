@@ -16,12 +16,31 @@
         <span class="post-handle">{{ post.authorUsername }}</span>
       </div>
     </a>
-    <button class="post-more" type="button" aria-label="More post options">
+    <button class="post-more" type="button" aria-label="More post options" [attr.aria-expanded]="showMoreOptions" (click)="showMoreOptions = !showMoreOptions">
       <ion-icon name="ellipsis-horizontal" aria-hidden="true"></ion-icon>
     </button>
+    @if (showMoreOptions) {
+      <div class="post-options-menu" role="menu" aria-label="Post options" (click)="$event.stopPropagation()">
+        @if (isPostOwner && post.trashedAt) {
+          <button type="button" role="menuitem" (click)="restorePost()">Restore post</button>
+          <button type="button" role="menuitem" class="destructive-option" (click)="deletePostPermanently()">Delete permanently</button>
+        } @else if (isPostOwner) {
+          <button type="button" role="menuitem" (click)="startEditingPost()">Edit post</button>
+          <button type="button" role="menuitem" (click)="togglePostNotifications()">{{ post.notificationsDisabled ? 'Turn on notifications for this post' : 'Turn off notifications for this post' }}</button>
+          <button type="button" role="menuitem" (click)="togglePostArchive()">{{ post.archivedAt ? 'Move back to profile' : 'Move to archive' }}</button>
+          <button type="button" role="menuitem" class="destructive-option" (click)="movePostToTrash()">Move to trash</button>
+        }
+        <button type="button" role="menuitem" (click)="copyPostLink()">Copy link</button>
+      </div>
+    }
   </div>
 
-  @if (post.body) { <p class="post-body">{{ post.body }}</p> }
+  @if (editingPost) {
+    <div class="post-edit-form">
+      <textarea [value]="editBody" (input)="editBody = $any($event.target).value" maxlength="500" aria-label="Edit post text"></textarea>
+      <div><button type="button" (click)="editingPost = false">Cancel</button><button type="button" (click)="saveEditedPost()">Save changes</button></div>
+    </div>
+  } @else if (post.body) { <p class="post-body">{{ post.body }}</p> }
 
   @if (post.attachments.length) {
     <div class="post-media-carousel">
@@ -48,7 +67,8 @@
     </div>
   }
 
-  <div class="post-actions" aria-label="Post actions">
+  @if (post.trashedAt) { <p class="post-trash-note">In trash · permanently deleted in {{ trashDaysRemaining }} days unless restored</p> }
+  @if (!post.trashedAt) { <div class="post-actions" aria-label="Post actions">
     <button class="action-button" [class.is-active]="isLiked" type="button" [attr.aria-pressed]="isLiked" [attr.aria-label]="isLiked ? 'Unlike post' : 'Like post'" (click)="toggleLike()">
       <ion-icon [name]="isLiked ? 'heart' : 'heart-outline'" aria-hidden="true"></ion-icon>
       <span>{{ post.likes.length }}</span>
@@ -64,7 +84,7 @@
     <button class="action-button" type="button" aria-label="Share post" (click)="sharePost()">
       <ion-icon name="share-outline" aria-hidden="true"></ion-icon>
     </button>
-  </div>
+  </div> }
 
   @if (actionMessage) { <p class="action-message" role="status">{{ actionMessage }}</p> }
 </article>

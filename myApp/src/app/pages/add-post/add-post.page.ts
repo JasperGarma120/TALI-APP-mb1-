@@ -7,6 +7,26 @@ import { addIcons } from 'ionicons';
 import { addCircle, attachOutline, chatbubbleOutline, checkmarkOutline, closeCircleOutline, closeOutline, documentOutline, ellipsisVertical, homeOutline, micOutline, notificationsOutline, personCircleOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
 import { AccountService } from '../../services/account.service';
 import { PostAttachment, PostAudience, PostService } from '../../services/post.service';
+import { loadBrowserData, saveBrowserData, deleteBrowserData } from '../../services/browser-data.store';
+import { ViewStateService } from '../../services/view-state.service';
+
+interface PostDraft {
+  message: string;
+  pendingAttachments: PostAttachment[];
+  audience: PostAudience;
+  audienceAccountIds: number[];
+  showAudienceMenu: boolean;
+  showAudiencePicker: boolean;
+}
+
+const postDraftKey = 'tali-post-draft';
+function isPostDraft(value: unknown): value is PostDraft {
+  if (!value || typeof value !== 'object') return false;
+  const draft = value as Partial<PostDraft>;
+  return typeof draft.message === 'string' && Array.isArray(draft.pendingAttachments) &&
+    ['public', 'friends', 'friends-of-friends', 'selected-friends', 'hide-from', 'only-me'].includes(String(draft.audience)) &&
+    Array.isArray(draft.audienceAccountIds);
+}
 
 @Component({
   selector: 'app-add-post',
@@ -19,6 +39,7 @@ export class AddPostPage {
   readonly accountService = inject(AccountService);
   private readonly postService = inject(PostService);
   private readonly router = inject(Router);
+  readonly viewState = inject(ViewStateService);
   message = '';
   publishError = '';
   pendingAttachments: PostAttachment[] = [];
@@ -27,6 +48,9 @@ export class AddPostPage {
   showAudiencePicker = false;
   audience: PostAudience = 'public';
   audienceAccountIds: number[] = [];
+  private draftReady = false;
+  private draftEdited = false;
+  private draftSaveQueue: Promise<void> = Promise.resolve();
   readonly audienceOptions: { value: PostAudience; label: string }[] = [
     { value: 'public', label: 'Public' },
     { value: 'friends', label: 'Friends' },
@@ -38,6 +62,40 @@ export class AddPostPage {
 
   constructor() {
     addIcons({ addCircle, attachOutline, chatbubbleOutline, checkmarkOutline, closeCircleOutline, closeOutline, documentOutline, ellipsisVertical, homeOutline, micOutline, notificationsOutline, personCircleOutline, trendingUpOutline, videocamOutline });
+    void loadBrowserData<PostDraft | null>(postDraftKey, null, (value): value is PostDraft | null => value === null || isPostDraft(value)).then((draft) => {
+      if (!this.draftEdited && draft) {
+        this.message = draft.message;
+        this.pendingAttachments = draft.pendingAttachments;
+        this.audience = draft.audience;
+        this.audienceAccountIds = draft.audienceAccountIds;
+        this.showAudienceMenu = draft.showAudienceMenu;
+        this.showAudiencePicker = draft.showAudiencePicker;
+      }
+      this.draftReady = true;
+      if (this.draftEdited) this.persistDraft();
+    });
+  }
+
+  onDraftTextChange() {
+    this.publishError = '';
+    this.persistDraft();
+  }
+
+  persistDraft() {
+    this.draftEdited = true;
+    if (!this.draftReady) return;
+    const snapshot: PostDraft = {
+      message: this.message, pendingAttachments: [...this.pendingAttachments], audience: this.audience,
+      audienceAccountIds: [...this.audienceAccountIds], showAudienceMenu: this.showAudienceMenu,
+      showAudiencePicker: this.showAudiencePicker,
+    };
+    this.draftSaveQueue = this.draftSaveQueue.then(() => saveBrowserData(postDraftKey, snapshot));
+  }
+
+  private clearDraft() {
+    this.draftReady = false;
+    this.draftEdited = false;
+    this.draftSaveQueue = this.draftSaveQueue.then(() => deleteBrowserData(postDraftKey));
   }
 
   get canPublish() {
@@ -65,6 +123,7 @@ export class AddPostPage {
     this.audience = audience;
     this.showAudienceMenu = false;
     this.showAudiencePicker = audience === 'selected-friends' || audience === 'hide-from';
+    this.persistDraft();
   }
 
   toggleAudienceAccount(accountId: number) {
@@ -72,6 +131,7 @@ export class AddPostPage {
     this.audienceAccountIds = this.audienceAccountIds.includes(accountId)
       ? this.audienceAccountIds.filter((id) => id !== accountId)
       : [...this.audienceAccountIds, accountId];
+    this.persistDraft();
   }
 
   get mediaPermissionEnabled() {
@@ -89,12 +149,14 @@ export class AddPostPage {
     const results = await Promise.all(files.map((file) => this.readFile(file).catch(() => null)));
     const attachments = results.filter((result): result is PostAttachment => result !== null);
     this.pendingAttachments = [...this.pendingAttachments, ...attachments];
+    this.persistDraft();
     if (attachments.length !== files.length) this.mediaError = 'Some files could not be added. Please try again.';
   }
 
   removeAttachment(index: number) {
     this.pendingAttachments = this.pendingAttachments.filter((_, attachmentIndex) => attachmentIndex !== index);
     this.publishError = '';
+    this.persistDraft();
   }
 
   publish() {
@@ -122,6 +184,13 @@ export class AddPostPage {
       audience: this.audience,
       audienceAccountIds: [...this.audienceAccountIds],
     }, account, this.accountService.accounts());
+    this.clearDraft();
+    this.message = '';
+    this.pendingAttachments = [];
+    this.audience = 'public';
+    this.audienceAccountIds = [];
+    this.showAudienceMenu = false;
+    this.showAudiencePicker = false;
     void this.router.navigateByUrl('/home');
   }
 

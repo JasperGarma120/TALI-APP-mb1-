@@ -6,6 +6,7 @@
       <p>Log in to your account to continue</p>
     </div>
 
+    @if (welcomeName) { <div class="login-welcome">Welcome {{ welcomeName }}, log in to your account</div> }
     <ion-item class="login-field" lines="none" [class.field-invalid]="submitted && !identifier.trim()">
       <ion-input
         label="Email or number"

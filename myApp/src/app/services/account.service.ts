@@ -17,11 +17,15 @@ export interface Account {
 
 const accountsStorageKey = 'tali-accounts';
 const activeAccountStorageKey = 'tali-active-account';
+const unsavedPasswordIdsStorageKey = 'tali-unsaved-password-ids';
+const hiddenAccountIdsStorageKey = 'tali-hidden-account-ids';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
   private readonly notificationService = inject(NotificationService);
   accounts = signal<Account[]>([]);
+  private readonly unsavedPasswordIds = signal<number[]>(loadStoredIds(unsavedPasswordIdsStorageKey));
+  private readonly hiddenAccountIds = signal<number[]>(loadStoredIds(hiddenAccountIdsStorageKey));
 
   selectedAccount = signal<Account | null>(null);
   private changedBeforeHydration = false;
@@ -51,6 +55,36 @@ export class AccountService {
     this.selectionChanged = true;
     this.selectedAccount.set(account);
     this.persistActiveAccount();
+  }
+
+  listedAccounts() {
+    const hiddenIds = new Set(this.hiddenAccountIds());
+    return this.accounts().filter((account) => !hiddenIds.has(account.id));
+  }
+
+  isPasswordSaved(accountId: number) {
+    return !this.unsavedPasswordIds().includes(accountId);
+  }
+
+  setPasswordSaved(accountId: number, saved: boolean) {
+    const ids = this.unsavedPasswordIds();
+    const updated = saved
+      ? ids.filter((id) => id !== accountId)
+      : (ids.includes(accountId) ? ids : [...ids, accountId]);
+    this.unsavedPasswordIds.set(updated);
+    persistIds(unsavedPasswordIdsStorageKey, updated);
+  }
+
+  removePasswordFromChooser(accountId: number) {
+    this.setPasswordSaved(accountId, false);
+  }
+
+  removeAccountFromChooser(accountId: number) {
+    const updated = this.hiddenAccountIds().includes(accountId)
+      ? this.hiddenAccountIds()
+      : [...this.hiddenAccountIds(), accountId];
+    this.hiddenAccountIds.set(updated);
+    persistIds(hiddenAccountIdsStorageKey, updated);
   }
 
   createAccount(firstName: string, lastName: string, username: string, contact: string, password: string) {
@@ -217,6 +251,21 @@ export class AccountService {
       return;
     }
   }
+}
+
+function loadStoredIds(key: string): number[] {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    const stored: unknown = JSON.parse(localStorage.getItem(key) ?? '[]');
+    return Array.isArray(stored) ? stored.filter((id): id is number => Number.isSafeInteger(id)) : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistIds(key: string, ids: number[]) {
+  if (typeof localStorage === 'undefined') return;
+  try { localStorage.setItem(key, JSON.stringify(ids)); } catch { return; }
 }
 
 function isStoredAccountList(value: unknown): value is Account[] {

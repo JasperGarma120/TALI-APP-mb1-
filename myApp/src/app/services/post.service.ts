@@ -33,11 +33,16 @@ export interface Post {
   comments: PostComment[];
   reposts: number[];
   createdAt: Date;
+  archivedAt?: Date | null;
+  trashedAt?: Date | null;
+  notificationsDisabled?: boolean;
+  updatedAt?: Date;
 }
 
 export type NewPost = Omit<Post, 'id' | 'createdAt' | 'likes' | 'comments' | 'reposts'>;
 
 const postsStorageKey = 'tali-posts';
+const trashRetentionMs = 30 * 24 * 60 * 60 * 1000;
 
 @Injectable({ providedIn: 'root' })
 export class PostService {
@@ -46,16 +51,23 @@ export class PostService {
   private nextId = 0;
   private nextCommentId = 0;
   private changedBeforeHydration = false;
+  private persistenceQueue: Promise<void> = Promise.resolve();
+  private trashCleanupTimer: number | undefined;
 
   constructor() {
     const posts = this.loadPosts();
     this.posts.set(posts);
-    void loadBrowserData(postsStorageKey, posts, isStoredPostList).then((savedPosts) => {
+    void loadBrowserData(postsStorageKey, posts, isStoredPostList).then((savedRecords) => {
+      const indexedPosts = savedRecords.filter(isStoredPost).map(restorePostDates);
+      // Merge the synchronous backup with IndexedDB so a partial/failed
+      // browser database write cannot make older valid posts disappear.
+      const savedPosts = mergePosts(posts, indexedPosts);
       const mergedPosts = this.changedBeforeHydration
         ? mergePosts(savedPosts, this.posts())
         : savedPosts;
-      this.posts.set(mergedPosts.map(restorePostDates));
-      if (this.changedBeforeHydration) this.persistPosts();
+      this.posts.set(this.removeExpiredTrash(mergedPosts));
+      if (this.changedBeforeHydration || this.posts().length !== mergedPosts.length) this.persistPosts();
+      this.scheduleTrashCleanup();
     });
   }
 
@@ -67,6 +79,10 @@ export class PostService {
       comments: [],
       reposts: [],
       createdAt: new Date(),
+      updatedAt: new Date(),
+      archivedAt: null,
+      trashedAt: null,
+      notificationsDisabled: false,
     };
 
     this.posts.update((posts) => [publishedPost, ...posts]);
@@ -88,7 +104,7 @@ export class PostService {
       return { ...post, likes };
     }));
     this.persistPosts();
-    if (post && actor && !alreadyLiked) {
+    if (post && actor && !alreadyLiked && !post.notificationsDisabled) {
       this.notificationService?.notifyPostAction('like', actor, post.authorId, post.id, post.body);
     }
   }
@@ -112,7 +128,7 @@ export class PostService {
       post.id === postId ? { ...post, comments: [...post.comments, comment] } : post,
     ));
     this.persistPosts();
-    if (post) {
+    if (post && !post.notificationsDisabled) {
       this.notificationService?.notifyPostAction('comment', account, post.authorId, post.id, body);
       this.notificationService?.notifyMentions(account, body, accounts, post.id);
     }
@@ -132,17 +148,19 @@ export class PostService {
       return { ...post, reposts };
     }));
     this.persistPosts();
-    if (post && actor && !alreadyReposted) {
+    if (post && actor && !alreadyReposted && !post.notificationsDisabled) {
       this.notificationService?.notifyPostAction('repost', actor, post.authorId, post.id, post.body);
     }
   }
 
   recordShare(postId: string, actor: Pick<Account, 'id' | 'name' | 'username'>) {
     const post = this.posts().find((item) => item.id === postId);
-    if (post) this.notificationService?.notifyPostAction('share', actor, post.authorId, post.id, post.body);
+    if (post && !post.notificationsDisabled) this.notificationService?.notifyPostAction('share', actor, post.authorId, post.id, post.body);
   }
 
   canViewPost(post: Post, viewer: Account | null, accounts: Account[]) {
+    if (post.trashedAt) return false;
+    if (post.archivedAt) return viewer?.id === post.authorId;
     if (viewer && post.authorId === viewer.id) return true;
     if (!viewer) return post.audience === 'public' || post.audience === 'hide-from';
 
@@ -176,14 +194,81 @@ export class PostService {
     this.persistPosts();
   }
 
+  updatePost(postId: string, ownerId: number, body: string) {
+    let updated = false;
+    this.posts.update((posts) => posts.map((post) => {
+      if (post.id !== postId || post.authorId !== ownerId || post.trashedAt) return post;
+      updated = true;
+      return { ...post, body: body.trim() };
+    }));
+    if (updated) this.persistPosts();
+    return updated;
+  }
+
+  setPostNotifications(postId: string, ownerId: number, disabled: boolean) {
+    let updated = false;
+    this.posts.update((posts) => posts.map((post) => {
+      if (post.id !== postId || post.authorId !== ownerId || post.trashedAt) return post;
+      updated = true;
+      return { ...post, notificationsDisabled: disabled };
+    }));
+    if (updated) this.persistPosts();
+  }
+
+  archivePost(postId: string, ownerId: number) {
+    let updated = false;
+    this.posts.update((posts) => posts.map((post) => {
+      if (post.id !== postId || post.authorId !== ownerId || post.trashedAt) return post;
+      updated = true;
+      return { ...post, archivedAt: new Date() };
+    }));
+    if (updated) this.persistPosts();
+  }
+
+  unarchivePost(postId: string, ownerId: number) {
+    let updated = false;
+    this.posts.update((posts) => posts.map((post) => {
+      if (post.id !== postId || post.authorId !== ownerId || post.trashedAt) return post;
+      updated = true;
+      return { ...post, archivedAt: null };
+    }));
+    if (updated) this.persistPosts();
+  }
+
+  trashPost(postId: string, ownerId: number) {
+    let updated = false;
+    this.posts.update((posts) => posts.map((post) => {
+      if (post.id !== postId || post.authorId !== ownerId || post.trashedAt) return post;
+      updated = true;
+      return { ...post, trashedAt: new Date(), archivedAt: null };
+    }));
+    if (updated) { this.persistPosts(); this.scheduleTrashCleanup(); }
+  }
+
+  restorePost(postId: string, ownerId: number) {
+    let updated = false;
+    this.posts.update((posts) => posts.map((post) => {
+      if (post.id !== postId || post.authorId !== ownerId || !post.trashedAt) return post;
+      updated = true;
+      return { ...post, trashedAt: null };
+    }));
+    if (updated) { this.persistPosts(); this.scheduleTrashCleanup(); }
+  }
+
+  permanentlyDeletePost(postId: string, ownerId: number) {
+    const existing = this.posts().find((post) => post.id === postId);
+    if (!existing || existing.authorId !== ownerId || !existing.trashedAt) return;
+    this.posts.update((posts) => posts.filter((post) => post.id !== postId));
+    this.persistPosts();
+    this.scheduleTrashCleanup();
+  }
+
   private loadPosts(): Post[] {
     if (typeof localStorage === 'undefined') return [];
     try {
       const stored = JSON.parse(localStorage.getItem(postsStorageKey) ?? '[]') as unknown;
       if (!Array.isArray(stored)) return [];
-      return stored.filter(isStoredPost).map((post) => ({
-        ...post,
-      })).map(restorePostDates);
+      return this.removeExpiredTrash(stored.filter(isStoredPost).map(restorePostDates));
     } catch {
       return [];
     }
@@ -191,13 +276,42 @@ export class PostService {
 
   private persistPosts() {
     this.changedBeforeHydration = true;
-    void saveBrowserData(postsStorageKey, this.posts());
+    const updatedAt = new Date();
+    const updatedPosts = this.posts().map((post) => ({ ...post, updatedAt }));
+    this.posts.set(updatedPosts);
+    const snapshot = updatedPosts.map((post) => ({ ...post, attachments: [...post.attachments], likes: [...post.likes], comments: [...post.comments], reposts: [...post.reposts] }));
+    this.persistenceQueue = this.persistenceQueue.then(() => saveBrowserData(postsStorageKey, snapshot));
     if (typeof localStorage === 'undefined') return;
     try {
-      localStorage.setItem(postsStorageKey, JSON.stringify(this.posts()));
+      localStorage.setItem(postsStorageKey, JSON.stringify(snapshot));
     } catch {
       return;
     }
+  }
+
+  private removeExpiredTrash(posts: Post[]) {
+    const expiration = Date.now() - trashRetentionMs;
+    return posts.filter((post) => !post.trashedAt || new Date(post.trashedAt).getTime() > expiration);
+  }
+
+  private scheduleTrashCleanup() {
+    if (typeof window === 'undefined') return;
+    if (this.trashCleanupTimer !== undefined) window.clearTimeout(this.trashCleanupTimer);
+    const nextExpiration = this.posts()
+      .filter((post) => post.trashedAt)
+      .reduce((soonest, post) => Math.min(soonest, new Date(post.trashedAt!).getTime() + trashRetentionMs), Number.POSITIVE_INFINITY);
+    if (!Number.isFinite(nextExpiration)) return;
+
+    // Recheck at least once a day so no browser timer needs to span 30 days.
+    const delay = Math.max(0, Math.min(nextExpiration - Date.now(), 24 * 60 * 60 * 1000));
+    this.trashCleanupTimer = window.setTimeout(() => {
+      const remaining = this.removeExpiredTrash(this.posts());
+      if (remaining.length !== this.posts().length) {
+        this.posts.set(remaining);
+        this.persistPosts();
+      }
+      this.scheduleTrashCleanup();
+    }, delay);
   }
 }
 
@@ -211,12 +325,18 @@ function optionalNotificationService(): NotificationService | null {
 }
 
 function isStoredPostList(value: unknown): value is Post[] {
-  return Array.isArray(value) && value.every(isStoredPost);
+  // Keep valid rows even if one old/corrupt record cannot be decoded.
+  return Array.isArray(value);
 }
 
 function mergePosts(savedPosts: Post[], currentPosts: Post[]): Post[] {
   const merged = new Map(savedPosts.map((post) => [post.id, post]));
-  for (const post of currentPosts) merged.set(post.id, post);
+  for (const post of currentPosts) {
+    const saved = merged.get(post.id);
+    const savedTime = saved?.updatedAt?.getTime() ?? saved?.createdAt.getTime() ?? 0;
+    const currentTime = post.updatedAt?.getTime() ?? post.createdAt.getTime() ?? 0;
+    if (!saved || currentTime >= savedTime) merged.set(post.id, post);
+  }
   return [...merged.values()].sort((first, second) =>
     new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime(),
   );
@@ -226,6 +346,9 @@ function restorePostDates(post: Post): Post {
   return {
     ...post,
     createdAt: new Date(post.createdAt),
+    archivedAt: post.archivedAt ? new Date(post.archivedAt) : null,
+    trashedAt: post.trashedAt ? new Date(post.trashedAt) : null,
+    updatedAt: post.updatedAt ? new Date(post.updatedAt) : undefined,
     comments: post.comments.map((comment) => ({ ...comment, createdAt: new Date(comment.createdAt) })),
   };
 }
@@ -233,15 +356,38 @@ function restorePostDates(post: Post): Post {
 function isStoredPost(value: unknown): value is Post {
   if (typeof value !== 'object' || value === null) return false;
   const post = value as Partial<Post>;
+  const validIdList = (items: unknown) => Array.isArray(items) && items.every((id) => Number.isSafeInteger(id));
+  const validAttachmentList = (items: unknown) => Array.isArray(items) && items.every((attachment) => {
+    if (typeof attachment !== 'object' || attachment === null) return false;
+    const item = attachment as Partial<PostAttachment>;
+    return typeof item.name === 'string' && typeof item.type === 'string' && typeof item.dataUrl === 'string';
+  });
+  const validCommentList = (items: unknown) => Array.isArray(items) && items.every((comment) => {
+    if (typeof comment !== 'object' || comment === null) return false;
+    const item = comment as Partial<PostComment>;
+    return typeof item.id === 'string' && Number.isSafeInteger(item.authorId) &&
+      typeof item.authorName === 'string' && typeof item.authorUsername === 'string' &&
+      typeof item.body === 'string' && isValidDateValue(item.createdAt);
+  });
   return typeof post.id === 'string' &&
     (typeof post.authorId === 'number' || post.authorId === null) &&
     typeof post.authorName === 'string' &&
     typeof post.authorUsername === 'string' &&
     typeof post.body === 'string' &&
-    Array.isArray(post.attachments) &&
-    Array.isArray(post.audienceAccountIds) &&
-    Array.isArray(post.likes) &&
-    Array.isArray(post.comments) &&
-    Array.isArray(post.reposts) &&
-    (typeof post.createdAt === 'string' || post.createdAt instanceof Date);
+    validAttachmentList(post.attachments) &&
+    validIdList(post.audienceAccountIds) &&
+    validIdList(post.likes) &&
+    validCommentList(post.comments) &&
+    validIdList(post.reposts) &&
+    ['public', 'friends', 'friends-of-friends', 'selected-friends', 'hide-from', 'only-me'].includes(String(post.audience)) &&
+    isValidDateValue(post.createdAt) &&
+    (post.updatedAt === undefined || isValidDateValue(post.updatedAt)) &&
+    (post.archivedAt === undefined || post.archivedAt === null || isValidDateValue(post.archivedAt)) &&
+    (post.trashedAt === undefined || post.trashedAt === null || isValidDateValue(post.trashedAt)) &&
+    (post.notificationsDisabled === undefined || typeof post.notificationsDisabled === 'boolean');
+}
+
+function isValidDateValue(value: unknown): value is string | Date {
+  if (!(typeof value === 'string' || value instanceof Date)) return false;
+  return Number.isFinite(new Date(value).getTime());
 }

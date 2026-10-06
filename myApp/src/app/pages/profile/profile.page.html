@@ -22,12 +22,16 @@
         <ion-button fill="outline" size="small" (click)="toggleFollowProfile()">{{ isFollowingProfile ? 'Following' : 'Follow' }}</ion-button>
       }
     </section>
-    <div class="stats-row"><div><strong>{{ ownPosts.length }}</strong><span>Posts</span></div><button type="button" (click)="connectionsView = 'followers'"><strong>{{ followers.length }}</strong><span>Followers</span></button><button type="button" (click)="connectionsView = 'following'"><strong>{{ following.length }}</strong><span>Following</span></button></div>
-    <nav class="profile-sections" aria-label="Profile content">
-      <button type="button" [class.active]="activeSection === 'posts'" [attr.aria-pressed]="activeSection === 'posts'" (click)="activeSection = 'posts'">Posts</button>
-      <button type="button" [class.active]="activeSection === 'photos'" [attr.aria-pressed]="activeSection === 'photos'" (click)="activeSection = 'photos'">Photos</button>
-      <button type="button" [class.active]="activeSection === 'videos'" [attr.aria-pressed]="activeSection === 'videos'" (click)="activeSection = 'videos'">Videos</button>
-      <button type="button" [class.active]="activeSection === 'reposts'" [attr.aria-pressed]="activeSection === 'reposts'" (click)="activeSection = 'reposts'">Reposts</button>
+    <div class="stats-row"><div><strong>{{ ownPosts.length }}</strong><span>Posts</span></div><button type="button" (click)="setConnectionsView('followers')"><strong>{{ followers.length }}</strong><span>Followers</span></button><button type="button" (click)="setConnectionsView('following')"><strong>{{ following.length }}</strong><span>Following</span></button></div>
+    <nav class="profile-sections" [class.profile-sections-owner]="isOwnProfile" aria-label="Profile content">
+      <button type="button" [class.active]="activeSection === 'posts'" [attr.aria-pressed]="activeSection === 'posts'" (click)="setProfileSection('posts')">Posts</button>
+      <button type="button" [class.active]="activeSection === 'photos'" [attr.aria-pressed]="activeSection === 'photos'" (click)="setProfileSection('photos')">Photos</button>
+      <button type="button" [class.active]="activeSection === 'videos'" [attr.aria-pressed]="activeSection === 'videos'" (click)="setProfileSection('videos')">Videos</button>
+      <button type="button" [class.active]="activeSection === 'reposts'" [attr.aria-pressed]="activeSection === 'reposts'" (click)="setProfileSection('reposts')">Reposts</button>
+      @if (isOwnProfile) {
+        <button type="button" [class.active]="activeSection === 'archive'" [attr.aria-pressed]="activeSection === 'archive'" (click)="setProfileSection('archive')">Archive</button>
+        <button type="button" [class.active]="activeSection === 'trash'" [attr.aria-pressed]="activeSection === 'trash'" (click)="setProfileSection('trash')">Trash</button>
+      }
     </nav>
     @if (activeSection === 'posts') {
       <section class="profile-posts"><h2>{{ isOwnProfile ? 'Your posts' : 'Posts' }}</h2>
@@ -56,6 +60,18 @@
         <div class="profile-posts-feed">
           @for (post of repostedPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }
         </div>
+      </section>
+    }
+    @if (activeSection === 'archive' && isOwnProfile) {
+      <section class="profile-posts"><h2>Archived posts</h2>
+        @if (!archivedPosts.length) { <div class="empty-profile"><ion-icon name="archive-outline"></ion-icon><p>Your archived posts will appear here.</p></div> }
+        <div class="profile-posts-feed">@for (post of archivedPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }</div>
+      </section>
+    }
+    @if (activeSection === 'trash' && isOwnProfile) {
+      <section class="profile-posts"><h2>Trash</h2><p class="trash-explanation">Posts stay here for 30 days. Restore a post to keep it or delete it permanently now.</p>
+        @if (!trashedPosts.length) { <div class="empty-profile"><ion-icon name="trash-outline"></ion-icon><p>Your trash is empty.</p></div> }
+        <div class="profile-posts-feed">@for (post of trashedPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }</div>
       </section>
     }
   } @else {
@@ -87,24 +103,24 @@
   </div>
 }
 @if (connectionsView) {
-  <div class="edit-backdrop" role="presentation" (click)="connectionsView = null">
+  <div class="edit-backdrop" role="presentation" (click)="setConnectionsView(null)">
     <section class="edit-dialog connections-dialog" role="dialog" aria-modal="true" [attr.aria-label]="connectionsView === 'followers' ? 'Followers' : 'Following'" (click)="$event.stopPropagation()">
       <h2>{{ connectionsView === 'followers' ? 'Followers' : 'Following' }}</h2>
       @for (person of (connectionsView === 'followers' ? followers : following); track person.id) {
-        <a class="connection-row" [routerLink]="['/profile', person.id]" (click)="connectionsView = null"><ion-icon name="person-circle-outline"></ion-icon><div><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div></a>
+        <a class="connection-row" [routerLink]="['/profile', person.id]" (click)="setConnectionsView(null)"><ion-icon name="person-circle-outline"></ion-icon><div><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div></a>
       } @empty { <p class="connection-empty">No {{ connectionsView }} yet.</p> }
-      <div class="edit-actions"><ion-button fill="clear" (click)="connectionsView = null">Close</ion-button></div>
+      <div class="edit-actions"><ion-button fill="clear" (click)="setConnectionsView(null)">Close</ion-button></div>
     </section>
   </div>
 }
 @if (isOwnProfile) {
 <ion-footer class="page-footer ion-no-border"><ion-toolbar>
   <nav class="page-nav profile-nav" aria-label="Main navigation">
-    <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
-    <ion-button fill="clear" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
-    <ion-button fill="clear" class="compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
-    <ion-button fill="clear" class="notification-nav-button" routerLink="/activity" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
-    <ion-button fill="solid" class="active-tab" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
+    <ion-button fill="clear" routerLink="/home" (click)="viewState.handleTabTap('/home', 'tali-view-home')" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
+    <ion-button fill="clear" routerLink="/messages" (click)="viewState.handleTabTap('/messages', 'tali-view-messages')" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
+    <ion-button fill="clear" class="compose-button" routerLink="/add-post" (click)="viewState.handleTabTap('/add-post', 'tali-post-draft')" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
+    <ion-button fill="clear" class="notification-nav-button" routerLink="/activity" (click)="viewState.handleTabTap('/activity', 'tali-view-activity')" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
+    <ion-button fill="solid" class="active-tab" routerLink="/profile" (click)="viewState.handleTabTap('/profile', 'tali-view-profile:current')" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
   </nav>
 </ion-toolbar></ion-footer>
 }

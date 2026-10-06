@@ -56,6 +56,18 @@ export async function saveBrowserData<T>(key: string, value: T): Promise<void> {
   }
 }
 
+export async function deleteBrowserData(key: string): Promise<void> {
+  const database = await openDatabase();
+  if (!database) return;
+  await new Promise<void>((resolve) => {
+    const transaction = database.transaction(objectStoreName, 'readwrite');
+    transaction.objectStore(objectStoreName).delete(key);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => resolve();
+    transaction.onabort = () => resolve();
+  });
+}
+
 function openDatabase(): Promise<IDBDatabase | null> {
   if (databasePromise) return databasePromise;
   if (typeof indexedDB === 'undefined') return Promise.resolve(null);

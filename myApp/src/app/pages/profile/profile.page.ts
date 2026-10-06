@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IonAvatar, IonBackButton, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonTextarea, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addCircle, chatbubbleOutline, createOutline, homeOutline, imageOutline, notificationsOutline, personCircleOutline, repeatOutline, settingsOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
+import { addCircle, archiveOutline, chatbubbleOutline, createOutline, homeOutline, imageOutline, notificationsOutline, personCircleOutline, repeatOutline, settingsOutline, trashOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
 import { PostCardComponent } from '../../components/post-card/post-card.component';
 import { AccountService } from '../../services/account.service';
 import { PostService } from '../../services/post.service';
 import { NotificationService } from '../../services/notification.service';
+import { ViewStateService } from '../../services/view-state.service';
 
 @Component({
   selector: 'app-profile',
@@ -22,7 +23,8 @@ export class ProfilePage {
   readonly postService = inject(PostService);
   readonly notificationService = inject(NotificationService);
   private readonly route = inject(ActivatedRoute);
-  activeSection: 'posts' | 'photos' | 'videos' | 'reposts' = 'posts';
+  readonly viewState = inject(ViewStateService);
+  activeSection: 'posts' | 'photos' | 'videos' | 'reposts' | 'archive' | 'trash' = 'posts';
   editingProfile = false;
   editName = '';
   editUsername = '';
@@ -37,7 +39,28 @@ export class ProfilePage {
   }
 
   constructor() {
-    addIcons({ addCircle, chatbubbleOutline, createOutline, homeOutline, imageOutline, notificationsOutline, personCircleOutline, repeatOutline, settingsOutline, trendingUpOutline, videocamOutline });
+    addIcons({ addCircle, archiveOutline, chatbubbleOutline, createOutline, homeOutline, imageOutline, notificationsOutline, personCircleOutline, repeatOutline, settingsOutline, trashOutline, trendingUpOutline, videocamOutline });
+    const saved = this.viewState.read<Partial<{ activeSection: 'posts' | 'photos' | 'videos' | 'reposts' | 'archive' | 'trash'; connectionsView: 'followers' | 'following' | null }>>(this.profileStateKey, {});
+    if (saved.activeSection) this.activeSection = saved.activeSection;
+    this.connectionsView = saved.connectionsView ?? null;
+  }
+
+  get profileStateKey() {
+    return `tali-view-profile:${this.route.snapshot.paramMap.get('accountId') ?? 'current'}`;
+  }
+
+  setProfileSection(section: 'posts' | 'photos' | 'videos' | 'reposts' | 'archive' | 'trash') {
+    this.activeSection = section;
+    this.saveProfileViewState();
+  }
+
+  setConnectionsView(view: 'followers' | 'following' | null) {
+    this.connectionsView = view;
+    this.saveProfileViewState();
+  }
+
+  private saveProfileViewState() {
+    this.viewState.write(this.profileStateKey, { activeSection: this.activeSection, connectionsView: this.connectionsView });
   }
 
   scrollGallery(event: WheelEvent) {
@@ -68,7 +91,21 @@ export class ProfilePage {
     const viewer = this.accountService.selectedAccount();
     const accounts = this.accountService.accounts();
     return profile
-      ? this.postService.posts().filter((post) => post.authorId === profile.id && this.postService.canViewPost(post, viewer, accounts))
+      ? this.postService.posts().filter((post) => post.authorId === profile.id && !post.archivedAt && !post.trashedAt && this.postService.canViewPost(post, viewer, accounts))
+      : [];
+  }
+
+  get archivedPosts() {
+    const profile = this.profileAccount;
+    return this.isOwnProfile && profile
+      ? this.postService.posts().filter((post) => post.authorId === profile.id && !!post.archivedAt && !post.trashedAt)
+      : [];
+  }
+
+  get trashedPosts() {
+    const profile = this.profileAccount;
+    return this.isOwnProfile && profile
+      ? this.postService.posts().filter((post) => post.authorId === profile.id && !!post.trashedAt)
       : [];
   }
 

@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { IonButton, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonSelect, IonSelectOption, IonToggle, IonToolbar } from '@ionic/angular';
+import { AlertController, IonButton, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonSelect, IonSelectOption, IonToggle, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { accessibilityOutline, cardOutline, chatbubblesOutline, colorPaletteOutline, documentTextOutline, helpCircleOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, serverOutline, shieldCheckmarkOutline, sunnyOutline, timeOutline } from 'ionicons/icons';
 import { AccountService } from '../../services/account.service';
@@ -21,6 +21,7 @@ export class SettingsPage {
   readonly accountService = inject(AccountService);
   readonly postService = inject(PostService);
   private readonly router = inject(Router);
+  private readonly alertController = inject(AlertController);
   readonly sections = [
     { id: 'account', label: 'Account Center', icon: 'person-circle-outline' },
     { id: 'privacy', label: 'Privacy', icon: 'lock-closed-outline' },
@@ -104,7 +105,23 @@ export class SettingsPage {
     window.alert('For help with your Tali account, please contact your community administrator.');
   }
 
-  logout() {
+  async logout() {
+    const account = this.accountService.selectedAccount();
+    if (!account) return;
+    const alert = await this.alertController.create({
+      header: 'Save your password?',
+      message: `Save the password for ${account.name} on this device for next time?`,
+      buttons: [
+        { text: 'Cancel', role: 'cancel' },
+        { text: 'Don’t Save', role: 'destructive', handler: () => this.finishLogout(account.id, false) },
+        { text: 'Save Password', handler: () => this.finishLogout(account.id, true) },
+      ],
+    });
+    await alert.present();
+  }
+
+  private finishLogout(accountId: number, savePassword: boolean) {
+    this.accountService.setPasswordSaved(accountId, savePassword);
     this.accountService.logout();
     void this.router.navigateByUrl('/login');
   }

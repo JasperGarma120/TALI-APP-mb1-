@@ -50,14 +50,16 @@
 .message-row.own-message { justify-content: flex-end; }
 .message-row.own-message .message-content { align-items: flex-end; }
 .message-sender { padding: 0 8px; color: var(--page-muted); font-size: .72rem; font-weight: 600; }
-.message-bubble { max-width: 100%; margin: 0; padding: 10px 14px; border-radius: 18px 18px 18px 4px; background: var(--page-surface); color: var(--page-text); overflow-wrap: anywhere; }
+.message-bubble-row { display: flex; max-width: 100%; align-items: center; gap: 6px; }
+.message-row.own-message .message-bubble-row { flex-direction: row-reverse; }
+.message-bubble { max-width: calc(100% - 34px); margin: 0; padding: 10px 14px; border-radius: 18px 18px 18px 4px; background: var(--page-surface); color: var(--page-text); overflow-wrap: anywhere; }
 .message-attachment { display: block; width: min(100%, 360px); max-height: 360px; border: 1px solid var(--page-border); border-radius: 14px; object-fit: contain; }
 .message-voice { width: min(100%, 320px); }
 .message-row.own-message .message-bubble { border-radius: 18px 18px 4px 18px; background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); }
 .message-seen { padding: 0 7px; color: var(--page-muted); font-size: .67rem; }
 .message-reaction-tools { position: relative; display: flex; align-items: center; gap: 5px; }
 .message-reaction { min-height: 25px; padding: 2px 8px; border: 1px solid var(--page-border); border-radius: 14px; background: var(--page-bg); color: var(--page-text); font: inherit; font-size: .72rem; cursor: pointer; }
-.add-reaction-button { display: grid; width: 26px; height: 26px; place-items: center; border: 1px solid var(--page-border); border-radius: 50%; background: var(--page-surface); color: var(--page-text); font-size: 1rem; cursor: pointer; }
+.add-reaction-button { display: grid; width: 28px; height: 28px; flex: 0 0 28px; place-items: center; border: 1px solid var(--page-border); border-radius: 50%; background: var(--page-surface); color: var(--page-text); font-size: 1rem; cursor: pointer; }
 .message-emoji-picker { position: absolute; z-index: 10; bottom: 32px; left: 0; display: block; width: min(350px, calc(100vw - 40px)); height: 340px; --background: var(--page-bg); --border-color: var(--page-border); --border-radius: 16px; --category-font-color: var(--page-text); --input-font-color: var(--page-text); --input-placeholder-color: var(--page-muted); --button-hover-background: var(--page-surface); --emoji-size: 1.25rem; --emoji-padding: .18rem; }
 .message-row.own-message .message-emoji-picker { right: 0; left: auto; }
 .no-search-results { margin: auto; color: var(--page-muted); text-align: center; }
@@ -136,6 +138,83 @@
 .shared-link { overflow-wrap: anywhere; color: var(--ion-color-primary); font-size: .78rem; }
 .settings-notice { margin: 8px 0; color: var(--ion-color-primary); font-size: .82rem; }
 
+/* Message list styling follows the app theme; light mode keeps its blue accents. */
+.page-header:has(.message-list-header) {
+  --background: var(--page-surface);
+  background: var(--page-surface);
+  border-radius: 0 0 28px 28px;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, .16);
+}
+.page-header:has(.message-list-header) ion-toolbar { --background: transparent; padding: 10px 18px 16px; }
+.message-list-header { display: grid; gap: 13px; }
+.message-list-heading { display: flex; min-height: 46px; align-items: center; justify-content: space-between; }
+.message-list-heading h1 { color: var(--page-text); font-size: 1.05rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; }
+.message-list-heading ion-button { width: 42px; height: 42px; margin: 0; border-radius: 15px; --color: var(--page-text); --background: color-mix(in srgb, var(--page-text) 10%, transparent); font-size: 1.2rem; }
+.message-quick-chats { display: flex; gap: 12px; overflow-x: auto; padding: 2px 1px 4px; scrollbar-width: none; }
+.message-quick-chats::-webkit-scrollbar { display: none; }
+.quick-chat-avatar { display: grid; width: 48px; height: 48px; flex: 0 0 48px; place-items: center; overflow: hidden; padding: 0; border: 2px solid var(--page-border); border-radius: 50%; background: var(--page-bg); color: var(--page-text); box-shadow: 0 5px 12px rgba(0,0,0,.18); cursor: pointer; }
+.quick-chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.quick-chat-avatar ion-icon { width: 32px; height: 32px; }
+.page-content:not(.chat-mode) { --background: var(--page-bg); --color: var(--page-text); }
+.page-content:not(.chat-mode)::part(background) { background: var(--page-bg); }
+.page-content:not(.chat-mode) ion-searchbar { padding: 14px 16px 10px; --background: var(--page-surface); --border-radius: 16px; --color: var(--page-text); --icon-color: var(--ion-color-primary); --placeholder-color: var(--page-muted); }
+.page-content:not(.chat-mode) .message-tabs { gap: 9px; padding: 0 16px 12px; }
+.page-content:not(.chat-mode) .message-tabs ion-button { border-color: var(--page-border); background: color-mix(in srgb, var(--page-surface) 65%, transparent); --color: var(--page-muted); }
+.page-content:not(.chat-mode) .message-tabs ion-button.active-tab,
+.page-content:not(.chat-mode) .message-tabs ion-button.selected-filter { border-color: var(--page-border); background: var(--page-surface); --color: var(--ion-color-primary); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.page-content:not(.chat-mode) .conversation-entry { border-bottom-color: var(--page-border); }
+.page-content:not(.chat-mode) .conversation-row { padding: 14px 18px; color: var(--page-text); }
+.page-content:not(.chat-mode) .conversation-avatar { background: var(--page-surface); color: var(--ion-color-primary); }
+.page-content:not(.chat-mode) .conversation-copy strong { color: var(--page-text); font-size: .96rem; }
+.page-content:not(.chat-mode) .conversation-row:has(.conversation-unread-count) .conversation-copy strong { color: var(--ion-color-primary); }
+.page-content:not(.chat-mode) .conversation-copy span { color: var(--page-muted); }
+.page-content:not(.chat-mode) .conversation-status-icon { color: var(--ion-color-primary); }
+.page-content:not(.chat-mode) .conversation-unread-count { border: 2px solid var(--page-bg); outline: 1px solid #a9927d; background: #49111c; color: #f2f4f3; }
+.page-content:not(.chat-mode) .empty-icon { border-color: var(--page-border); color: var(--page-muted); }
+.page-content:not(.chat-mode) .empty-state h2 { color: var(--page-text); }
+.page-content:not(.chat-mode) .empty-state p { color: var(--page-muted); }
+.page-footer:has(.messages-nav), .page-footer:has(.messages-nav) ion-toolbar { --background: var(--page-bg); --border-color: var(--page-border); }
+.page-footer:has(.messages-nav) ion-button { --color: var(--page-muted); }
+.page-footer:has(.messages-nav) .active-tab, .page-footer:has(.messages-nav) .compose-button { --color: var(--ion-color-primary); }
+
+:host-context(html.app-light) .page-header:has(.message-list-header) { --background: #5278ef; background: linear-gradient(145deg, #6489ff 0%, #5578ef 58%, #748cff 100%); box-shadow: 0 14px 28px rgba(66, 101, 211, .22); }
+:host-context(html.app-light) .message-list-heading h1,
+:host-context(html.app-light) .message-list-heading ion-button { color: #fff; --color: #fff; }
+:host-context(html.app-light) .quick-chat-avatar { border-color: rgba(255,255,255,.72); background: rgba(255,255,255,.24); color: #fff; box-shadow: 0 5px 12px rgba(28,55,150,.2); }
+:host-context(html.app-light) .page-content:not(.chat-mode) { --background: #f2f5ff; --color: #202b45; }
+:host-context(html.app-light) .page-content:not(.chat-mode)::part(background) { background: linear-gradient(180deg, #f5f7ff 0%, #eef2ff 100%); }
+:host-context(html.app-light) .page-content:not(.chat-mode) ion-searchbar { --background: #fff; --color: #202b45; --icon-color: #6484ed; --placeholder-color: #98a2b8; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .message-tabs ion-button { border-color: #dce4fb; background: rgba(255,255,255,.55); --color: #6f7890; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .message-tabs ion-button.active-tab,
+:host-context(html.app-light) .page-content:not(.chat-mode) .message-tabs ion-button.selected-filter { border-color: #dbe4ff; background: #fff; --color: #5278ef; box-shadow: 0 4px 12px rgba(72,101,187,.08); }
+:host-context(html.app-light) .page-content:not(.chat-mode) .conversation-entry { border-bottom-color: #e7ebf4; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .conversation-row { color: #263149; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .conversation-avatar { background: #e2eaff; color: #6684ed; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .conversation-copy strong { color: #252e43; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .conversation-row:has(.conversation-unread-count) .conversation-copy strong { color: #5879e6; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .conversation-copy span { color: #858da0; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .conversation-status-icon { color: #6785eb; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .empty-icon { border-color: #dce4f5; color: #8d9cc3; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .empty-state h2 { color: #2d3852; }
+:host-context(html.app-light) .page-content:not(.chat-mode) .empty-state p { color: #7e879b; }
+:host-context(html.app-light) .page-footer:has(.messages-nav), :host-context(html.app-light) .page-footer:has(.messages-nav) ion-toolbar { --background: #f5f7ff; --border-color: #e2e8f7; }
+:host-context(html.app-light) .page-footer:has(.messages-nav) ion-button { --color: #8792ab; }
+:host-context(html.app-light) .page-footer:has(.messages-nav) .active-tab, :host-context(html.app-light) .page-footer:has(.messages-nav) .compose-button { --color: #5c7df0; }
+
+/* The conversation itself keeps its existing colors; only its top bar changes. */
+.page-header:has(.chat-toolbar-row) {
+  --background: #5578ef;
+  background: linear-gradient(145deg, #6489ff 0%, #5578ef 58%, #748cff 100%);
+  border-radius: 0 0 24px 24px;
+  box-shadow: 0 12px 25px rgba(41, 76, 187, .2);
+}
+.page-header:has(.chat-toolbar-row) ion-toolbar { --background: transparent; padding: 8px 14px 12px; }
+.chat-toolbar-row .chat-back-button { border: 0; border-radius: 14px; background: rgba(255,255,255,.16); --color: #fff !important; }
+.chat-toolbar-row .chat-profile-name, .chat-toolbar-row .chat-group-title,
+.chat-toolbar-row .chat-header-actions ion-button { color: #fff; --color: #fff; }
+.chat-profile-avatar { border: 2px solid rgba(255,255,255,.75); background: rgba(255,255,255,.22); color: #fff; }
+.chat-toolbar-row .chat-header-actions ion-button { border-radius: 14px; background: rgba(255,255,255,.16); }
+
 /* Conversation styling based on the supplied green chat reference. */
 .page-content.chat-mode {
   --background: #079b70;
@@ -167,19 +246,21 @@
 .message-content { max-width: min(78%, 440px); gap: 6px; }
 .message-sender { color: #d3ffea; }
 .message-bubble {
-  padding: 14px 18px;
-  border-radius: 24px 24px 24px 7px;
+  padding: 15px 19px;
+  border-radius: 30px 30px 30px 8px;
   background: #adf2d2;
   color: #075441;
   line-height: 1.4;
   box-shadow: 0 8px 20px rgba(0, 72, 51, .16);
 }
 .message-row.own-message .message-bubble {
-  border-radius: 24px 24px 7px 24px;
+  border-radius: 30px 30px 8px 30px;
   background: #075d49;
   color: #effff7;
   box-shadow: 0 8px 20px rgba(0, 60, 43, .2);
 }
+.message-bubble-row .add-reaction-button { border-color: rgba(218,255,237,.28); background: rgba(7,93,73,.78); color: #effff7; }
+.message-row.own-message .message-bubble-row .add-reaction-button { border-color: rgba(218,255,237,.28); background: rgba(173,242,210,.2); color: #effff7; }
 .message-row.own-message .message-seen { color: #d4ffea; }
 .chat-footer, .chat-footer ion-toolbar {
   --background: #079b70;
@@ -190,13 +271,14 @@
 .chat-composer ion-input {
   min-height: 60px;
   padding: 0 17px !important;
-  border: 0;
-  border-radius: 32px;
-  --background: #adf2d2;
-  --color: #075441;
-  --placeholder-color: #42a98a;
-  box-shadow: 0 8px 22px rgba(0, 72, 51, .2);
+  border: 0 !important;
+  border-radius: 0;
+  --background: transparent !important;
+  --color: #effff7;
+  --placeholder-color: rgba(239, 255, 247, .72);
+  box-shadow: none !important;
 }
+.chat-composer ion-input::part(native) { background: transparent !important; background-color: transparent !important; box-shadow: none !important; }
 .chat-composer > ion-button {
   width: 46px;
   height: 46px;

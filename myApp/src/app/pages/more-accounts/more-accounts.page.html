@@ -11,24 +11,35 @@
     <h1>More accounts</h1>
     <p>Choose an account to continue</p>
   </div>
-  @if (accountService.accounts().length) {
+  @if (accountService.listedAccounts().length) {
     <ion-list lines="none">
-      @for (account of accountService.accounts(); track account.username) {
-        <ion-item button="true" (click)="chooseAccount(account)">
-          <ion-avatar slot="start" class="account-avatar">
-            <ion-icon name="person-circle-outline"></ion-icon>
-          </ion-avatar>
-          <ion-label>
-            <h2>{{ account.name }}</h2>
-            <p>{{ account.username }}</p>
-          </ion-label>
-        </ion-item>
+      @for (account of accountService.listedAccounts(); track account.username) {
+        <div class="account-entry">
+          <ion-item button="true" (click)="chooseAccount(account)">
+            <ion-avatar slot="start" class="account-avatar">
+              <ion-icon name="person-circle-outline"></ion-icon>
+            </ion-avatar>
+            <ion-label>
+              <h2>{{ account.name }}</h2>
+              <p>{{ account.username }}</p>
+            </ion-label>
+            <button type="button" slot="end" class="account-more-button" aria-label="Account options" [attr.aria-expanded]="accountMenuId === account.id" (click)="toggleAccountMenu($event, account.id)">
+              <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+            </button>
+          </ion-item>
+        </div>
       }
     </ion-list>
   } @else {
     <div class="auth-empty-state">
       <h1>No accounts yet</h1>
       <p>Create an account first, then it will appear here.</p>
+    </div>
+  }
+  @if (activeMenuAccount; as account) {
+    <div class="account-action-menu" role="menu" [style.top.px]="menuTop" [style.left.px]="menuLeft">
+      <button type="button" role="menuitem" (click)="removePassword($event, account.id)">Remove password</button>
+      <button type="button" role="menuitem" (click)="removeAccount($event, account.id)">Remove account</button>
     </div>
   }
 </ion-content>

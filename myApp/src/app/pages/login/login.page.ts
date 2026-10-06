@@ -21,11 +21,24 @@ export class LoginPage implements OnInit {
   readonly accountService = inject(AccountService);
 
   ngOnInit() {
+    this.prepareSelectedAccountLogin();
+  }
+
+  ionViewWillEnter() {
+    this.prepareSelectedAccountLogin();
+  }
+
+  private prepareSelectedAccountLogin() {
     const account = this.accountService.selectedAccount();
     if (account) {
       this.identifier = account.contact;
-      this.password = account.password;
+      this.password = this.accountService.isPasswordSaved(account.id) ? account.password : '';
+      this.submitted = false;
     }
+  }
+
+  get welcomeName() {
+    return this.accountService.selectedAccount()?.name.trim().split(/\s+/)[0] ?? '';
   }
 
   logIn() {

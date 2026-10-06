@@ -10,7 +10,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="home-content">
+<ion-content class="home-content" [scrollEvents]="true" (ionScroll)="saveScroll($event)">
   <div class="screen-shell">
     @if (accountService.selectedAccount(); as account) {
       <section class="home-account-row" aria-label="Current account">
@@ -41,7 +41,7 @@
     }
 
     @for (post of feedPosts; track post.id) {
-      <app-post-card [post]="post"></app-post-card>
+      <app-post-card [post]="post" [focusPostOnLoad]="post.id === focusedPostId" [openCommentsOnLoad]="post.id === focusedPostId && openCommentsForFocusedPost" [focusRequestId]="notificationFocusKey"></app-post-card>
     }
   </div>
 </ion-content>
@@ -49,11 +49,11 @@
 <ion-footer class="home-footer ion-no-border">
   <ion-toolbar>
     <nav class="page-nav home-nav" aria-label="Main navigation">
-      <ion-button fill="solid" class="active-tab" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-sharp"></ion-icon></ion-button>
-      <ion-button fill="clear" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
-      <ion-button fill="clear" class="compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
-      <ion-button fill="clear" class="notification-nav-button" routerLink="/activity" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
-      <ion-button fill="clear" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
+      <ion-button fill="solid" class="active-tab" routerLink="/home" (click)="viewState.handleTabTap('/home', 'tali-view-home')" aria-label="Home"><ion-icon slot="icon-only" name="home-sharp"></ion-icon></ion-button>
+      <ion-button fill="clear" routerLink="/messages" (click)="viewState.handleTabTap('/messages', 'tali-view-messages')" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
+      <ion-button fill="clear" class="compose-button" routerLink="/add-post" (click)="viewState.handleTabTap('/add-post', 'tali-post-draft')" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
+      <ion-button fill="clear" class="notification-nav-button" routerLink="/activity" (click)="viewState.handleTabTap('/activity', 'tali-view-activity')" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
+      <ion-button fill="clear" routerLink="/profile" (click)="viewState.handleTabTap('/profile', 'tali-view-profile:current')" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
     </nav>
   </ion-toolbar>
 </ion-footer>

@@ -9,7 +9,13 @@
 .profile-avatar ion-icon { width: 100%; height: 100%; }
 .select-header h1,.more-heading h1 { margin: 0; color: var(--auth-paper); font-size: 1.55rem; font-weight: 650; }
 .select-header p,.more-heading p { margin: 6px 0 0; color: rgba(242,244,243,.68); font-size: .88rem; }
-.account-list { --ion-item-background: transparent; width: min(calc(100% - 32px), 460px); margin: 0 auto; padding: 8px 0; border: 1px solid rgba(242,244,243,.12); border-radius: 22px; background: rgba(10,9,8,.82) !important; box-shadow: 0 20px 54px rgba(0,0,0,.28); backdrop-filter: blur(16px); }
+.account-list { --ion-item-background: transparent; width: min(calc(100% - 32px), 460px); margin: 0 auto; padding: 8px 0; border: 1px solid rgba(242,244,243,.12); border-radius: 22px; background: rgba(10,9,8,.82) !important; box-shadow: 0 20px 54px rgba(0,0,0,.28); backdrop-filter: blur(16px); overflow: visible !important; contain: none; }
+.account-entry { position: relative; }
+.account-more-button { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border: 0; border-radius: 50%; background: transparent; color: rgba(242,244,243,.78); font-size: 1.2rem; cursor: pointer; }
+.account-more-button:active, .account-more-button:focus-visible { background: rgba(242,244,243,.1); outline: none; }
+.account-action-menu { position: fixed; z-index: 10000; display: grid; width: 190px; padding: 6px; border: 1px solid rgba(242,244,243,.15); border-radius: 13px; background: #171513; box-shadow: 0 12px 30px rgba(0,0,0,.45); }
+.account-action-menu button { min-height: 42px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--auth-paper); font: inherit; font-size: .82rem; text-align: left; cursor: pointer; }
+.account-action-menu button:active, .account-action-menu button:focus-visible { background: rgba(242,244,243,.1); outline: none; }
 ion-item { --background: rgba(10,9,8,.78) !important; --ion-item-background: rgba(10,9,8,.78) !important; --color: var(--auth-paper) !important; --border-radius: 13px; --inner-border-width: 0; margin: 0 10px 7px; border: 1px solid rgba(242,244,243,.12); border-radius: 13px; --inner-padding-end: 14px; --min-height: 70px; }
 ion-item::part(native) { background: rgba(10,9,8,.78) !important; color: var(--auth-paper) !important; }
 .account-avatar { width: 42px; height: 42px; border: 1px solid rgba(169,146,125,.28); background: rgba(73,17,28,.5); color: #d2bca7; }
