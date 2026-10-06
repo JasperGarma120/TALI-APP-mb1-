@@ -74,7 +74,7 @@ export class CommentsPage {
       return;
     }
 
-    this.postService.addComment(post.id, account, body);
+    this.postService.addComment(post.id, account, body, this.accountService.accounts());
     this.commentDraft = '';
     this.commentError = '';
   }

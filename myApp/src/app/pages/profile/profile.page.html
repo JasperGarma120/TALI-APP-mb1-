@@ -103,7 +103,7 @@
     <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
     <ion-button fill="clear" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
     <ion-button fill="clear" class="compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
-    <ion-button fill="clear" routerLink="/suggestions" aria-label="Suggestions"><ion-icon slot="icon-only" name="trending-up-outline"></ion-icon></ion-button>
+    <ion-button fill="clear" class="notification-nav-button" routerLink="/activity" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
     <ion-button fill="solid" class="active-tab" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
   </nav>
 </ion-toolbar></ion-footer>

@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
 import { IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonTextarea, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addCircle, attachOutline, chatbubbleOutline, checkmarkOutline, closeCircleOutline, closeOutline, documentOutline, ellipsisVertical, homeOutline, micOutline, personCircleOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
+import { addCircle, attachOutline, chatbubbleOutline, checkmarkOutline, closeCircleOutline, closeOutline, documentOutline, ellipsisVertical, homeOutline, micOutline, notificationsOutline, personCircleOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
 import { AccountService } from '../../services/account.service';
 import { PostAttachment, PostAudience, PostService } from '../../services/post.service';
 
@@ -37,7 +37,7 @@ export class AddPostPage {
   ];
 
   constructor() {
-    addIcons({ addCircle, attachOutline, chatbubbleOutline, checkmarkOutline, closeCircleOutline, closeOutline, documentOutline, ellipsisVertical, homeOutline, micOutline, personCircleOutline, trendingUpOutline, videocamOutline });
+    addIcons({ addCircle, attachOutline, chatbubbleOutline, checkmarkOutline, closeCircleOutline, closeOutline, documentOutline, ellipsisVertical, homeOutline, micOutline, notificationsOutline, personCircleOutline, trendingUpOutline, videocamOutline });
   }
 
   get canPublish() {
@@ -121,7 +121,7 @@ export class AddPostPage {
       attachments: [...this.pendingAttachments],
       audience: this.audience,
       audienceAccountIds: [...this.audienceAccountIds],
-    });
+    }, account, this.accountService.accounts());
     void this.router.navigateByUrl('/home');
   }
 

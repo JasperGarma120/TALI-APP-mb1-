@@ -38,9 +38,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/add-post/add-post.page').then((m) => m.AddPostPage),
   },
   {
-    path: 'suggestions',
+    path: 'activity',
     loadComponent: () => import('./pages/suggestions/suggestions.page').then((m) => m.SuggestionsPage),
   },
+  { path: 'suggestions', redirectTo: 'activity', pathMatch: 'full' },
   {
     path: 'profile/:accountId',
     loadComponent: () => import('./pages/profile/profile.page').then((m) => m.ProfilePage),

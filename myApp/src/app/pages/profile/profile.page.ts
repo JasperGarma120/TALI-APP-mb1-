@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IonAvatar, IonBackButton, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonTextarea, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addCircle, chatbubbleOutline, createOutline, homeOutline, imageOutline, personCircleOutline, repeatOutline, settingsOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
+import { addCircle, chatbubbleOutline, createOutline, homeOutline, imageOutline, notificationsOutline, personCircleOutline, repeatOutline, settingsOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
 import { PostCardComponent } from '../../components/post-card/post-card.component';
 import { AccountService } from '../../services/account.service';
 import { PostService } from '../../services/post.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-profile',
@@ -19,6 +20,7 @@ import { PostService } from '../../services/post.service';
 export class ProfilePage {
   readonly accountService = inject(AccountService);
   readonly postService = inject(PostService);
+  readonly notificationService = inject(NotificationService);
   private readonly route = inject(ActivatedRoute);
   activeSection: 'posts' | 'photos' | 'videos' | 'reposts' = 'posts';
   editingProfile = false;
@@ -29,8 +31,13 @@ export class ProfilePage {
   profileImageError = '';
   connectionsView: 'followers' | 'following' | null = null;
 
+  get unreadNotifications() {
+    const accountId = this.accountService.selectedAccount()?.id;
+    return accountId === undefined ? 0 : this.notificationService.unreadCount(accountId);
+  }
+
   constructor() {
-    addIcons({ addCircle, chatbubbleOutline, createOutline, homeOutline, imageOutline, personCircleOutline, repeatOutline, settingsOutline, trendingUpOutline, videocamOutline });
+    addIcons({ addCircle, chatbubbleOutline, createOutline, homeOutline, imageOutline, notificationsOutline, personCircleOutline, repeatOutline, settingsOutline, trendingUpOutline, videocamOutline });
   }
 
   scrollGallery(event: WheelEvent) {

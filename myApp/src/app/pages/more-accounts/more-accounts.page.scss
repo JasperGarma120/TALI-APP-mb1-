@@ -5,11 +5,12 @@
 .more-content { --background: #5e503f; --color: var(--auth-paper); }
 .more-content::part(background) { background: linear-gradient(145deg, rgba(10,9,8,.58), rgba(73,17,28,.42)), url('/assets/bgdesign2.svg') center / cover fixed; }
 .more-heading { padding: 84px 20px 20px; text-align: center; }
-.more-content ion-list { width: min(calc(100% - 32px), 460px); margin: 0 auto; padding: 8px 0; border: 1px solid rgba(242,244,243,.12); border-radius: 22px; background: rgba(10,9,8,.82); box-shadow: 0 20px 54px rgba(0,0,0,.28); backdrop-filter: blur(16px); }
-ion-item { --background: transparent; --color: var(--auth-paper); --border-radius: 13px; --inner-border-width: 0; margin: 0 10px 7px; border: 1px solid rgba(242,244,243,.12); border-radius: 13px; --inner-padding-end: 14px; --min-height: 70px; }
+.more-content ion-list { --ion-item-background: transparent; width: min(calc(100% - 32px), 460px); margin: 0 auto; padding: 8px 0; border: 1px solid rgba(242,244,243,.12); border-radius: 22px; background: rgba(10,9,8,.82) !important; box-shadow: 0 20px 54px rgba(0,0,0,.28); backdrop-filter: blur(16px); }
+ion-item { --background: rgba(10,9,8,.78) !important; --ion-item-background: rgba(10,9,8,.78) !important; --color: var(--auth-paper) !important; --border-radius: 13px; --inner-border-width: 0; margin: 0 10px 7px; border: 1px solid rgba(242,244,243,.12); border-radius: 13px; --inner-padding-end: 14px; --min-height: 70px; }
+ion-item::part(native) { background: rgba(10,9,8,.78) !important; color: var(--auth-paper) !important; }
 .account-avatar { width: 42px; height: 42px; border: 1px solid rgba(169,146,125,.28); background: rgba(73,17,28,.5); color: #d2bca7; }
 ion-label h2 { color: var(--auth-paper); font-size: .98rem; font-weight: 600; }
 ion-label p { color: rgba(242,244,243,.6) !important; }
-.empty-state { width: min(calc(100% - 32px), 460px); box-sizing: border-box; margin: 14px auto; padding: 28px 22px; border: 1px solid rgba(242,244,243,.13); border-radius: 20px; background: rgba(10,9,8,.88); color: var(--auth-paper); text-align: center; }
-.empty-state h1 { margin: 0; color: var(--auth-paper); font-size: 1.1rem; font-weight: 600; }
-.empty-state p { margin: 8px 0 0; color: rgba(242,244,243,.65); font-size: .85rem; }
+.auth-empty-state { width: min(calc(100% - 32px), 460px); box-sizing: border-box; margin: 14px auto; padding: 28px 22px; border: 1px solid rgba(242,244,243,.13); border-radius: 20px; background: rgba(10,9,8,.88); color: var(--auth-paper); text-align: center; }
+.auth-empty-state h1 { margin: 0; color: var(--auth-paper); font-size: 1.1rem; font-weight: 600; }
+.auth-empty-state p { margin: 8px 0 0; color: rgba(242,244,243,.65); font-size: .85rem; }

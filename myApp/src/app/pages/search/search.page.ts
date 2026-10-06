@@ -3,8 +3,9 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonSearchbar, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addCircle, chatbubbleOutline, homeOutline, personCircleOutline, searchOutline, trendingUpOutline } from 'ionicons/icons';
+import { addCircle, chatbubbleOutline, homeOutline, notificationsOutline, personCircleOutline, searchOutline, trendingUpOutline } from 'ionicons/icons';
 import { AccountService } from '../../services/account.service';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-search',
@@ -15,11 +16,17 @@ import { AccountService } from '../../services/account.service';
 })
 export class SearchPage {
   readonly accountService = inject(AccountService);
+  readonly notificationService = inject(NotificationService);
   query = '';
   readonly topics = ['Good questions', 'Creative practice', 'Daily reflections', 'Community care'];
 
+  get unreadNotifications() {
+    const accountId = this.accountService.selectedAccount()?.id;
+    return accountId === undefined ? 0 : this.notificationService.unreadCount(accountId);
+  }
+
   constructor() {
-    addIcons({ addCircle, chatbubbleOutline, homeOutline, personCircleOutline, searchOutline, trendingUpOutline });
+    addIcons({ addCircle, chatbubbleOutline, homeOutline, notificationsOutline, personCircleOutline, searchOutline, trendingUpOutline });
   }
 
   get filteredPeople() {

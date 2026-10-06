@@ -606,6 +606,68 @@ body .page-nav ion-button.compose-button:not(.active-tab) {
 .audience-person strong { font-size: .8rem; }
 .audience-person small { color: var(--page-muted); font-size: .7rem; }
 
+/* Keep the account flow's transparent navigation chrome independent of app theme. */
+html body ion-header.auth-header,
+html.app-light body ion-header.auth-header {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 20;
+	width: 100%;
+	background: transparent !important;
+	--background: transparent !important;
+	--color: #f2f4f3 !important;
+	--border-color: transparent !important;
+}
+
+html body ion-header.auth-header ion-toolbar,
+html.app-light body ion-header.auth-header ion-toolbar {
+	background: transparent !important;
+	--background: transparent !important;
+	--color: #f2f4f3 !important;
+	--border-color: transparent !important;
+}
+
+html body ion-header.auth-header ion-back-button,
+html.app-light body ion-header.auth-header ion-back-button {
+	--color: #f2f4f3 !important;
+}
+
+html body ion-content.select-content ion-list,
+html body ion-content.more-content ion-list,
+html.app-light body ion-content.select-content ion-list,
+html.app-light body ion-content.more-content ion-list {
+	--ion-item-background: transparent !important;
+	background: rgba(10, 9, 8, .84) !important;
+}
+
+html body ion-content.select-content ion-item,
+html body ion-content.more-content ion-item,
+html.app-light body ion-content.select-content ion-item,
+html.app-light body ion-content.more-content ion-item {
+	--background: rgba(10, 9, 8, .78) !important;
+	--ion-item-background: rgba(10, 9, 8, .78) !important;
+	--color: #f2f4f3 !important;
+}
+
+html body ion-content.select-content ion-item::part(native),
+html body ion-content.more-content ion-item::part(native),
+html.app-light body ion-content.select-content ion-item::part(native),
+html.app-light body ion-content.more-content ion-item::part(native) {
+	background: rgba(10, 9, 8, .78) !important;
+	color: #f2f4f3 !important;
+}
+
+html body ion-content.login-content ion-item.login-field ion-input::part(native),
+html.app-light body ion-content.login-content ion-item.login-field ion-input::part(native) {
+	background: transparent !important;
+	background-color: transparent !important;
+	color: #f2f4f3 !important;
+	-webkit-text-fill-color: #f2f4f3 !important;
+	-webkit-box-shadow: 0 0 0 1000px #171513 inset !important;
+	box-shadow: 0 0 0 1000px #171513 inset !important;
+}
+
 @media (min-width: 1024px) {
 	html.app-web-shell body {
 		margin: 0;
@@ -651,6 +713,9 @@ html.app-light ion-modal.post-comments-modal::part(content) {
 	border-color: #000;
 	box-shadow: 0 0 0 2px #000, 0 18px 56px rgba(0, 0, 0, .2);
 }
+
+.notification-nav-button { position: relative; }
+.notification-badge { position: absolute; top: 2px; right: 2px; display: grid; min-width: 17px; height: 17px; place-items: center; padding: 0 4px; border: 2px solid var(--page-bg); border-radius: 999px; background: #b93b4b; color: #fff; font-size: .62rem; font-weight: 700; line-height: 1; }
 
 @media (max-width: 720px) {
 	ion-modal.post-comments-modal {

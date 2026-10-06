@@ -1,9 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { addCircle, chatbubbleOutline, homeOutline, personAddOutline, personCircleOutline, trendingUpOutline } from 'ionicons/icons';
+import { addCircle, atOutline, chatbubbleOutline, heartOutline, homeOutline, notificationsOutline, personAddOutline, personCircleOutline, repeatOutline, shareOutline, trendingUpOutline } from 'ionicons/icons';
 import { Account, AccountService } from '../../services/account.service';
+import { AppNotification, NotificationService } from '../../services/notification.service';
 import { PostService } from '../../services/post.service';
 
 @Component({
@@ -11,11 +13,13 @@ import { PostService } from '../../services/post.service';
   standalone: true,
   templateUrl: './suggestions.page.html',
   styleUrls: ['./suggestions.page.scss'],
-  imports: [RouterLink, IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonToolbar],
+  imports: [CommonModule, RouterLink, IonAvatar, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonToolbar],
 })
 export class SuggestionsPage {
   readonly accountService = inject(AccountService);
   readonly postService = inject(PostService);
+  readonly notificationService = inject(NotificationService);
+  selectedSection: 'suggestions' | 'notifications' = 'suggestions';
   selectedCategory: 'people' | 'posts' | 'groups' = 'people';
 
   get people() {
@@ -32,7 +36,37 @@ export class SuggestionsPage {
   }
 
   constructor() {
-    addIcons({ addCircle, chatbubbleOutline, homeOutline, personAddOutline, personCircleOutline, trendingUpOutline });
+    addIcons({ addCircle, atOutline, chatbubbleOutline, heartOutline, homeOutline, notificationsOutline, personAddOutline, personCircleOutline, repeatOutline, shareOutline, trendingUpOutline });
+  }
+
+  get notifications() {
+    const accountId = this.accountService.selectedAccount()?.id;
+    return accountId === undefined ? [] : this.notificationService.forAccount(accountId);
+  }
+
+  get unreadNotifications() {
+    const accountId = this.accountService.selectedAccount()?.id;
+    return accountId === undefined ? 0 : this.notificationService.unreadCount(accountId);
+  }
+
+  notificationMessage(notification: AppNotification) {
+    switch (notification.type) {
+      case 'like': return 'liked your post';
+      case 'comment': return 'commented on your post';
+      case 'follow': return 'followed you';
+      case 'share': return 'shared your post';
+      case 'repost': return 'reposted your post';
+      case 'mention': return 'mentioned you';
+    }
+  }
+
+  markNotificationRead(notification: AppNotification) {
+    this.notificationService.markRead(notification.id, notification.recipientId);
+  }
+
+  markAllNotificationsRead() {
+    const accountId = this.accountService.selectedAccount()?.id;
+    if (accountId !== undefined) this.notificationService.markAllRead(accountId);
   }
 
   toggleFollow(person: Account) {

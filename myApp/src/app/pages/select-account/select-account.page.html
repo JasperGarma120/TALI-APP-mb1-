@@ -15,22 +15,22 @@
     <p>Choose an account to continue</p>
   </div>
 
-  <ion-list class="account-list" lines="none">
-    @for (account of previewAccounts; track account.username) {
-      <ion-item button="true" (click)="chooseAccount(account)">
-        <ion-avatar slot="start" class="account-avatar">
-          <ion-icon name="person-circle-outline"></ion-icon>
-        </ion-avatar>
-        <ion-label>
-          <h2>{{ account.name }}</h2>
-          <p>{{ account.username }}</p>
-        </ion-label>
-      </ion-item>
-    }
-  </ion-list>
-
-  @if (!previewAccounts.length) {
-    <div class="empty-state">
+  @if (previewAccounts.length) {
+    <ion-list class="account-list" lines="none">
+      @for (account of previewAccounts; track account.username) {
+        <ion-item button="true" (click)="chooseAccount(account)">
+          <ion-avatar slot="start" class="account-avatar">
+            <ion-icon name="person-circle-outline"></ion-icon>
+          </ion-avatar>
+          <ion-label>
+            <h2>{{ account.name }}</h2>
+            <p>{{ account.username }}</p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  } @else {
+    <div class="auth-empty-state">
       <h1>No accounts yet</h1>
       <p>Create an account first, then it will appear here.</p>
     </div>

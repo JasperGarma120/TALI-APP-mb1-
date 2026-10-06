@@ -83,14 +83,14 @@ export class PostCardComponent {
     const account = this.accountService.selectedAccount();
     if (!account) return this.requireAccount();
     this.actionMessage = '';
-    this.postService.toggleLike(this.post.id, account.id);
+    this.postService.toggleLike(this.post.id, account);
   }
 
   toggleRepost() {
     const account = this.accountService.selectedAccount();
     if (!account) return this.requireAccount();
     this.actionMessage = '';
-    this.postService.toggleRepost(this.post.id, account.id);
+    this.postService.toggleRepost(this.post.id, account);
   }
 
   async sharePost() {
@@ -100,9 +100,13 @@ export class PostCardComponent {
     try {
       if (navigator.share) {
         await navigator.share({ title: `${this.post.authorName} on Tali`, text: this.post.body, url: postUrl.toString() });
+        const account = this.accountService.selectedAccount();
+        if (account) this.postService.recordShare(this.post.id, account);
       } else if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(postUrl.toString());
         this.actionMessage = 'Link copied.';
+        const account = this.accountService.selectedAccount();
+        if (account) this.postService.recordShare(this.post.id, account);
       } else {
         this.actionMessage = 'Sharing is not available in this browser.';
       }

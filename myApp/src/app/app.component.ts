@@ -17,7 +17,7 @@ export class AppComponent {
 
 		const updateWebShell = (url: string) => {
 			const path = url.split(/[?#]/, 1)[0];
-			const isSignedInPage = ['/home', '/search', '/messages', '/add-post', '/suggestions', '/profile', '/settings']
+			const isSignedInPage = ['/home', '/search', '/messages', '/add-post', '/activity', '/suggestions', '/profile', '/settings']
 				.some((route) => path === route || path.startsWith(`${route}/`));
 			document.documentElement.classList.toggle('app-web-shell', isSignedInPage);
 		};

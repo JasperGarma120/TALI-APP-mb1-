@@ -11,22 +11,22 @@
     <h1>More accounts</h1>
     <p>Choose an account to continue</p>
   </div>
-  <ion-list lines="none">
-    @for (account of accountService.accounts(); track account.username) {
-      <ion-item button="true" (click)="chooseAccount(account)">
-        <ion-avatar slot="start" class="account-avatar">
-          <ion-icon name="person-circle-outline"></ion-icon>
-        </ion-avatar>
-        <ion-label>
-          <h2>{{ account.name }}</h2>
-          <p>{{ account.username }}</p>
-        </ion-label>
-      </ion-item>
-    }
-  </ion-list>
-
-  @if (!accountService.accounts().length) {
-    <div class="empty-state">
+  @if (accountService.accounts().length) {
+    <ion-list lines="none">
+      @for (account of accountService.accounts(); track account.username) {
+        <ion-item button="true" (click)="chooseAccount(account)">
+          <ion-avatar slot="start" class="account-avatar">
+            <ion-icon name="person-circle-outline"></ion-icon>
+          </ion-avatar>
+          <ion-label>
+            <h2>{{ account.name }}</h2>
+            <p>{{ account.username }}</p>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  } @else {
+    <div class="auth-empty-state">
       <h1>No accounts yet</h1>
       <p>Create an account first, then it will appear here.</p>
     </div>

@@ -1,37 +1,71 @@
-<ion-header class="page-header ion-no-border"><ion-toolbar><h1>Suggestions</h1></ion-toolbar></ion-header>
+<ion-header class="page-header ion-no-border"><ion-toolbar><h1>Activity</h1></ion-toolbar></ion-header>
 <ion-content class="page-content" [fullscreen]="true">
-  <nav class="suggestion-tabs" aria-label="Suggestion categories">
-    <button type="button" [class.active]="selectedCategory === 'people'" (click)="selectedCategory = 'people'">People</button>
-    <button type="button" [class.active]="selectedCategory === 'posts'" (click)="selectedCategory = 'posts'">Posts</button>
-    <button type="button" [class.active]="selectedCategory === 'groups'" (click)="selectedCategory = 'groups'">Groups</button>
+  <nav class="activity-switcher" aria-label="Activity sections">
+    <button type="button" [class.active]="selectedSection === 'suggestions'" (click)="selectedSection = 'suggestions'">Suggestions</button>
+    <button type="button" [class.active]="selectedSection === 'notifications'" (click)="selectedSection = 'notifications'">
+      Notifications
+      @if (unreadNotifications) { <span class="notification-count">{{ unreadNotifications }}</span> }
+    </button>
   </nav>
-  @if (selectedCategory === 'people') {
-    <section class="intro"><h2>People to meet</h2></section>
-    @for (person of people; track person.id) {
-      <article class="suggestion-row">
-        <a class="person-profile-link" [routerLink]="['/profile', person.id]">
-          <ion-avatar><ion-icon name="person-circle-outline"></ion-icon></ion-avatar>
-          <div class="suggestion-copy"><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div>
-        </a>
-        <ion-button [fill]="isFollowing(person) ? 'clear' : 'outline'" size="small" (click)="toggleFollow(person)"><ion-icon slot="start" [name]="isFollowing(person) ? 'person-circle-outline' : 'person-add-outline'"></ion-icon>{{ isFollowing(person) ? 'Following' : 'Follow' }}</ion-button>
-      </article>
-    } @empty { <p class="empty-suggestions">No other accounts to suggest yet.</p> }
+
+  @if (selectedSection === 'suggestions') {
+    <nav class="suggestion-tabs" aria-label="Suggestion categories">
+      <button type="button" [class.active]="selectedCategory === 'people'" (click)="selectedCategory = 'people'">People</button>
+      <button type="button" [class.active]="selectedCategory === 'posts'" (click)="selectedCategory = 'posts'">Posts</button>
+      <button type="button" [class.active]="selectedCategory === 'groups'" (click)="selectedCategory = 'groups'">Groups</button>
+    </nav>
+    @if (selectedCategory === 'people') {
+      <section class="intro"><h2>People to meet</h2></section>
+      @for (person of people; track person.id) {
+        <article class="suggestion-row">
+          <a class="person-profile-link" [routerLink]="['/profile', person.id]">
+            <ion-avatar><ion-icon name="person-circle-outline"></ion-icon></ion-avatar>
+            <div class="suggestion-copy"><strong>{{ person.name }}</strong><span>{{ person.username }}</span></div>
+          </a>
+          <ion-button [fill]="isFollowing(person) ? 'clear' : 'outline'" size="small" (click)="toggleFollow(person)"><ion-icon slot="start" [name]="isFollowing(person) ? 'person-circle-outline' : 'person-add-outline'"></ion-icon>{{ isFollowing(person) ? 'Following' : 'Follow' }}</ion-button>
+        </article>
+      } @empty { <p class="empty-suggestions">No other accounts to suggest yet.</p> }
+    }
+    @if (selectedCategory === 'posts') {
+      <section class="intro"><h2>Posts to explore</h2></section>
+      @for (post of posts; track post.id) {
+        <article class="suggestion-post"><a class="suggestion-post-author" [routerLink]="['/profile', post.authorId]"><strong>{{ post.authorName }}</strong><span>{{ post.authorUsername }}</span></a>@if (post.body) { <p>{{ post.body }}</p> }
+          @for (attachment of post.attachments; track $index) {
+            @if (attachment.type.startsWith('image/')) { <img [src]="attachment.dataUrl" [alt]="attachment.name" /> }
+            @else if (attachment.type.startsWith('video/')) { <video controls playsinline preload="metadata" [attr.aria-label]="attachment.name"><source [src]="attachment.dataUrl" [type]="attachment.type" /></video> }
+            @else { <a [href]="attachment.dataUrl" [download]="attachment.name">{{ attachment.name }}</a> }
+          }
+        </article>
+      } @empty { <p class="empty-suggestions">No posts to suggest yet.</p> }
+    }
+    @if (selectedCategory === 'groups') {
+      <section class="intro"><h2>Community groups</h2></section>
+      <p class="empty-suggestions">No community groups are available yet.</p>
+    }
   }
-  @if (selectedCategory === 'posts') {
-    <section class="intro"><h2>Posts to explore</h2></section>
-    @for (post of posts; track post.id) {
-      <article class="suggestion-post"><a class="suggestion-post-author" [routerLink]="['/profile', post.authorId]"><strong>{{ post.authorName }}</strong><span>{{ post.authorUsername }}</span></a>@if (post.body) { <p>{{ post.body }}</p> }
-        @for (attachment of post.attachments; track $index) {
-          @if (attachment.type.startsWith('image/')) { <img [src]="attachment.dataUrl" [alt]="attachment.name" /> }
-          @else if (attachment.type.startsWith('video/')) { <video controls playsinline preload="metadata" [attr.aria-label]="attachment.name"><source [src]="attachment.dataUrl" [type]="attachment.type" /></video> }
-          @else { <a [href]="attachment.dataUrl" [download]="attachment.name">{{ attachment.name }}</a> }
-        }
-      </article>
-    } @empty { <p class="empty-suggestions">No posts to suggest yet.</p> }
-  }
-  @if (selectedCategory === 'groups') {
-    <section class="intro"><h2>Community groups</h2></section>
-    <p class="empty-suggestions">No community groups are available yet.</p>
+
+  @if (selectedSection === 'notifications') {
+    <section class="notification-heading">
+      <div><h2>Notifications</h2><p>Updates about activity on your account.</p></div>
+      @if (unreadNotifications) { <button type="button" class="mark-read-button" (click)="markAllNotificationsRead()">Mark all read</button> }
+    </section>
+    @if (!accountService.selectedAccount()) {
+      <p class="empty-suggestions">Select an account to view its notifications.</p>
+    } @else {
+      @for (notification of notifications; track notification.id) {
+        <button type="button" class="notification-row" [class.unread]="!notification.read" (click)="markNotificationRead(notification)">
+          <span class="notification-avatar"><ion-icon [name]="notification.type === 'like' ? 'heart-outline' : notification.type === 'comment' ? 'chatbubble-outline' : notification.type === 'follow' ? 'person-add-outline' : notification.type === 'mention' ? 'at-outline' : notification.type === 'share' ? 'share-outline' : 'repeat-outline'"></ion-icon></span>
+          <span class="notification-copy">
+            <span><strong>{{ notification.actorName }}</strong> {{ notificationMessage(notification) }}</span>
+            @if (notification.postPreview) { <span class="notification-preview">“{{ notification.postPreview }}”</span> }
+            <time>{{ notification.createdAt | date:'medium' }}</time>
+          </span>
+          @if (!notification.read) { <span class="unread-dot" aria-label="Unread"></span> }
+        </button>
+      } @empty {
+        <p class="empty-suggestions">You’re all caught up. New likes, comments, follows, shares, reposts, and mentions will appear here.</p>
+      }
+    }
   }
 </ion-content>
 <ion-footer class="page-footer ion-no-border"><ion-toolbar>
@@ -39,7 +73,7 @@
     <ion-button fill="clear" routerLink="/home" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>
     <ion-button fill="clear" routerLink="/messages" aria-label="Messages"><ion-icon slot="icon-only" name="chatbubble-outline"></ion-icon></ion-button>
     <ion-button fill="clear" class="compose-button" routerLink="/add-post" aria-label="Create post"><ion-icon slot="icon-only" name="add-circle"></ion-icon></ion-button>
-    <ion-button fill="solid" class="active-tab" routerLink="/suggestions" aria-label="Suggestions"><ion-icon slot="icon-only" name="trending-up-outline"></ion-icon></ion-button>
+    <ion-button fill="solid" class="active-tab notification-nav-button" routerLink="/activity" aria-label="Activity"><ion-icon slot="icon-only" name="notifications-outline"></ion-icon>@if (unreadNotifications) { <span class="notification-badge">{{ unreadNotifications }}</span> }</ion-button>
     <ion-button fill="clear" routerLink="/profile" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
   </nav>
 </ion-toolbar></ion-footer>

@@ -1,4 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { loadBrowserData, saveBrowserData } from './browser-data.store';
+import { NotificationService } from './notification.service';
 
 export interface Account {
   id: number;
@@ -8,6 +10,7 @@ export interface Account {
   password: string;
   bio: string;
   profileImage?: string;
+  verified?: boolean;
   followersIds: number[];
   followingIds: number[];
 }
@@ -17,18 +20,35 @@ const activeAccountStorageKey = 'tali-active-account';
 
 @Injectable({ providedIn: 'root' })
 export class AccountService {
+  private readonly notificationService = inject(NotificationService);
   accounts = signal<Account[]>([]);
 
   selectedAccount = signal<Account | null>(null);
+  private changedBeforeHydration = false;
+  private selectionChanged = false;
 
   constructor() {
     const accounts = this.loadAccounts();
     const activeAccountId = this.loadActiveAccountId();
     this.accounts.set(accounts);
     this.selectedAccount.set(accounts.find((account) => account.id === activeAccountId) ?? null);
+    void loadBrowserData(accountsStorageKey, accounts, isStoredAccountList).then((savedAccounts) => {
+      const currentSelectionId = this.selectedAccount()?.id;
+      const mergedAccounts = this.changedBeforeHydration
+        ? mergeAccounts(savedAccounts, this.accounts())
+        : savedAccounts;
+      this.accounts.set(mergedAccounts);
+      if (!this.selectionChanged) {
+        this.selectedAccount.set(mergedAccounts.find((account) => account.id === activeAccountId) ?? null);
+      } else {
+        this.selectedAccount.set(mergedAccounts.find((account) => account.id === currentSelectionId) ?? null);
+      }
+      if (this.changedBeforeHydration) this.persistAccounts();
+    });
   }
 
   selectAccount(account: Account) {
+    this.selectionChanged = true;
     this.selectedAccount.set(account);
     this.persistActiveAccount();
   }
@@ -53,6 +73,7 @@ export class AccountService {
 
     this.accounts.update((accounts) => [...accounts, account]);
     this.selectedAccount.set(account);
+    this.selectionChanged = true;
     this.persistAccounts();
     this.persistActiveAccount();
     return account;
@@ -71,12 +92,14 @@ export class AccountService {
     };
     this.accounts.update((accounts) => accounts.map((account) => account.id === selected.id ? updated : account));
     this.selectedAccount.set(updated);
+    this.selectionChanged = true;
     this.persistAccounts();
     this.persistActiveAccount();
     return updated;
   }
 
   logout() {
+    this.selectionChanged = true;
     this.selectedAccount.set(null);
     this.persistActiveAccount();
   }
@@ -87,6 +110,7 @@ export class AccountService {
     const updated = { ...selected, password: newPassword };
     this.accounts.update((accounts) => accounts.map((account) => account.id === selected.id ? updated : account));
     this.selectedAccount.set(updated);
+    this.selectionChanged = true;
     this.persistAccounts();
     this.persistActiveAccount();
     return true;
@@ -106,8 +130,10 @@ export class AccountService {
       account.id === selected.id ? updatedSelected : account.id === targetId ? updatedTarget : account,
     ));
     this.selectedAccount.set(updatedSelected);
+    this.selectionChanged = true;
     this.persistAccounts();
     this.persistActiveAccount();
+    this.notificationService.notifyFollow(selected, targetId);
   }
 
   unfollowAccount(targetId: number) {
@@ -125,6 +151,7 @@ export class AccountService {
       return account;
     }));
     this.selectedAccount.set(updatedSelected);
+    this.selectionChanged = true;
     this.persistAccounts();
     this.persistActiveAccount();
   }
@@ -170,6 +197,8 @@ export class AccountService {
   }
 
   private persistAccounts() {
+    this.changedBeforeHydration = true;
+    void saveBrowserData(accountsStorageKey, this.accounts());
     if (typeof localStorage === 'undefined') return;
     try {
       localStorage.setItem(accountsStorageKey, JSON.stringify(this.accounts()));
@@ -190,6 +219,16 @@ export class AccountService {
   }
 }
 
+function isStoredAccountList(value: unknown): value is Account[] {
+  return Array.isArray(value) && value.every(isStoredAccount);
+}
+
+function mergeAccounts(savedAccounts: Account[], currentAccounts: Account[]): Account[] {
+  const merged = new Map(savedAccounts.map((account) => [account.id, account]));
+  for (const account of currentAccounts) merged.set(account.id, account);
+  return [...merged.values()];
+}
+
 function isStoredAccount(value: unknown): value is Account {
   if (typeof value !== 'object' || value === null) return false;
   const account = value as Partial<Account>;
@@ -200,6 +239,7 @@ function isStoredAccount(value: unknown): value is Account {
     typeof account.password === 'string' &&
     typeof account.bio === 'string' &&
     (account.profileImage === undefined || typeof account.profileImage === 'string') &&
+    (account.verified === undefined || typeof account.verified === 'boolean') &&
     Array.isArray(account.followersIds) && account.followersIds.every(Number.isSafeInteger) &&
     Array.isArray(account.followingIds) && account.followingIds.every(Number.isSafeInteger);
 }

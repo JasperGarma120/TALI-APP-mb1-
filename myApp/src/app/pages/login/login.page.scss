@@ -55,6 +55,14 @@
   border: 1px solid rgba(242,244,243,.13);
   border-radius: 14px;
 }
+.login-field ion-input::part(native) {
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--auth-paper) !important;
+  -webkit-text-fill-color: var(--auth-paper) !important;
+  -webkit-box-shadow: 0 0 0 1000px #171513 inset !important;
+  box-shadow: 0 0 0 1000px #171513 inset !important;
+}
 .login-field.field-invalid { border-color: #d98e8e; }
 .login-error { width: 100%; max-width: 340px; margin: -2px 0 0; color: #efadad; font-size: .8rem; text-align: left; }
 .login-button {
