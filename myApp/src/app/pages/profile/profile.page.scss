@@ -155,3 +155,4 @@
 .profile-photo-crop-preview img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .08s ease-out; }
 .crop-control { display: grid; gap: 6px; color: var(--page-text); font-size: .82rem; }
 .crop-control input { width: 100%; accent-color: var(--ion-color-primary); }
+.crop-control select { min-height: 42px; padding: 8px 10px; border: 1px solid var(--page-border); border-radius: 10px; background: var(--page-bg); color: var(--page-text); font: inherit; }

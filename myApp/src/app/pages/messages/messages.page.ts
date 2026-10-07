@@ -244,6 +244,10 @@ export class MessagesPage {
     return account && this.accountService.canViewProfileImage(account, this.selectedAccount()) ? account.profileImage ?? null : null;
   }
 
+  canViewProfileImage(account: Account) {
+    return this.accountService.canViewProfileImage(account, this.selectedAccount());
+  }
+
   messageAuthor(message: ChatMessage) {
     return this.accounts().find((account) => account.id === message.senderId);
   }

@@ -6,7 +6,7 @@
         @if (activeChatAccount; as person) {
           <a class="chat-profile-link" [routerLink]="['/profile', person.id]">
             <span class="chat-profile-avatar">
-              @if (person.profileImage) { <img [src]="person.profileImage" [alt]="person.name" /> }
+              @if (canViewProfileImage(person) && person.profileImage) { <img [src]="person.profileImage" [alt]="person.name" /> }
               @else { <ion-icon name="person-circle-outline"></ion-icon> }
             </span>
             <span class="chat-profile-name">{{ conversationTitle(conversation) }}</span>
@@ -56,7 +56,7 @@
         <div class="message-row" [class.own-message]="message.senderId === selectedAccount()?.id">
           @if (message.senderId !== selectedAccount()?.id) {
             <span class="incoming-avatar">
-              @if (messageAuthor(message)?.profileImage; as image) { <img [src]="image" [alt]="messageAuthorName(message)" /> }
+              @if (messageAuthorImage(message); as image) { <img [src]="image" [alt]="messageAuthorName(message)" /> }
               @else { <ion-icon name="person-circle-outline"></ion-icon> }
             </span>
           }
