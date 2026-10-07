@@ -52,6 +52,7 @@ export class MessagesPage {
   groupName = '';
   selectedMemberIds: number[] = [];
   messageDraft = '';
+  isComposerExpanded = false;
   pendingAttachments: ChatAttachment[] = [];
   recordingVoice = false;
   reactionPickerMessageId: string | null = null;

@@ -1,6 +1,6 @@
 .comments-modal-content { --background: var(--page-surface); --color: var(--page-text); --padding-start: 0; --padding-end: 0; --padding-top: 0; --padding-bottom: 0; }
 .comments-dialog { display: grid; width: 100%; height: 100%; min-height: 0; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); overflow: hidden; background: var(--page-surface); color: var(--page-text); }
-.comments-media { position: relative; display: grid; min-width: 0; min-height: 0; place-items: center; overflow: hidden; background: #080a09; }
+.comments-media { position: relative; display: grid; min-width: 0; min-height: 0; place-items: center; overflow: hidden; background: var(--page-bg); }
 .comments-media-image { display: block; width: 100%; height: 100%; object-fit: contain; }
 .comments-text-post { display: grid; width: min(76%, 560px); grid-template-columns: 42px minmax(0, 1fr); align-items: start; gap: 14px; padding: 24px; border: 1px solid var(--page-border); border-radius: 16px; background: var(--page-surface); color: var(--page-text); box-shadow: 0 14px 40px rgba(0, 0, 0, .24); }
 .comments-text-post .comment-avatar { width: 42px; height: 42px; }
@@ -8,11 +8,11 @@
 .comments-text-post-copy strong { color: var(--page-text); font-size: 1rem; }
 .comments-text-post-copy > span, .comments-text-post-copy time { color: var(--page-muted); font-size: .78rem; }
 .comments-text-post-copy p { margin: 8px 0; color: var(--page-text); font-size: clamp(1rem, 2vw, 1.4rem); line-height: 1.5; overflow-wrap: anywhere; white-space: pre-wrap; }
-.media-arrow { position: absolute; top: 50%; display: grid; width: 38px; height: 38px; place-items: center; transform: translateY(-50%); border: 0; border-radius: 50%; background: rgba(15, 20, 20, .68); color: #fff; cursor: pointer; }
+.media-arrow { position: absolute; top: 50%; display: grid; width: 38px; height: 38px; place-items: center; transform: translateY(-50%); border: 1px solid var(--page-border); border-radius: 50%; background: var(--page-surface); color: var(--page-text); cursor: pointer; }
 .media-arrow ion-icon { font-size: 1.25rem; }
 .media-previous { left: 14px; }
 .media-next { right: 14px; }
-.media-counter { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); padding: 4px 10px; border-radius: 14px; background: rgba(0, 0, 0, .58); color: #fff; font-size: .75rem; }
+.media-counter { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); padding: 4px 10px; border-radius: 14px; background: var(--page-surface); color: var(--page-text); font-size: .75rem; }
 .comments-no-media { display: grid; justify-items: center; gap: 12px; color: var(--page-muted); font-size: .88rem; }
 .comments-no-media ion-icon { font-size: 2rem; }
 .comments-panel { display: grid; min-width: 0; min-height: 0; grid-template-rows: auto auto minmax(0, 1fr) auto auto; background: var(--page-surface); color: var(--page-text); }
@@ -37,11 +37,24 @@
 .comments-unavailable { height: 100%; align-content: center; gap: 8px; }
 .comment-composer { display: flex; min-height: 64px; align-items: center; gap: 8px; padding: 8px 14px; border-top: 1px solid var(--page-border); }
 .comment-composer ion-textarea { max-height: 120px; --padding-top: 8px; --padding-bottom: 8px; --padding-start: 6px; --padding-end: 6px; --color: var(--page-text); --placeholder-color: var(--page-muted); }
-.comment-composer ion-button { flex: 0 0 auto; margin: 0; --color: #4c8bf5; font-weight: 700; }
+.comment-composer ion-button { flex: 0 0 auto; margin: 0; --color: var(--ion-color-primary); font-weight: 700; }
 .comment-composer ion-button[disabled] { opacity: .5; }
 .comment-error { margin: 0; padding: 0 14px 10px; color: #c0392b; font-size: .78rem; }
 
 @media (max-width: 720px) {
   .comments-dialog { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(220px, 38vh) minmax(0, 1fr); }
   .comments-author { min-height: 60px; padding-block: 8px; }
+}
+
+@media (max-width: 560px) {
+  .comments-text-post { width: 100%; grid-template-columns: 36px minmax(0, 1fr); gap: 10px; padding: 16px; }
+  .comments-text-post .comment-avatar { width: 36px; height: 36px; }
+  .comments-text-post-copy strong, .comments-author-copy strong, .comment-copy strong { font-size: .82rem; }
+  .comments-text-post-copy > span, .comments-text-post-copy time, .comments-author-copy span, .comment-copy > span, .comment-copy time, .post-caption time { font-size: .7rem; }
+  .comments-text-post-copy p { font-size: .94rem; }
+  .comments-heading { font-size: .92rem; }
+  .comment-entry p { font-size: .84rem; }
+  .comment-entry time, .comments-author-copy span, .comment-copy time { font-size: .7rem; }
+  .comments-no-media, .comments-empty, .comments-unavailable { font-size: .82rem; }
+  .comment-error { font-size: .76rem; }
 }

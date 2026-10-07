@@ -191,3 +191,10 @@ ion-content {
   }
 }
 
+@media (max-width: 560px) {
+  .post-name { font-size: .86rem; }
+  .post-username { font-size: .72rem; }
+  .post-text { font-size: .88rem; }
+  .action-pill { font-size: .72rem; }
+}
+

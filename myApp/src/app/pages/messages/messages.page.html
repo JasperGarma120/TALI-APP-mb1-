@@ -284,19 +284,20 @@
 @if (activeConversation; as conversation) {
   <ion-footer class="chat-footer ion-no-border">
     <ion-toolbar>
-      <div class="chat-composer">
+      <form class="chat-composer" [class.is-expanded]="isComposerExpanded" (ngSubmit)="sendMessage()">
         <input #photoPicker hidden type="file" accept="image/*" (change)="attachSelectedFile($event, 'photo')" />
         <input #videoPicker hidden type="file" accept="video/*" (change)="attachSelectedFile($event, 'video')" />
         <input #gifPicker hidden type="file" accept="image/gif,.gif" (change)="attachSelectedFile($event, 'gif')" />
+        <ion-button type="button" fill="clear" class="composer-collapse" tabindex="-1" aria-label="Return to attachments" (pointerdown)="$event.preventDefault()" (click)="isComposerExpanded = false"><ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon></ion-button>
         <div class="chat-attachment-actions" aria-label="Message attachments">
           <ion-button fill="clear" aria-label="Upload photo" (click)="photoPicker.click()"><ion-icon slot="icon-only" name="image-outline"></ion-icon></ion-button>
           <ion-button fill="clear" aria-label="Upload video" (click)="videoPicker.click()"><ion-icon slot="icon-only" name="videocam-outline"></ion-icon></ion-button>
           <ion-button fill="clear" aria-label="Upload GIF" (click)="gifPicker.click()"><ion-icon slot="icon-only" name="happy-outline"></ion-icon></ion-button>
           <ion-button fill="clear" [attr.aria-label]="recordingVoice ? 'Stop voice recording' : 'Record voice message'" (click)="toggleVoiceRecording()"><ion-icon slot="icon-only" [name]="recordingVoice ? 'stop-circle-outline' : 'mic-outline'"></ion-icon></ion-button>
         </div>
-        <ion-input [(ngModel)]="messageDraft" (ngModelChange)="saveViewState()" placeholder="Write a message" aria-label="Write a message" [disabled]="isPreferenceEnabled('blockedFor')" (keyup.enter)="sendMessage()"></ion-input>
-        <ion-button fill="solid" aria-label="Send message" [disabled]="!messageDraft.trim() || isPreferenceEnabled('blockedFor')" (click)="sendMessage()"><ion-icon slot="icon-only" name="arrow-up-outline"></ion-icon></ion-button>
-      </div>
+        <input class="chat-text-input" type="text" name="chatMessage" [(ngModel)]="messageDraft" (ngModelChange)="saveViewState()" (focus)="isComposerExpanded = true" placeholder="Write a message" aria-label="Write a message" [disabled]="isPreferenceEnabled('blockedFor')" autocomplete="off" />
+        <ion-button type="submit" fill="solid" aria-label="Send message" [disabled]="(!messageDraft.trim() && !pendingAttachments.length) || isPreferenceEnabled('blockedFor')"><ion-icon slot="icon-only" name="arrow-up-outline"></ion-icon></ion-button>
+      </form>
     </ion-toolbar>
   </ion-footer>
 } @else {

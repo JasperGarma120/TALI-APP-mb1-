@@ -4,7 +4,7 @@
 .settings-header h1 { margin: 0; font-size: 1.1rem; }
 .settings-header ion-button { --color: var(--ion-color-primary); }
 .account-center, .settings-section { padding: 18px; border-bottom: 1px solid var(--page-border); }
-.section-label { color: var(--ion-color-primary); font-size: .68rem; font-weight: 700; }
+.section-label { color: var(--ion-color-primary); font-size: .7rem; font-weight: 700; }
 .account-identity { display: flex; align-items: center; gap: 12px; margin: 15px 0 10px; }
 .account-identity > ion-icon { width: 42px; height: 42px; color: var(--ion-color-primary); }
 .account-identity strong, .account-identity span { display: block; }
@@ -47,4 +47,20 @@
 	.settings-categories button span { white-space: nowrap; }
 	.settings-categories .logout-category { margin-top: 0; }
 	.settings-detail { padding: 20px 18px; }
+}
+
+@media (max-width: 560px) {
+	.account-center, .settings-section { padding: 16px; }
+	.section-label { font-size: .7rem; }
+	.account-identity strong { font-size: .88rem; }
+	.account-identity span, .account-contact, .account-bio { font-size: .76rem; }
+	.settings-section h2 { font-size: .9rem; }
+	.settings-section ion-label strong, .settings-detail ion-label { font-size: .84rem; }
+	.settings-section ion-label p, .settings-detail ion-label p, .connection-row span, .activity-post time { font-size: .72rem; }
+	.settings-section ion-select, .settings-categories button { font-size: .8rem; }
+	.settings-detail { padding: 18px 16px; }
+	.settings-detail h2 { font-size: .98rem; }
+	.settings-detail h3 { font-size: .82rem; }
+	.detail-copy, .connection-row { font-size: .8rem; }
+	.activity-post p { font-size: .82rem; }
 }

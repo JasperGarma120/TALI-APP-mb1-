@@ -3,7 +3,7 @@
 .activity-switcher button { display: flex; min-height: 52px; align-items: center; justify-content: center; gap: 8px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--page-muted); font: inherit; font-size: .9rem; }
 .activity-switcher button.active { border-bottom-color: var(--ion-color-primary); color: var(--page-text); font-weight: 600; }
 .activity-switcher button:focus-visible,.mark-read-button:focus-visible,.notification-row:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: -2px; }
-.notification-count { display: inline-grid; min-width: 20px; height: 20px; place-items: center; padding: 0 5px; border-radius: 999px; background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); font-size: .68rem; font-weight: 700; }
+.notification-count { display: inline-grid; min-width: 20px; height: 20px; place-items: center; padding: 0 5px; border-radius: 999px; background: var(--ion-color-primary); color: var(--ion-color-primary-contrast); font-size: .7rem; font-weight: 700; }
 .notification-heading { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px; border-bottom: 1px solid var(--page-border); }
 .notification-heading h2 { margin: 0; color: var(--page-text); font-size: 1rem; }
 .notification-heading p { margin: 5px 0 0; color: var(--page-muted); font-size: .78rem; }
@@ -20,7 +20,7 @@
 .page-header ion-toolbar { --background: var(--page-bg); padding: 8px 18px; }
 .page-header h1 { margin: 0; color: var(--page-text); font-size: 1.2rem; font-weight: 650; }
 .suggestion-tabs { display: grid; grid-template-columns: repeat(3, 1fr); border-bottom: 1px solid var(--page-border); }
-.suggestion-tabs button { min-height: 48px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--page-muted); font: inherit; }
+.suggestion-tabs button { min-height: 48px; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--page-muted); font: inherit; font-size: .86rem; }
 .suggestion-tabs button.active { border-bottom-color: var(--ion-color-primary); color: var(--page-text); }
 .suggestion-tabs button:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: -2px; }
 .intro { padding: 20px 18px 14px; border-bottom: 1px solid var(--page-border); }
@@ -48,3 +48,26 @@
 .page-footer ion-button { width: 48px; height: 48px; margin: 0; --color: var(--page-muted); font-size: 1.45rem; }
 .page-footer .active-tab, .page-footer .compose-button { --color: var(--page-text); }
 .page-footer .compose-button { font-size: 1.9rem; }
+
+@media (max-width: 560px) {
+	.activity-switcher button { min-height: 46px; font-size: .78rem; }
+	.suggestion-tabs button { min-height: 42px; font-size: .76rem; }
+	.notification-heading h2 { font-size: .88rem; }
+	.notification-heading p { font-size: .7rem; }
+	.mark-read-button { font-size: .7rem; text-transform: none; }
+	.notification-row { padding: 12px 14px; }
+	.notification-avatar { width: 38px; height: 38px; flex-basis: 38px; font-size: 1rem; }
+	.notification-copy { font-size: .74rem; }
+	.notification-preview { font-size: .68rem; }
+	.notification-copy time { font-size: .66rem; }
+	.intro { padding: 16px 14px 10px; }
+	.intro h2 { font-size: .9rem; }
+	.intro p { font-size: .7rem; }
+	.suggestion-row { gap: 9px; padding: 13px 14px; }
+	.suggestion-row ion-avatar { width: 42px; height: 42px; }
+	.suggestion-copy strong, .suggestion-post strong { font-size: .76rem; }
+	.suggestion-copy span, .suggestion-copy p, .suggestion-post span { font-size: .66rem; }
+	.suggestion-copy p, .suggestion-post p { font-size: .74rem; }
+	.suggestion-row ion-button { font-size: .68rem; text-transform: none; }
+	.empty-suggestions { font-size: .74rem; }
+}

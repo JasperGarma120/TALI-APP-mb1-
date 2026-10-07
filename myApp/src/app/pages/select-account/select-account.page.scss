@@ -25,3 +25,14 @@ ion-label p { color: rgba(242,244,243,.6) !important; }
 .auth-empty-state { width: min(calc(100% - 32px), 460px); box-sizing: border-box; margin: 14px auto; padding: 28px 22px; border: 1px solid rgba(242,244,243,.13); border-radius: 20px; background: rgba(10,9,8,.88); color: var(--auth-paper); text-align: center; }
 .auth-empty-state h1 { margin: 0; color: var(--auth-paper); font-size: 1.1rem; font-weight: 600; }
 .auth-empty-state p { margin: 8px 0 0; color: rgba(242,244,243,.65); font-size: .85rem; }
+
+@media (max-width: 560px) {
+  .select-header h1, .more-heading h1 { font-size: 1.38rem; }
+  .select-header p, .more-heading p { font-size: .82rem; }
+  ion-label h2 { font-size: .92rem; }
+  ion-label p { font-size: .76rem; }
+  .account-action-menu button { font-size: .8rem; }
+  .more-link { font-size: .84rem; }
+  .auth-empty-state h1 { font-size: 1.04rem; }
+  .auth-empty-state p { font-size: .8rem; }
+}

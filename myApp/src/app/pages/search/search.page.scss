@@ -19,3 +19,12 @@ ion-searchbar { padding: 12px 16px 4px; --background: var(--page-surface); --col
 .page-footer ion-toolbar { display: flex; justify-content: space-around; min-height: 70px; padding: 4px 10px; --background: var(--page-bg); }
 .page-footer ion-button { width: 48px; height: 48px; margin: 0; --color: var(--page-muted); font-size: 1.45rem; }
 .page-footer .compose-button { --color: var(--page-text); font-size: 1.9rem; }
+
+@media (max-width: 560px) {
+  .page-header h1 { font-size: 1.08rem; }
+  ion-searchbar { font-size: .92rem; }
+  .section-block h2 { font-size: .86rem; }
+  .topic-row, .person-row { font-size: .88rem; }
+  .person-row strong { font-size: .82rem; }
+  .person-row span, .empty-state { font-size: .72rem; }
+}

@@ -1,21 +1,20 @@
 .home-content {
-  --background: var(--page-bg);
-  --color: var(--page-text);
+	--background: #fff;
+	--color: #0a0908;
   --padding-top: 0;
   --padding-bottom: 0;
 }
 
 .home-header,
 .home-footer {
-  --background: var(--page-bg);
-  --border-color: var(--page-border);
+	--background: var(--page-bg);
+	--border-color: var(--page-border);
 }
 
-.home-header ion-toolbar,
-.home-footer ion-toolbar {
-  --background: var(--page-bg);
-  --border-color: var(--page-border);
-}
+.home-header { --background: #fff; --border-color: #e5e5ea; }
+.home-header ion-toolbar { --background: #fff; --color: #0a0908; --border-color: #e5e5ea; }
+
+.home-footer ion-toolbar { --background: var(--page-bg); --border-color: var(--page-border); }
 
 .home-header ion-toolbar {
   min-height: 76px;
@@ -45,7 +44,7 @@
 }
 
 .search-button {
-  --color: var(--page-text);
+	--color: #0a0908;
   width: 40px;
   height: 40px;
   margin: 0;
@@ -55,7 +54,7 @@
 .screen-shell {
   width: 100%;
   min-height: 100%;
-  background: var(--page-bg);
+	background: #fff;
 }
 
 .home-account-row {
@@ -63,7 +62,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px 18px 14px;
-  border-bottom: 1px solid var(--page-border);
+	border-bottom: 1px solid #e5e5ea;
 }
 
 .profile-avatar,
@@ -108,13 +107,13 @@
 }
 
 .home-account-copy strong {
-  color: var(--page-text);
+	color: #0a0908;
   font-size: .9rem;
   font-weight: 700;
 }
 
 .home-account-copy span {
-  color: var(--page-muted);
+	color: #777986;
   font-size: .75rem;
 }
 
@@ -133,24 +132,24 @@ app-post-card { display: block; margin: 0 12px 12px; }
 .feed-empty > ion-icon {
   width: 32px;
   height: 32px;
-  color: var(--page-text);
+	color: #5e503f;
 }
 
 .feed-empty h3 {
   margin: 12px 0 6px;
   font-size: 1rem;
-  color: var(--page-text);
+	color: #0a0908;
 }
 
 .feed-empty p {
   margin: 0;
-  color: var(--page-muted);
+	color: #777986;
   font-size: 0.8rem;
 }
 
 .feed-empty ion-button {
   margin-top: 10px;
-  --color: var(--page-text);
+	--color: #5e503f;
 }
 
 .home-footer ion-toolbar {
@@ -175,7 +174,15 @@ app-post-card { display: block; margin: 0 12px 12px; }
 }
 
 .home-footer .compose-button {
-  --color: var(--page-text);
-  font-size: 1.8rem;
+	--color: var(--page-text);
+	font-size: 1.8rem;
+}
+
+@media (max-width: 560px) {
+	.home-account-copy strong { font-size: .8rem; font-weight: 600; }
+	.home-account-copy span { font-size: .68rem; }
+	.feed-empty h3 { font-size: .94rem; }
+	.feed-empty p { font-size: .74rem; }
+	.feed-empty ion-button { font-size: .8rem; text-transform: none; }
 }
 

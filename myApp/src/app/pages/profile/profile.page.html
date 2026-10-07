@@ -1,29 +1,33 @@
-<ion-header class="page-header ion-no-border"><ion-toolbar>
+<ion-header class="page-header profile-header ion-no-border"><ion-toolbar>
   @if (!isOwnProfile) { <ion-back-button slot="start" defaultHref="/home" text="" aria-label="Back"></ion-back-button> }
-  <h1>{{ isOwnProfile ? 'Profile' : (profileAccount?.name || 'Profile') }}</h1>
+  <h1>{{ isOwnProfile ? 'My Profile' : (profileAccount?.name || 'Profile') }}</h1>
   @if (isOwnProfile) { <ion-button fill="clear" slot="end" routerLink="/settings" aria-label="Settings"><ion-icon slot="icon-only" name="settings-outline"></ion-icon></ion-button> }
 </ion-toolbar></ion-header>
-<ion-content class="page-content" [fullscreen]="true">
+<ion-content class="page-content profile-content">
   @if (profileAccount; as profile) {
-    <section class="profile-top">
-      <ion-avatar>
-        @if (profile.profileImage) {
-          <img [src]="profile.profileImage" alt="Profile photo" />
-        } @else {
-          <ion-icon name="person-circle-outline"></ion-icon>
-        }
-      </ion-avatar>
-      <h2>{{ profile.name }}</h2>
-      <p>{{ profile.username }}</p>
-      @if (profile.bio) { <p class="profile-bio">{{ profile.bio }}</p> }
-      @if (isOwnProfile) {
-        <ion-button fill="outline" size="small" (click)="openProfileEditor()"><ion-icon slot="start" name="create-outline"></ion-icon>Edit profile</ion-button>
-      } @else {
-        <ion-button fill="outline" size="small" (click)="toggleFollowProfile()">{{ isFollowingProfile ? 'Following' : 'Follow' }}</ion-button>
-      }
-    </section>
-    <div class="stats-row"><div><strong>{{ ownPosts.length }}</strong><span>Posts</span></div><button type="button" (click)="setConnectionsView('followers')"><strong>{{ followers.length }}</strong><span>Followers</span></button><button type="button" (click)="setConnectionsView('following')"><strong>{{ following.length }}</strong><span>Following</span></button></div>
-    <nav class="profile-sections" [class.profile-sections-owner]="isOwnProfile" aria-label="Profile content">
+    <div class="profile-page-shell">
+      <section class="profile-hero">
+        <div class="profile-top">
+          <ion-avatar>
+            @if (profile.profileImage) {
+              <img [src]="profile.profileImage" alt="Profile photo" />
+            } @else {
+              <ion-icon name="person-circle-outline"></ion-icon>
+            }
+          </ion-avatar>
+          <h2>{{ profile.name }}</h2>
+          <p>{{ profile.username }}</p>
+          @if (profile.bio) { <p class="profile-bio">{{ profile.bio }}</p> }
+          @if (isOwnProfile) {
+            <ion-button fill="outline" size="small" (click)="openProfileEditor()"><ion-icon slot="start" name="create-outline"></ion-icon>Edit profile</ion-button>
+          } @else {
+            <ion-button fill="outline" size="small" (click)="toggleFollowProfile()">{{ isFollowingProfile ? 'Following' : 'Follow' }}</ion-button>
+          }
+        </div>
+        <div class="stats-row"><div><strong>{{ ownPosts.length }}</strong><span>Posts</span></div><button type="button" (click)="setConnectionsView('followers')"><strong>{{ followers.length }}</strong><span>Followers</span></button><button type="button" (click)="setConnectionsView('following')"><strong>{{ following.length }}</strong><span>Following</span></button></div>
+      </section>
+      <div class="profile-content-panel">
+      <nav class="profile-sections" [class.profile-sections-owner]="isOwnProfile" aria-label="Profile content">
       <button type="button" [class.active]="activeSection === 'posts'" [attr.aria-pressed]="activeSection === 'posts'" (click)="setProfileSection('posts')">Posts</button>
       <button type="button" [class.active]="activeSection === 'photos'" [attr.aria-pressed]="activeSection === 'photos'" (click)="setProfileSection('photos')">Photos</button>
       <button type="button" [class.active]="activeSection === 'videos'" [attr.aria-pressed]="activeSection === 'videos'" (click)="setProfileSection('videos')">Videos</button>
@@ -74,6 +78,8 @@
         <div class="profile-posts-feed">@for (post of trashedPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }</div>
       </section>
     }
+      </div>
+    </div>
   } @else {
     <div class="empty-profile"><ion-icon name="person-circle-outline"></ion-icon><p>This profile is unavailable.</p></div>
   }

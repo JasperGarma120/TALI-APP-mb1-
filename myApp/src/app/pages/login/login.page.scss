@@ -86,3 +86,10 @@
 @media (max-width: 380px) {
   .login-wrapper { width: calc(100% - 24px); min-height: 590px; padding: 24px 18px; }
 }
+
+@media (max-width: 560px) {
+	.login-brand h1 { font-size: 1.48rem; }
+	.login-brand p, .login-welcome { font-size: .84rem; }
+  .login-error { font-size: .76rem; }
+  .login-link-button { font-size: .82rem; }
+}
