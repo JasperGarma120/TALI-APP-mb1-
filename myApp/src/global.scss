@@ -1120,6 +1120,28 @@ html:not(.app-light) body button.account-choice {
   background: transparent !important;
   color: var(--page-text) !important;
 }
+html:not(.app-light) body .settings-categories {
+  gap: 8px !important;
+}
+html:not(.app-light) body .settings-categories button {
+  min-height: 48px;
+  border: 1px solid rgba(230, 237, 253, .62) !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  color: #e6edfd !important;
+  box-shadow: none;
+}
+html:not(.app-light) body .settings-categories button.active {
+  border-color: #6e92f2 !important;
+  background: rgba(46, 93, 230, .24) !important;
+  color: #ffffff !important;
+}
+html:not(.app-light) body .settings-categories button ion-icon {
+  color: #afc5f8 !important;
+}
+html:not(.app-light) body .settings-categories button.logout-category {
+  color: #ff9b9b !important;
+}
 html:not(.app-light) body .feed-tabs .feed-tab {
   border: 0 !important;
   border-bottom: 2px solid transparent !important;
