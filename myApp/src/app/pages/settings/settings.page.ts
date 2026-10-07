@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AlertController, IonButton, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonSelect, IonSelectOption, IonToggle, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { accessibilityOutline, cardOutline, chatbubblesOutline, colorPaletteOutline, documentTextOutline, helpCircleOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, serverOutline, shieldCheckmarkOutline, sunnyOutline, timeOutline } from 'ionicons/icons';
+import { accessibilityOutline, arrowBackOutline, cardOutline, chatbubblesOutline, colorPaletteOutline, documentTextOutline, helpCircleOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, serverOutline, shieldCheckmarkOutline, sunnyOutline, timeOutline } from 'ionicons/icons';
 import { AccountService } from '../../services/account.service';
 import { PostService } from '../../services/post.service';
 import { MessageService } from '../../services/message.service';
@@ -44,6 +44,7 @@ export class SettingsPage {
     { id: 'about', label: 'About', icon: 'information-circle-outline' },
   ] as const;
   activeSection: SettingsSection = 'account';
+  mobileDetailOpen = false;
   darkMode = true;
   privateAccount = false;
   activityStatus = true;
@@ -64,11 +65,20 @@ export class SettingsPage {
   passwordMessage = '';
 
   constructor() {
-    addIcons({ accessibilityOutline, cardOutline, chatbubblesOutline, colorPaletteOutline, documentTextOutline, helpCircleOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, serverOutline, shieldCheckmarkOutline, sunnyOutline, timeOutline });
+    addIcons({ accessibilityOutline, arrowBackOutline, cardOutline, chatbubblesOutline, colorPaletteOutline, documentTextOutline, helpCircleOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, serverOutline, shieldCheckmarkOutline, sunnyOutline, timeOutline });
     this.readPreferences();
     this.privateAccount = this.accountService.selectedAccount()?.privacy === 'private' || this.privateAccount;
     this.language = this.readLanguage();
     this.applyPreferences();
+  }
+
+  openSection(section: SettingsSection) {
+    this.activeSection = section;
+    this.mobileDetailOpen = true;
+  }
+
+  backToCategories() {
+    this.mobileDetailOpen = false;
   }
 
   savePreferences() {

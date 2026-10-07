@@ -50,7 +50,8 @@ export class HomePage implements AfterViewInit {
   }
 
   profileImageFor(authorId: number | null) {
-    return this.accountService.accounts().find((account) => account.id === authorId)?.profileImage;
+    const author = this.accountService.accounts().find((account) => account.id === authorId);
+    return author && this.accountService.canViewProfileImage(author, this.accountService.selectedAccount()) ? author.profileImage : undefined;
   }
 
   constructor() {

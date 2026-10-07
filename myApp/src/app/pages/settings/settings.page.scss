@@ -28,6 +28,7 @@
 .settings-categories button:focus-visible { outline: 2px solid var(--ion-color-primary); outline-offset: 2px; }
 .settings-categories .logout-category { margin-top: auto; color: #ff9b9b; }
 .settings-detail { min-width: 0; padding: 24px clamp(18px, 4vw, 42px); color: var(--page-text); }
+.settings-back-button { display: none; }
 .settings-detail h2 { margin: 0 0 18px; font-size: 1rem; }
 .settings-detail h3 { margin: 22px 0 8px; color: var(--page-muted); font-size: .82rem; }
 .settings-detail ion-item { --background: transparent; --color: var(--page-text); --padding-start: 0; --inner-padding-end: 0; }
@@ -46,7 +47,10 @@
 	.settings-categories button { width: 100%; flex: 0 0 auto; min-height: 44px; }
 	.settings-categories button span { white-space: normal; }
 	.settings-categories .logout-category { margin-top: 0; }
-	.settings-detail { padding: 20px 18px; }
+	.settings-detail { display: none; padding: 12px 18px 20px; }
+	.settings-layout.mobile-detail-open .settings-categories { display: none; }
+	.settings-layout.mobile-detail-open .settings-detail { display: block; }
+	.settings-back-button { display: inline-flex; margin: 0 0 12px -12px; --color: var(--ion-color-primary); }
 }
 
 @media (max-width: 560px) {

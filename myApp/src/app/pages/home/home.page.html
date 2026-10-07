@@ -15,7 +15,7 @@
     @if (accountService.selectedAccount(); as account) {
       <section class="home-account-row" aria-label="Current account">
         <ion-avatar class="profile-avatar">
-          @if (account.profileImage; as profileImage) {
+          @if (profileImageFor(account.id); as profileImage) {
             <img [src]="profileImage" alt="" />
           } @else {
             <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>

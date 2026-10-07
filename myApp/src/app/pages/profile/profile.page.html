@@ -9,7 +9,7 @@
       <section class="profile-hero">
         <div class="profile-top">
           <ion-avatar>
-            @if (profile.profileImage) {
+            @if (canViewProfileImage(profile)) {
               <img [src]="profile.profileImage" alt="Profile photo" />
             } @else {
               <ion-icon name="person-circle-outline"></ion-icon>
@@ -100,6 +100,14 @@
         <ion-button fill="outline" size="small" (click)="profilePhotoInput.click()">Upload photo</ion-button>
         @if (editProfileImage) { <ion-button fill="clear" size="small" (click)="removeProfileImage()">Remove photo</ion-button> }
       </div>
+      <section class="profile-privacy-settings profile-photo-visibility">
+        <h3>Profile photo visibility</h3>
+        <label>Who can see your photo
+          <select [(ngModel)]="editProfileImageVisibility" aria-label="Profile photo visibility">
+            <option value="public">Public</option><option value="friends">Friends</option><option value="only-me">Only me</option>
+          </select>
+        </label>
+      </section>
       @if (profileImageError) { <p class="profile-photo-error" role="alert">{{ profileImageError }}</p> }
       <ion-input label="Name" labelPlacement="stacked" [(ngModel)]="editName" maxlength="80"></ion-input>
       <ion-input label="Username" labelPlacement="stacked" [(ngModel)]="editUsername" maxlength="30"></ion-input>
@@ -119,6 +127,23 @@
         </label>
       </section>
       <div class="edit-actions"><ion-button fill="clear" (click)="editingProfile = false">Cancel</ion-button><ion-button [disabled]="!editName.trim() || !editUsername.trim()" (click)="saveProfile()">Save</ion-button></div>
+    </section>
+  </div>
+}
+@if (croppingProfileImage) {
+  <div class="edit-backdrop crop-backdrop" role="presentation">
+    <section class="edit-dialog crop-dialog" role="dialog" aria-modal="true" aria-labelledby="crop-photo-title">
+      <h2 id="crop-photo-title">Adjust profile photo</h2>
+      <div class="profile-photo-crop-preview"><img [src]="cropSource" [style.transform]="cropImageTransform" alt="Photo crop preview" /></div>
+      <label class="crop-control">Zoom <input type="range" min="1" max="3" step="0.05" [(ngModel)]="cropZoom" /></label>
+      <label class="crop-control">Horizontal position <input type="range" min="-100" max="100" step="1" [(ngModel)]="cropX" /></label>
+      <label class="crop-control">Vertical position <input type="range" min="-100" max="100" step="1" [(ngModel)]="cropY" /></label>
+      <label class="crop-control">Who can see your photo
+        <select [(ngModel)]="editProfileImageVisibility" aria-label="Profile photo visibility">
+          <option value="public">Public</option><option value="friends">Friends</option><option value="only-me">Only me</option>
+        </select>
+      </label>
+      <div class="edit-actions"><ion-button fill="clear" (click)="croppingProfileImage = false">Cancel</ion-button><ion-button (click)="finishProfileImageCrop()">Finish</ion-button></div>
     </section>
   </div>
 }
