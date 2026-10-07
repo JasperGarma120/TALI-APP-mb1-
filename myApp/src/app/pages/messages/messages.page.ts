@@ -240,11 +240,17 @@ export class MessagesPage {
 
   conversationProfileImage(conversation: Conversation) {
     const otherId = conversation.memberIds.find((id) => id !== this.selectedAccount()?.id);
-    return this.accounts().find((account) => account.id === otherId)?.profileImage ?? null;
+    const account = this.accounts().find((item) => item.id === otherId);
+    return account && this.accountService.canViewProfileImage(account, this.selectedAccount()) ? account.profileImage ?? null : null;
   }
 
   messageAuthor(message: ChatMessage) {
     return this.accounts().find((account) => account.id === message.senderId);
+  }
+
+  messageAuthorImage(message: ChatMessage) {
+    const author = this.messageAuthor(message);
+    return author && this.accountService.canViewProfileImage(author, this.selectedAccount()) ? author.profileImage : undefined;
   }
 
   messageAuthorName(message: ChatMessage) {
