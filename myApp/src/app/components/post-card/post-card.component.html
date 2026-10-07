@@ -11,7 +11,7 @@
       <div class="post-user-details">
         <div class="identity-row">
           <strong>{{ post.authorName }}</strong>
-          <span class="post-time">{{ post.createdAt | date:'short' }}</span>
+          <span class="post-time" [attr.title]="post.createdAt | date:'medium'">{{ timeAgo }}</span>
         </div>
         <span class="post-handle">{{ post.authorUsername }}</span>
       </div>
