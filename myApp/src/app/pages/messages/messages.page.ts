@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonSearchbar, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import 'emoji-picker-element';
-import { addCircle, arrowRedoOutline, arrowUndoOutline, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOffOutline, notificationsOutline, paperPlaneOutline, pauseOutline, peopleOutline, personCircleOutline, pinOutline, playOutline, searchOutline, stopCircleOutline, trashOutline, videocamOutline } from 'ionicons/icons';
+import { addCircle, arrowRedoOutline, arrowUndoOutline, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, documentOutline, ellipsisHorizontal, filterOutline, happyOutline, heartOutline, homeOutline, imageOutline, micOutline, notificationsOffOutline, notificationsOutline, paperPlaneOutline, pauseOutline, peopleOutline, personCircleOutline, pinOutline, playOutline, searchOutline, stopCircleOutline, trashOutline, videocamOutline } from 'ionicons/icons';
 import { Account, AccountService } from '../../services/account.service';
 import { ChatAttachment, ChatMessage, Conversation, MessageService, SharedItemsType } from '../../services/message.service';
 import { NotificationService } from '../../services/notification.service';
@@ -25,7 +25,12 @@ export class MessagesPage {
   readonly messageService = inject(MessageService);
   readonly notificationService = inject(NotificationService);
   readonly selectedAccount = this.accountService.selectedAccount;
-  readonly accounts = this.accountService.accounts;
+  readonly accounts = computed(() => {
+    const accounts = this.accountService.accounts();
+    const selected = this.selectedAccount();
+    if (!selected || accounts.some((account) => account.id !== selected.id)) return accounts;
+    return [...accounts, ...sampleChatAccounts];
+  });
   readonly conversations = this.messageService.conversations;
   get unreadNotifications() {
     const accountId = this.selectedAccount()?.id;
@@ -50,6 +55,7 @@ export class MessagesPage {
   callNotice = '';
   settingsNotice = '';
   groupName = '';
+  groupMemberSearch = '';
   selectedMemberIds: number[] = [];
   messageDraft = '';
   isComposerExpanded = false;
@@ -183,7 +189,7 @@ export class MessagesPage {
   }
 
   constructor() {
-    addIcons({ addCircle, arrowRedoOutline, arrowUndoOutline, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOffOutline, notificationsOutline, paperPlaneOutline, pauseOutline, peopleOutline, personCircleOutline, pinOutline, playOutline, searchOutline, stopCircleOutline, trashOutline, videocamOutline });
+    addIcons({ addCircle, arrowRedoOutline, arrowUndoOutline, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, documentOutline, ellipsisHorizontal, filterOutline, happyOutline, heartOutline, homeOutline, imageOutline, micOutline, notificationsOffOutline, notificationsOutline, paperPlaneOutline, pauseOutline, peopleOutline, personCircleOutline, pinOutline, playOutline, searchOutline, stopCircleOutline, trashOutline, videocamOutline });
     const saved = this.viewState.read<Partial<{ activeTab: 'inbox' | 'requests'; activeFilter: string; searchQuery: string; activeConversationId: string | null; messageDraft: string; conversationSearch: string; showChatSettings: boolean; showSharedItems: boolean; sharedItemsType: SharedItemsType; showFilters: boolean; composeMode: 'menu' | 'direct' | 'group' | null; groupName: string; selectedMemberIds: number[] }>>(this.viewStateKey, {});
     if (saved.activeTab) this.activeTab = saved.activeTab;
     if (saved.activeFilter && this.filters.includes(saved.activeFilter)) this.activeFilter = saved.activeFilter;
@@ -225,6 +231,7 @@ export class MessagesPage {
     this.composeMode = null;
     this.selectedMemberIds = [];
     this.groupName = '';
+    this.groupMemberSearch = '';
     this.saveViewState();
   }
 
@@ -242,6 +249,15 @@ export class MessagesPage {
       ? this.selectedMemberIds.filter((id) => id !== accountId)
       : [...this.selectedMemberIds, accountId];
     this.saveViewState();
+  }
+
+  get groupMemberOptions() {
+    const query = this.groupMemberSearch.trim().toLowerCase();
+    return this.otherAccounts().filter((account) => !query || account.name.toLowerCase().includes(query) || account.username.toLowerCase().includes(query));
+  }
+
+  accountById(accountId: number) {
+    return this.accounts().find((account) => account.id === accountId) ?? null;
   }
 
   setComposeMode(mode: 'menu' | 'direct' | 'group') {
@@ -262,11 +278,12 @@ export class MessagesPage {
   createGroup() {
     const account = this.selectedAccount();
     const validMembers = this.selectedMemberIds.filter((id) => this.accounts().some((item) => item.id === id));
-    if (!account || !this.groupName.trim() || validMembers.length < 4) return;
+    if (!account || !this.groupName.trim() || validMembers.length < 1) return;
     const conversation = this.messageService.createGroupConversation([account.id, ...validMembers], this.groupName);
     if (!conversation) return;
     this.closeCompose();
     this.activeConversationId = conversation.id;
+    this.activeTab = 'inbox';
     this.saveViewState();
   }
 
@@ -329,7 +346,7 @@ export class MessagesPage {
     if (latestMessage.body) return latestMessage.body;
     const attachment = latestMessage.attachments?.[0];
     if (!attachment) return 'Message';
-    return attachment.kind === 'voice' ? 'Voice message' : attachment.kind === 'gif' ? 'GIF' : attachment.kind === 'video' ? 'Video' : 'Photo';
+    return attachment.kind === 'voice' ? 'Voice message' : attachment.kind === 'gif' ? 'GIF' : attachment.kind === 'video' ? 'Video' : attachment.kind === 'file' ? 'File' : 'Photo';
   }
 
   openConversation(conversationId: string) {
@@ -339,7 +356,6 @@ export class MessagesPage {
     this.reactionPickerMessageId = null;
     this.saveViewState();
     const accountId = this.selectedAccount()?.id;
-    this.messageService.purgeExpiredMessages(conversationId);
     if (accountId !== undefined) this.messageService.markRead(conversationId, accountId);
   }
 
@@ -431,6 +447,23 @@ export class MessagesPage {
     return links;
   }
 
+  sharedAttachments(type: SharedItemsType) {
+    const allowedKinds: ChatAttachment['kind'][] = type === 'photos'
+      ? ['photo', 'video', 'gif']
+      : type === 'voice messages' ? ['voice'] : ['file'];
+    return (this.activeConversation?.messages ?? []).flatMap((message) =>
+      (message.attachments ?? [])
+        .filter((attachment) => allowedKinds.includes(attachment.kind))
+        .map((attachment) => ({ messageId: message.id, attachment })),
+    );
+  }
+
+  openSearchResult(messageId: string) {
+    this.showChatSettings = false;
+    this.saveViewState();
+    requestAnimationFrame(() => document.getElementById(`message-${messageId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+  }
+
   isPreferenceEnabled(preference: 'pinnedFor' | 'archivedFor' | 'unreadFor' | 'mutedFor' | 'restrictedFor' | 'blockedFor') {
     const accountId = this.selectedAccount()?.id;
     return accountId !== undefined && (this.activeChatSettings?.[preference].includes(accountId) ?? false);
@@ -459,7 +492,7 @@ export class MessagesPage {
   get typingNames() {
     const conversation = this.activeConversation;
     const currentId = this.selectedAccount()?.id;
-    if (!conversation || currentId === undefined || !this.activeChatSettings?.typingIndicator) return [];
+    if (!conversation || currentId === undefined) return [];
     return this.messageService.typingAccounts(conversation.id)
       .filter((id) => id !== currentId && conversation.memberIds.includes(id))
       .map((id) => this.accounts().find((account) => account.id === id)?.name ?? 'Someone');
@@ -575,7 +608,7 @@ export class MessagesPage {
     this.callNotice = 'Video calls are not connected in this local app yet.';
   }
 
-  attachSelectedFile(event: Event, kind: 'photo' | 'video' | 'gif') {
+  attachSelectedFile(event: Event, kind: 'photo' | 'video' | 'gif' | 'file') {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
@@ -721,3 +754,9 @@ export class MessagesPage {
     this.pendingAttachments = [];
   }
 }
+
+const sampleChatAccounts: Account[] = [
+  { id: -1001, name: 'Mika Santos', username: '@mika.santos', contact: 'mika@example.invalid', password: '', bio: 'Sample account', followersIds: [], followingIds: [] },
+  { id: -1002, name: 'Alex Rivera', username: '@alex.rivera', contact: 'alex@example.invalid', password: '', bio: 'Sample account', followersIds: [], followingIds: [] },
+  { id: -1003, name: 'Sam Lee', username: '@sam.lee', contact: 'sam@example.invalid', password: '', bio: 'Sample account', followersIds: [], followingIds: [] },
+];
