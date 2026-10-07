@@ -168,6 +168,8 @@ export class PostService {
     const areFriends = (first: Account, second: Account) =>
       first.followingIds.includes(second.id) && second.followingIds.includes(first.id);
 
+    if (author?.privacy === 'private' && (!viewer || !areFriends(author, viewer))) return false;
+
     switch (post.audience) {
       case 'public':
         return true;

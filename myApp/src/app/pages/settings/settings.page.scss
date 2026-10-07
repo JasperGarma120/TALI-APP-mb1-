@@ -64,3 +64,10 @@
 	.detail-copy, .connection-row { font-size: .8rem; }
 	.activity-post p { font-size: .82rem; }
 }
+.account-safety-list { margin:18px 0;padding:16px;border:1px solid var(--page-border);border-radius:16px;background:var(--page-surface); }
+.account-safety-list h3 { margin:0 0 8px; }
+.account-safety-list .detail-copy { margin:6px 0 12px; }
+.safety-list-row { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+.safety-list-row>div { display:grid;gap:3px;min-width:0; }
+.safety-list-row span { color:var(--page-muted);font-size:.82rem; }
+.safety-list-row ion-button { flex:0 0 auto; }

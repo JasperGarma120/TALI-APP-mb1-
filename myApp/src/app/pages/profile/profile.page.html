@@ -104,6 +104,20 @@
       <ion-input label="Name" labelPlacement="stacked" [(ngModel)]="editName" maxlength="80"></ion-input>
       <ion-input label="Username" labelPlacement="stacked" [(ngModel)]="editUsername" maxlength="30"></ion-input>
       <ion-textarea label="Bio" labelPlacement="stacked" [(ngModel)]="editBio" maxlength="160" [autoGrow]="true"></ion-textarea>
+      <section class="profile-privacy-settings">
+        <h3>Privacy</h3>
+        <label>Account type
+          <select [(ngModel)]="editPrivacy" aria-label="Account privacy">
+            <option value="public">Public</option><option value="private">Private</option>
+          </select>
+        </label>
+        <p>{{ editPrivacy === 'public' ? 'Anyone can see your public posts, photos, videos, likes, comments, shares, and reposts.' : 'Only people you follow back can see your posts, photos, and videos.' }}</p>
+        <label>Who can see your reposts
+          <select [(ngModel)]="editRepostVisibility" aria-label="Repost visibility">
+            <option value="public">Public</option><option value="friends">Friends only</option><option value="only-me">Only me</option>
+          </select>
+        </label>
+      </section>
       <div class="edit-actions"><ion-button fill="clear" (click)="editingProfile = false">Cancel</ion-button><ion-button [disabled]="!editName.trim() || !editUsername.trim()" (click)="saveProfile()">Save</ion-button></div>
     </section>
   </div>

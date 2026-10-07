@@ -39,8 +39,9 @@
       } @empty { <p class="empty-suggestions">No posts to suggest yet.</p> }
     }
     @if (selectedCategory === 'groups') {
-      <section class="intro"><h2>Community groups</h2></section>
-      <p class="empty-suggestions">No community groups are available yet.</p>
+      <section class="intro groups-intro"><div><h2>Community groups</h2><p>Find people around shared interests.</p></div><ion-button routerLink="/groups"><ion-icon slot="start" name="add-circle"></ion-icon>Create group</ion-button></section>
+      @for (group of groups; track group.id) { <article class="suggestion-row community-group-card"><div class="suggestion-copy"><strong>{{ group.name }}</strong><span>{{ group.description || 'A new community group.' }}</span></div></article> }
+      @if (!groups.length) { <p class="empty-suggestions">No community groups are available yet. Create one to get started.</p> }
     }
   }
 

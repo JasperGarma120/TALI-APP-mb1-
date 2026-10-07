@@ -10,6 +10,7 @@ export interface ChatMessage {
   createdAt: Date;
   reactions?: Record<string, number[]>;
   readBy?: number[];
+  seenBy?: number[];
   attachments?: ChatAttachment[];
 }
 
@@ -51,6 +52,7 @@ export interface Conversation {
 @Injectable({ providedIn: 'root' })
 export class MessageService {
   readonly conversations = signal<Conversation[]>([]);
+  private readonly typingByConversation = signal<Map<string, number[]>>(new Map());
   private nextId = 0;
   private changedBeforeHydration = false;
 
@@ -74,7 +76,23 @@ export class MessageService {
   }
 
   createGroupConversation(accountIds: number[], groupName: string) {
-    return this.createConversation([...new Set(accountIds)], groupName.trim());
+    const members = [...new Set(accountIds)];
+    if (members.length < 5 || !groupName.trim()) return null;
+    return this.createConversation(members, groupName.trim());
+  }
+
+  setTyping(conversationId: string, accountId: number, typing: boolean) {
+    this.typingByConversation.update((current) => {
+      const next = new Map(current);
+      const users = new Set(next.get(conversationId) ?? []);
+      if (typing) users.add(accountId); else users.delete(accountId);
+      if (users.size) next.set(conversationId, [...users]); else next.delete(conversationId);
+      return next;
+    });
+  }
+
+  typingAccounts(conversationId: string) {
+    return this.typingByConversation().get(conversationId) ?? [];
   }
 
   sendMessage(conversationId: string, senderId: number, body: string, attachments: ChatAttachment[] = []) {
@@ -88,6 +106,7 @@ export class MessageService {
       attachments,
       createdAt: new Date(),
       readBy: [senderId],
+      seenBy: [senderId],
     };
     this.conversations.update((conversations) => conversations.map((conversation) => {
       if (conversation.id !== conversationId) return conversation;
@@ -114,9 +133,18 @@ export class MessageService {
       const settings = normalizeChatSettings(conversation.settings);
       const unreadFor = settings.unreadFor.filter((id) => id !== accountId);
       const messages = conversation.messages.map((message) => {
-        if (message.senderId === accountId || message.readBy?.includes(accountId)) return message;
+        if (message.senderId === accountId) return message;
+        const readBy = message.readBy ?? [];
+        const seenBy = message.seenBy ?? [];
+        const needsRead = !readBy.includes(accountId);
+        const needsReceipt = settings.readReceipts && !seenBy.includes(accountId);
+        if (!needsRead && !needsReceipt) return message;
         changed = true;
-        return { ...message, readBy: [...(message.readBy ?? []), accountId] };
+        return {
+          ...message,
+          readBy: needsRead ? [...readBy, accountId] : readBy,
+          seenBy: needsReceipt ? [...seenBy, accountId] : seenBy,
+        };
       });
       if (unreadFor.length !== settings.unreadFor.length) changed = true;
       return { ...conversation, settings: { ...settings, unreadFor }, messages };
@@ -145,6 +173,11 @@ export class MessageService {
     this.persistConversations();
   }
 
+  deleteConversation(conversationId: string) {
+    this.conversations.update((items) => items.filter((item) => item.id !== conversationId));
+    this.persistConversations();
+  }
+
   toggleAccountPreference(
     conversationId: string,
     preference: 'pinnedFor' | 'archivedFor' | 'unreadFor' | 'mutedFor' | 'restrictedFor' | 'blockedFor' | 'reportedFor',
@@ -167,11 +200,11 @@ export class MessageService {
         ...conversation,
         messages: conversation.messages.map((message) => {
           if (message.id !== messageId) return message;
-          const reactions = { ...(message.reactions ?? {}) };
-          const accounts = reactions[emoji] ?? [];
-          reactions[emoji] = accounts.includes(accountId)
-            ? accounts.filter((id) => id !== accountId)
-            : [...accounts, accountId];
+          const reactions = Object.fromEntries(Object.entries(message.reactions ?? {}).map(([key, users]) => [
+            key, users.filter((id) => id !== accountId),
+          ])) as Record<string, number[]>;
+          const hadThisReaction = (message.reactions?.[emoji] ?? []).includes(accountId);
+          if (!hadThisReaction) reactions[emoji] = [...(reactions[emoji] ?? []), accountId];
           if (!reactions[emoji].length) delete reactions[emoji];
           return { ...message, reactions };
         }),
@@ -239,8 +272,20 @@ function restoreConversationDates(conversation: Conversation): Conversation {
     settings,
     messages: conversation.messages
       .filter((message) => expiry === null || Date.now() - new Date(message.createdAt).getTime() <= expiry * 1000)
-      .map((message) => ({ ...message, createdAt: new Date(message.createdAt), reactions: message.reactions ?? {}, readBy: message.readBy ?? [] })),
+      .map((message) => ({ ...message, createdAt: new Date(message.createdAt), reactions: normalizeReactions(message.reactions ?? {}), readBy: message.readBy ?? [] })),
   };
+}
+
+function normalizeReactions(reactions: Record<string, number[]>) {
+  const seen = new Set<number>();
+  return Object.fromEntries(Object.entries(reactions).map(([emoji, accountIds]) => {
+    const unique = accountIds.filter((id) => {
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+    return [emoji, unique];
+  }).filter(([, accountIds]) => accountIds.length));
 }
 
 export function normalizeChatSettings(settings?: Partial<ChatSettings>): ChatSettings {

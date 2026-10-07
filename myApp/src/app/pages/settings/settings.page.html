@@ -25,7 +25,17 @@
       }
       @if (activeSection === 'privacy') {
         <h2>Privacy</h2>
-        <ion-item lines="none"><ion-label><strong>Private account</strong><p>Save your account visibility preference.</p></ion-label><ion-toggle slot="end" [(ngModel)]="privateAccount" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+        <ion-item lines="none"><ion-label><strong>Private account</strong><p>Only people you follow back can see your posts, photos, and videos.</p></ion-label><ion-toggle slot="end" [(ngModel)]="privateAccount" (ionChange)="savePreferences()"></ion-toggle></ion-item>
+        <section class="account-safety-list"><h3>Restricted accounts</h3><p class="detail-copy">Messages from restricted accounts are limited. They are not notified when you restrict them.</p>
+          @for (item of restrictedList; track item.conversationId) {
+            <div class="connection-row safety-list-row"><div><strong>{{ item.name }}</strong><span>{{ item.username }}</span></div><ion-button fill="clear" size="small" (click)="toggleSafetyList(item.conversationId, 'restrictedFor')">Unrestrict</ion-button></div>
+          } @empty { <p class="detail-copy">No restricted accounts.</p> }
+        </section>
+        <section class="account-safety-list"><h3>Blocked accounts</h3>
+          @for (item of blockedList; track item.conversationId) {
+            <div class="connection-row safety-list-row"><div><strong>{{ item.name }}</strong><span>{{ item.username }}</span></div><ion-button fill="clear" size="small" (click)="toggleSafetyList(item.conversationId, 'blockedFor')">Unblock</ion-button></div>
+          } @empty { <p class="detail-copy">No blocked accounts.</p> }
+        </section>
         <ion-item lines="none"><ion-label><strong>Activity status</strong><p>Save whether your active status is shown.</p></ion-label><ion-toggle slot="end" [(ngModel)]="activityStatus" (ionChange)="savePreferences()"></ion-toggle></ion-item>
       }
       @if (activeSection === 'security') {

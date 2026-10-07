@@ -41,6 +41,7 @@ export const routes: Routes = [
     path: 'activity',
     loadComponent: () => import('./pages/suggestions/suggestions.page').then((m) => m.SuggestionsPage),
   },
+  { path: 'groups', loadComponent: () => import('./pages/groups/groups.page').then((m) => m.GroupsPage) },
   { path: 'suggestions', redirectTo: 'activity', pathMatch: 'full' },
   {
     path: 'profile/:accountId',

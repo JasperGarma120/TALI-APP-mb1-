@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonSearchbar, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import 'emoji-picker-element';
-import { addCircle, addOutline, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOutline, paperPlaneOutline, personCircleOutline, pinOutline, searchOutline, stopCircleOutline, videocamOutline } from 'ionicons/icons';
+import { addCircle, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOffOutline, notificationsOutline, paperPlaneOutline, personCircleOutline, pinOutline, searchOutline, stopCircleOutline, videocamOutline } from 'ionicons/icons';
 import { Account, AccountService } from '../../services/account.service';
 import { ChatAttachment, ChatMessage, Conversation, MessageService, SharedItemsType } from '../../services/message.service';
 import { NotificationService } from '../../services/notification.service';
@@ -56,8 +56,11 @@ export class MessagesPage {
   pendingAttachments: ChatAttachment[] = [];
   recordingVoice = false;
   reactionPickerMessageId: string | null = null;
+  showComposerEmojiPicker = false;
+  openConversationMenuId: string | null = null;
+  private reactionPressTimer: ReturnType<typeof setTimeout> | null = null;
   private voiceRecorder: MediaRecorder | null = null;
-  readonly filters = ['All', 'Unread', 'Unanswered', 'Verified', 'Archived'];
+  readonly filters = ['All', 'Unread', 'Unanswered', 'Verified', 'Archived', 'Restricted', 'Blocked'];
 
   get visibleConversations() {
     const accountId = this.selectedAccount()?.id;
@@ -67,6 +70,8 @@ export class MessagesPage {
       .filter((conversation) => {
         if (accountId === undefined) return false;
         const settings = this.messageService.settingsFor(conversation.id);
+        if (this.activeFilter === 'Restricted') return settings.restrictedFor.includes(accountId);
+        if (this.activeFilter === 'Blocked') return settings.blockedFor.includes(accountId);
         const isRequest = this.isConversationRequest(conversation, accountId);
         if ((this.activeTab === 'requests') !== isRequest) return false;
         if (this.activeFilter === 'Archived') return settings.archivedFor.includes(accountId);
@@ -138,7 +143,7 @@ export class MessagesPage {
   }
 
   constructor() {
-    addIcons({ addCircle, addOutline, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOutline, paperPlaneOutline, personCircleOutline, pinOutline, searchOutline, stopCircleOutline, videocamOutline });
+    addIcons({ addCircle, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOffOutline, notificationsOutline, paperPlaneOutline, personCircleOutline, pinOutline, searchOutline, stopCircleOutline, videocamOutline });
     const saved = this.viewState.read<Partial<{ activeTab: 'inbox' | 'requests'; activeFilter: string; searchQuery: string; activeConversationId: string | null; messageDraft: string; conversationSearch: string; showChatSettings: boolean; showSharedItems: boolean; sharedItemsType: SharedItemsType; showFilters: boolean; composeMode: 'menu' | 'direct' | 'group' | null; groupName: string; selectedMemberIds: number[] }>>(this.viewStateKey, {});
     if (saved.activeTab) this.activeTab = saved.activeTab;
     if (saved.activeFilter && this.filters.includes(saved.activeFilter)) this.activeFilter = saved.activeFilter;
@@ -217,8 +222,9 @@ export class MessagesPage {
   createGroup() {
     const account = this.selectedAccount();
     const validMembers = this.selectedMemberIds.filter((id) => this.accounts().some((item) => item.id === id));
-    if (!account || !this.groupName.trim() || validMembers.length === 0) return;
+    if (!account || !this.groupName.trim() || validMembers.length < 4) return;
     const conversation = this.messageService.createGroupConversation([account.id, ...validMembers], this.groupName);
+    if (!conversation) return;
     this.closeCompose();
     this.activeConversationId = conversation.id;
     this.saveViewState();
@@ -247,7 +253,7 @@ export class MessagesPage {
 
   messageWasReadByOther(message: ChatMessage) {
     const accountId = this.selectedAccount()?.id;
-    return accountId !== undefined && (message.readBy ?? []).some((readerId) => readerId !== accountId);
+    return accountId !== undefined && (message.seenBy ?? message.readBy ?? []).some((readerId) => readerId !== accountId);
   }
 
   conversationIsUnread(conversation: Conversation) {
@@ -273,6 +279,7 @@ export class MessagesPage {
   }
 
   openConversation(conversationId: string) {
+    this.openConversationMenuId = null;
     this.activeConversationId = conversationId;
     this.conversationSearch = '';
     this.reactionPickerMessageId = null;
@@ -282,7 +289,35 @@ export class MessagesPage {
     if (accountId !== undefined) this.messageService.markRead(conversationId, accountId);
   }
 
+  toggleConversationMenu(id: string, event: Event) {
+    event.stopPropagation();
+    this.openConversationMenuId = this.openConversationMenuId === id ? null : id;
+  }
+
+  conversationAction(conversation: Conversation, action: 'unreadFor' | 'pinnedFor' | 'mutedFor' | 'archivedFor' | 'restrictedFor' | 'blockedFor' | 'delete') {
+    const accountId = this.selectedAccount()?.id;
+    if (accountId === undefined) return;
+    if (action === 'delete') {
+      this.messageService.deleteConversation(conversation.id);
+    } else if (action === 'unreadFor' && this.unreadMessageCount(conversation) > 0) {
+      this.messageService.markRead(conversation.id, accountId);
+      const settings = this.messageService.settingsFor(conversation.id);
+      if (settings.unreadFor.includes(accountId)) this.messageService.toggleAccountPreference(conversation.id, 'unreadFor', accountId);
+    } else {
+      this.messageService.toggleAccountPreference(conversation.id, action, accountId);
+    }
+    this.openConversationMenuId = null;
+  }
+
+  otherIsMuted(conversation: Conversation) {
+    const otherId = conversation.memberIds.find((id) => id !== this.selectedAccount()?.id);
+    return otherId !== undefined && this.messageService.settingsFor(conversation.id).mutedFor.includes(otherId);
+  }
+
+  unblockActiveChat() { this.toggleChatPreference('blockedFor'); }
+
   closeConversation() {
+    this.clearTyping();
     this.activeConversationId = null;
     this.messageDraft = '';
     this.showChatSettings = false;
@@ -354,9 +389,52 @@ export class MessagesPage {
     this.reactionPickerMessageId = null;
   }
 
+  startReactionPress(message: ChatMessage) {
+    this.clearReactionPress();
+    this.reactionPressTimer = setTimeout(() => {
+      this.reactionPickerMessageId = message.id;
+      this.reactionPressTimer = null;
+    }, 450);
+  }
+
+  clearReactionPress() {
+    if (this.reactionPressTimer !== null) clearTimeout(this.reactionPressTimer);
+    this.reactionPressTimer = null;
+  }
+
+  get typingNames() {
+    const conversation = this.activeConversation;
+    const currentId = this.selectedAccount()?.id;
+    if (!conversation || currentId === undefined || !this.activeChatSettings?.typingIndicator) return [];
+    return this.messageService.typingAccounts(conversation.id)
+      .filter((id) => id !== currentId && conversation.memberIds.includes(id))
+      .map((id) => this.accounts().find((account) => account.id === id)?.name ?? 'Someone');
+  }
+
+  updateDraftTyping(value: string) {
+    this.messageDraft = value;
+    const accountId = this.selectedAccount()?.id;
+    const conversation = this.activeConversation;
+    if (accountId !== undefined && conversation) this.messageService.setTyping(conversation.id, accountId, !!value.trim());
+    this.saveViewState();
+  }
+
+  clearTyping() {
+    const accountId = this.selectedAccount()?.id;
+    const conversation = this.activeConversation;
+    if (accountId !== undefined && conversation) this.messageService.setTyping(conversation.id, accountId, false);
+  }
+
   onEmojiSelected(event: Event, message: ChatMessage) {
     const emoji = (event as CustomEvent<{ unicode: string }>).detail?.unicode;
     if (emoji) this.chooseMessageReaction(message, emoji);
+  }
+
+  onComposerEmojiSelected(event: Event) {
+    const emoji = (event as CustomEvent<{ unicode: string }>).detail?.unicode;
+    if (emoji) this.messageDraft += emoji;
+    this.showComposerEmojiPicker = false;
+    this.saveViewState();
   }
   messageReactionList(message: ChatMessage) {
     return Object.entries(message.reactions ?? {})
@@ -434,6 +512,7 @@ export class MessagesPage {
     const conversation = this.activeConversation;
     if (!account || !conversation || (!this.messageDraft.trim() && !this.pendingAttachments.length) || this.isPreferenceEnabled('blockedFor')) return;
     this.messageService.sendMessage(conversation.id, account.id, this.messageDraft, this.pendingAttachments);
+    this.clearTyping();
     this.messageDraft = '';
     this.saveViewState();
     this.pendingAttachments = [];

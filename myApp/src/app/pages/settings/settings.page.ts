@@ -7,6 +7,7 @@ import { addIcons } from 'ionicons';
 import { accessibilityOutline, cardOutline, chatbubblesOutline, colorPaletteOutline, documentTextOutline, helpCircleOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, serverOutline, shieldCheckmarkOutline, sunnyOutline, timeOutline } from 'ionicons/icons';
 import { AccountService } from '../../services/account.service';
 import { PostService } from '../../services/post.service';
+import { MessageService } from '../../services/message.service';
 
 type SettingsSection = 'account' | 'privacy' | 'security' | 'notifications' | 'messages' | 'content' | 'connections' | 'activity' | 'appearance' | 'accessibility' | 'language' | 'data' | 'permissions' | 'ads' | 'payments' | 'help' | 'about';
 
@@ -20,6 +21,7 @@ type SettingsSection = 'account' | 'privacy' | 'security' | 'notifications' | 'm
 export class SettingsPage {
   readonly accountService = inject(AccountService);
   readonly postService = inject(PostService);
+  readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
   private readonly alertController = inject(AlertController);
   readonly sections = [
@@ -64,17 +66,40 @@ export class SettingsPage {
   constructor() {
     addIcons({ accessibilityOutline, cardOutline, chatbubblesOutline, colorPaletteOutline, documentTextOutline, helpCircleOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, serverOutline, shieldCheckmarkOutline, sunnyOutline, timeOutline });
     this.readPreferences();
+    this.privateAccount = this.accountService.selectedAccount()?.privacy === 'private' || this.privateAccount;
     this.language = this.readLanguage();
     this.applyPreferences();
   }
 
   savePreferences() {
+    const current = this.accountService.selectedAccount();
+    if (current) this.accountService.updatePrivacy(this.privateAccount ? 'private' : 'public', current.repostVisibility ?? 'public');
     if (typeof localStorage !== 'undefined') {
       const preferences = this.preferenceValues();
       Object.entries(preferences).forEach(([key, value]) => localStorage.setItem(`tali-setting-${key}`, String(value)));
       localStorage.setItem('tali-language', this.language);
     }
     this.applyPreferences();
+  }
+
+  get safetyList() {
+    const id = this.accountService.selectedAccount()?.id;
+    if (id === undefined) return [];
+    return this.messageService.conversations().flatMap((conversation) => {
+      const settings = this.messageService.settingsFor(conversation.id);
+      const personId = conversation.memberIds.find((memberId) => memberId !== id);
+      if (personId === undefined || !settings.blockedFor.includes(id) && !settings.restrictedFor.includes(id)) return [];
+      const person = this.accountService.accounts().find((item) => item.id === personId);
+      return [{ conversationId: conversation.id, personId, name: person?.name ?? 'Unavailable account', username: person?.username ?? '', blocked: settings.blockedFor.includes(id), restricted: settings.restrictedFor.includes(id) }];
+    });
+  }
+
+  get restrictedList() { return this.safetyList.filter((item) => item.restricted); }
+  get blockedList() { return this.safetyList.filter((item) => item.blocked); }
+
+  toggleSafetyList(conversationId: string, preference: 'blockedFor' | 'restrictedFor') {
+    const id = this.accountService.selectedAccount()?.id;
+    if (id !== undefined) this.messageService.toggleAccountPreference(conversationId, preference, id);
   }
 
   get followers() {

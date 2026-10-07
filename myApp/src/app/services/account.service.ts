@@ -9,6 +9,8 @@ export interface Account {
   contact: string;
   password: string;
   bio: string;
+  privacy?: 'public' | 'private';
+  repostVisibility?: 'public' | 'friends' | 'only-me';
   profileImage?: string;
   verified?: boolean;
   followersIds: number[];
@@ -130,6 +132,16 @@ export class AccountService {
     this.persistAccounts();
     this.persistActiveAccount();
     return updated;
+  }
+
+  updatePrivacy(privacy: 'public' | 'private', repostVisibility: 'public' | 'friends' | 'only-me') {
+    const selected = this.selectedAccount();
+    if (!selected) return;
+    const updated = { ...selected, privacy, repostVisibility };
+    this.accounts.update((items) => items.map((item) => item.id === selected.id ? updated : item));
+    this.selectedAccount.set(updated);
+    this.persistAccounts();
+    this.persistActiveAccount();
   }
 
   logout() {
@@ -287,6 +299,8 @@ function isStoredAccount(value: unknown): value is Account {
     typeof account.contact === 'string' &&
     typeof account.password === 'string' &&
     typeof account.bio === 'string' &&
+    (account.privacy === undefined || account.privacy === 'public' || account.privacy === 'private') &&
+    (account.repostVisibility === undefined || ['public', 'friends', 'only-me'].includes(account.repostVisibility)) &&
     (account.profileImage === undefined || typeof account.profileImage === 'string') &&
     (account.verified === undefined || typeof account.verified === 'boolean') &&
     Array.isArray(account.followersIds) && account.followersIds.every(Number.isSafeInteger) &&
