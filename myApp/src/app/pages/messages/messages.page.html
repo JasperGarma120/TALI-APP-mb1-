@@ -402,12 +402,6 @@
         <div class="composer-emoji-control"><ion-button type="button" fill="clear" aria-label="Open emoji picker" aria-haspopup="dialog" [attr.aria-expanded]="showComposerEmojiPicker" (click)="showComposerEmojiPicker = !showComposerEmojiPicker"><ion-icon slot="icon-only" name="happy-outline"></ion-icon></ion-button></div>
         <div class="chat-input-wrap">
           <input class="chat-text-input" type="text" name="chatMessage" [ngModel]="messageDraft" (ngModelChange)="updateDraftTyping($event)" (focus)="isComposerExpanded = true" (blur)="clearTyping()" placeholder="Write a message" aria-label="Write a message" [disabled]="isPreferenceEnabled('blockedFor')" autocomplete="off" />
-          @if (mentionQuery !== null) {
-            <div class="mention-suggestions" role="listbox" aria-label="Mention suggestions">
-              <button type="button" role="option" (mousedown)="$event.preventDefault(); insertMention('@everyone')">@everyone <small>Mention everyone</small></button>
-              @for (person of mentionSuggestions; track person.id) { <button type="button" role="option" (mousedown)="$event.preventDefault(); insertMention(person.username)">{{ person.username }} <small>{{ person.name }}</small></button> }
-            </div>
-          }
         </div>
         <ion-button type="submit" fill="solid" [attr.aria-label]="messageDraft.trim() || pendingAttachments.length ? 'Send message' : 'Send heart reaction'" [disabled]="isPreferenceEnabled('blockedFor')">@if (messageDraft.trim() || pendingAttachments.length) { <ion-icon slot="icon-only" name="arrow-up-outline"></ion-icon> } @else { <span class="quick-heart" aria-hidden="true">❤️</span> }</ion-button>
         }
@@ -428,4 +422,21 @@
 }
 @if (showComposerEmojiPicker && activeConversation) {
   <emoji-picker class="composer-emoji-picker" data-source="/assets/emoji-data.json" (emoji-click)="onComposerEmojiSelected($event)"></emoji-picker>
+}
+@if (mentionQuery !== null && activeConversation && !isActiveConversationRequest) {
+  <div class="mention-suggestions" role="listbox" aria-label="Group chat members to mention">
+    @for (person of mentionSuggestions; track person.id) {
+      <button type="button" role="option" (mousedown)="$event.preventDefault(); insertMention(person.username)">
+        <span class="mention-avatar">@if (person.profileImage) { <img [src]="person.profileImage" [alt]="''" /> } @else { <ion-icon name="person-circle-outline"></ion-icon> }</span>
+        <span class="mention-option-copy"><strong>{{ person.name }}</strong><small>{{ person.username }}</small></span>
+      </button>
+    }
+    @if (canMentionEveryone) {
+      <button type="button" role="option" (mousedown)="$event.preventDefault(); insertMention('@everyone')">
+        <span class="mention-avatar everyone-avatar"><ion-icon name="people-outline"></ion-icon></span>
+        <span class="mention-option-copy"><strong>everyone</strong><small>Mention everyone in this chat</small></span>
+      </button>
+    }
+    @if (!mentionSuggestions.length && !canMentionEveryone) { <p class="mention-empty">No members match that mention.</p> }
+  </div>
 }

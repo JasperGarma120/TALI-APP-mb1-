@@ -464,17 +464,26 @@ export class MessagesPage {
   }
 
   get mentionQuery() {
-    return this.messageDraft.match(/(?:^|\s)@([\w.]*)$/)?.[1] ?? null;
+    return this.messageDraft.match(/@([\w.]*)$/)?.[1] ?? null;
   }
 
   get mentionSuggestions() {
     const query = this.mentionQuery?.toLowerCase() ?? '';
     const accountId = this.selectedAccount()?.id;
-    return this.otherAccounts().filter((account) => account.id !== accountId && account.username.toLowerCase().replace(/^@/, '').includes(query)).slice(0, 5);
+    const memberIds = this.activeConversation?.memberIds ?? [];
+    return memberIds.map((id) => this.accounts().find((account) => account.id === id))
+      .filter((account): account is Account => !!account && account.id !== accountId)
+      .filter((account) => account.username.toLowerCase().replace(/^@/, '').includes(query) || account.name.toLowerCase().includes(query))
+      .slice(0, 6);
+  }
+
+  get canMentionEveryone() {
+    return (this.activeConversation?.memberIds.length ?? 0) > 2;
   }
 
   insertMention(username: string) {
-    this.messageDraft = this.messageDraft.replace(/(?:^|\s)@[\w.]*$/, (match) => `${match.startsWith(' ') ? ' ' : ''}${username} `);
+    const mention = username === '@everyone' || username.startsWith('@') ? username : `@${username}`;
+    this.messageDraft = this.messageDraft.replace(/@[\w.]*$/, `${mention} `);
     this.updateDraftTyping(this.messageDraft);
   }
 
@@ -522,7 +531,8 @@ export class MessagesPage {
   }
 
   mentionAccount(username: string) {
-    return this.accounts().find((account) => account.username.toLowerCase() === username.toLowerCase());
+    const normalized = username.toLowerCase().replace(/^@/, '');
+    return this.accounts().find((account) => account.username.toLowerCase().replace(/^@/, '') === normalized);
   }
 
   messageParts(body: string) {
