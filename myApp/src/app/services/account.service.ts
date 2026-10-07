@@ -12,6 +12,7 @@ export interface Account {
   privacy?: 'public' | 'private';
   repostVisibility?: 'public' | 'friends' | 'only-me';
   profileImage?: string;
+  profileImageVisibility?: 'public' | 'friends' | 'only-me';
   verified?: boolean;
   followersIds: number[];
   followingIds: number[];
@@ -115,7 +116,7 @@ export class AccountService {
     return account;
   }
 
-  updateProfile(name: string, username: string, bio: string, profileImage?: string) {
+  updateProfile(name: string, username: string, bio: string, profileImage?: string, profileImageVisibility: 'public' | 'friends' | 'only-me' = 'public') {
     const selected = this.selectedAccount();
     if (!selected) return null;
 
@@ -125,6 +126,7 @@ export class AccountService {
       username: username.trim().startsWith('@') ? username.trim() : `@${username.trim()}`,
       bio: bio.trim(),
       profileImage,
+      profileImageVisibility,
     };
     this.accounts.update((accounts) => accounts.map((account) => account.id === selected.id ? updated : account));
     this.selectedAccount.set(updated);
@@ -132,6 +134,15 @@ export class AccountService {
     this.persistAccounts();
     this.persistActiveAccount();
     return updated;
+  }
+
+  canViewProfileImage(profile: Account, viewer: Account | null) {
+    if (!profile.profileImage) return false;
+    if (profile.id === viewer?.id) return true;
+    const visibility = profile.profileImageVisibility ?? 'public';
+    if (visibility === 'only-me') return false;
+    if (visibility === 'public') return true;
+    return !!viewer && profile.followingIds.includes(viewer.id) && viewer.followingIds.includes(profile.id);
   }
 
   updatePrivacy(privacy: 'public' | 'private', repostVisibility: 'public' | 'friends' | 'only-me') {

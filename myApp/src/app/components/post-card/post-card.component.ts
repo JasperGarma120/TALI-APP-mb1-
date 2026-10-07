@@ -34,7 +34,8 @@ export class PostCardComponent implements OnChanges {
   }
 
   get authorImage() {
-    return this.accountService.accounts().find((account) => account.id === this.post.authorId)?.profileImage;
+    const author = this.accountService.accounts().find((account) => account.id === this.post.authorId);
+    return author && this.accountService.canViewProfileImage(author, this.accountService.selectedAccount()) ? author.profileImage : undefined;
   }
 
   get isLiked() {

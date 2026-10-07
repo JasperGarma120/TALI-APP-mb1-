@@ -5,10 +5,10 @@
   </ion-toolbar>
 </ion-header>
 <ion-content class="settings-content" [fullscreen]="true">
-  <div class="settings-layout">
+  <div class="settings-layout" [class.mobile-detail-open]="mobileDetailOpen">
     <nav class="settings-categories" aria-label="Settings categories">
       @for (section of sections; track section.id) {
-        <button type="button" [class.active]="activeSection === section.id" (click)="activeSection = section.id">
+        <button type="button" [class.active]="activeSection === section.id" (click)="openSection(section.id)">
           <ion-icon [name]="section.icon" aria-hidden="true"></ion-icon><span>{{ section.label }}</span>
         </button>
       }
@@ -16,6 +16,7 @@
     </nav>
 
     <section class="settings-detail">
+      <ion-button class="settings-back-button" fill="clear" (click)="backToCategories()"><ion-icon slot="start" name="arrow-back-outline"></ion-icon>Settings</ion-button>
       @if (activeSection === 'account') {
         <h2>Account Center</h2>
         <div class="account-identity"><ion-icon name="person-circle-outline"></ion-icon><div><strong>{{ accountService.selectedAccount()?.name || 'No active account' }}</strong><span>{{ accountService.selectedAccount()?.username || 'Choose an account to continue' }}</span></div></div>

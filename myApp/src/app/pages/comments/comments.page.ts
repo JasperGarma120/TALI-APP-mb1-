@@ -70,11 +70,13 @@ export class CommentsPage implements OnChanges {
   }
 
   get authorImage() {
-    return this.accountService.accounts().find((account) => account.id === this.post?.authorId)?.profileImage;
+    const author = this.accountService.accounts().find((account) => account.id === this.post?.authorId);
+    return author && this.accountService.canViewProfileImage(author, this.accountService.selectedAccount()) ? author.profileImage : undefined;
   }
 
   commentAuthorImage(authorId: number) {
-    return this.accountService.accounts().find((account) => account.id === authorId)?.profileImage;
+    const author = this.accountService.accounts().find((account) => account.id === authorId);
+    return author && this.accountService.canViewProfileImage(author, this.accountService.selectedAccount()) ? author.profileImage : undefined;
   }
 
   moveMedia(direction: number) {

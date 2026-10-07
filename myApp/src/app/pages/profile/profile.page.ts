@@ -6,7 +6,7 @@ import { IonAvatar, IonBackButton, IonButton, IonContent, IonFooter, IonHeader, 
 import { addIcons } from 'ionicons';
 import { addCircle, archiveOutline, chatbubbleOutline, createOutline, homeOutline, imageOutline, notificationsOutline, personCircleOutline, repeatOutline, settingsOutline, trashOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
 import { PostCardComponent } from '../../components/post-card/post-card.component';
-import { AccountService } from '../../services/account.service';
+import { Account, AccountService } from '../../services/account.service';
 import { PostService } from '../../services/post.service';
 import { NotificationService } from '../../services/notification.service';
 import { ViewStateService } from '../../services/view-state.service';
@@ -30,6 +30,12 @@ export class ProfilePage {
   editUsername = '';
   editBio = '';
   editProfileImage = '';
+  editProfileImageVisibility: 'public' | 'friends' | 'only-me' = 'public';
+  cropSource = '';
+  cropZoom = 1;
+  cropX = 0;
+  cropY = 0;
+  croppingProfileImage = false;
   editPrivacy: 'public' | 'private' = 'public';
   editRepostVisibility: 'public' | 'friends' | 'only-me' = 'public';
   profileImageError = '';
@@ -83,6 +89,14 @@ export class ProfilePage {
     return this.accountService.accounts().find((account) => account.id === Number(accountId)) ?? null;
   }
 
+  canViewProfileImage(profile: Account) {
+    return this.accountService.canViewProfileImage(profile, this.accountService.selectedAccount());
+  }
+
+  get cropImageTransform() {
+    return `translate(${this.cropX * 0.18}%, ${this.cropY * 0.18}%) scale(${this.cropZoom})`;
+  }
+
   get isOwnProfile() {
     const profileId = this.profileAccount?.id;
     return profileId !== undefined && profileId === this.accountService.selectedAccount()?.id;
@@ -115,7 +129,7 @@ export class ProfilePage {
     const profile = this.profileAccount;
     if (!profile) return [];
     return [
-      ...(profile.profileImage ? [{ source: profile.profileImage, name: `${profile.name}'s profile photo` }] : []),
+      ...(this.canViewProfileImage(profile) ? [{ source: profile.profileImage!, name: `${profile.name}'s profile photo` }] : []),
       ...this.ownPosts.flatMap((post) => post.attachments
         .filter((attachment) => attachment.type.startsWith('image/'))
         .map((attachment) => ({ source: attachment.dataUrl, name: attachment.name }))),
@@ -168,6 +182,7 @@ export class ProfilePage {
     this.editUsername = account.username;
     this.editBio = account.bio;
     this.editProfileImage = account.profileImage ?? '';
+    this.editProfileImageVisibility = account.profileImageVisibility ?? 'public';
     this.editPrivacy = account.privacy ?? 'public';
     this.editRepostVisibility = account.repostVisibility ?? 'public';
     this.profileImageError = '';
@@ -191,7 +206,13 @@ export class ProfilePage {
     }
 
     const reader = new FileReader();
-    reader.onload = () => this.editProfileImage = String(reader.result ?? '');
+    reader.onload = () => {
+      this.cropSource = String(reader.result ?? '');
+      this.cropZoom = 1;
+      this.cropX = 0;
+      this.cropY = 0;
+      this.croppingProfileImage = !!this.cropSource;
+    };
     reader.onerror = () => this.profileImageError = 'The image could not be read. Please try again.';
     reader.readAsDataURL(file);
   }
@@ -201,10 +222,35 @@ export class ProfilePage {
     this.profileImageError = '';
   }
 
+  finishProfileImageCrop() {
+    if (!this.cropSource) return;
+    const image = new Image();
+    image.onload = () => {
+      const cropSize = Math.min(image.naturalWidth, image.naturalHeight) / this.cropZoom;
+      const maxX = Math.max(0, image.naturalWidth - cropSize);
+      const maxY = Math.max(0, image.naturalHeight - cropSize);
+      const left = maxX * (this.cropX + 100) / 200;
+      const top = maxY * (this.cropY + 100) / 200;
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const context = canvas.getContext('2d');
+      if (!context) {
+        this.profileImageError = 'The photo could not be cropped. Please try again.';
+        return;
+      }
+      context.drawImage(image, left, top, cropSize, cropSize, 0, 0, 512, 512);
+      this.editProfileImage = canvas.toDataURL('image/jpeg', 0.9);
+      this.croppingProfileImage = false;
+    };
+    image.onerror = () => this.profileImageError = 'The image could not be opened. Please try again.';
+    image.src = this.cropSource;
+  }
+
   saveProfile() {
     if (!this.editName.trim() || !this.editUsername.trim()) return;
     if (!this.isOwnProfile) return;
-    this.accountService.updateProfile(this.editName, this.editUsername, this.editBio, this.editProfileImage || undefined);
+    this.accountService.updateProfile(this.editName, this.editUsername, this.editBio, this.editProfileImage || undefined, this.editProfileImageVisibility);
     this.accountService.updatePrivacy(this.editPrivacy, this.editRepostVisibility);
     const updated = this.accountService.selectedAccount();
     if (updated) this.postService.updateAuthor(updated.id, updated.name, updated.username);
