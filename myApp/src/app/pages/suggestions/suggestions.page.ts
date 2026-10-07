@@ -27,6 +27,7 @@ export class SuggestionsPage {
   private readonly router = inject(Router);
   selectedSection: 'suggestions' | 'notifications' = 'suggestions';
   selectedCategory: 'people' | 'posts' | 'groups' = 'people';
+  pendingUnfollow: Account | null = null;
 
   get groups() {
     try {
@@ -162,8 +163,18 @@ export class SuggestionsPage {
   }
 
   toggleFollow(person: Account) {
-    if (this.isFollowing(person)) this.accountService.unfollowAccount(person.id);
+    if (this.isFollowing(person)) this.pendingUnfollow = person;
     else this.accountService.followAccount(person.id);
+  }
+
+  cancelUnfollow() {
+    this.pendingUnfollow = null;
+  }
+
+  confirmUnfollow() {
+    const person = this.pendingUnfollow;
+    if (person && this.isFollowing(person)) this.accountService.unfollowAccount(person.id);
+    this.pendingUnfollow = null;
   }
 
   isFollowing(person: Account) {

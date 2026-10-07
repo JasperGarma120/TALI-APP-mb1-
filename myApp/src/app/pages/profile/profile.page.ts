@@ -75,18 +75,6 @@ export class ProfilePage {
     this.viewState.write(this.profileStateKey, { activeSection: this.activeSection, connectionsView: this.connectionsView });
   }
 
-  scrollGallery(event: WheelEvent) {
-    const gallery = event.currentTarget as HTMLElement;
-    if (gallery.scrollWidth <= gallery.clientWidth) return;
-
-    const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
-    const nextScrollLeft = gallery.scrollLeft + delta;
-    if (nextScrollLeft >= 0 && nextScrollLeft <= gallery.scrollWidth - gallery.clientWidth) {
-      event.preventDefault();
-      gallery.scrollLeft = nextScrollLeft;
-    }
-  }
-
   get profileAccount() {
     const accountId = this.route.snapshot.paramMap.get('accountId');
     if (accountId === null) return this.accountService.selectedAccount();

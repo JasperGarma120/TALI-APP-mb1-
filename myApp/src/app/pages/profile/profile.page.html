@@ -49,13 +49,13 @@
       </section>
     }
     @if (activeSection === 'photos') {
-      <section class="profile-gallery" aria-label="Photos" (wheel)="scrollGallery($event)">
+      <section class="profile-gallery profile-photo-gallery" aria-label="Photos">
         @for (photo of profilePhotos; track $index) { <img [src]="photo.source" [alt]="photo.name" /> }
         @empty { <div class="empty-profile"><ion-icon name="image-outline"></ion-icon><p>No photos shared yet.</p></div> }
       </section>
     }
     @if (activeSection === 'videos') {
-      <section class="profile-gallery profile-video-gallery" aria-label="Videos" (wheel)="scrollGallery($event)">
+      <section class="profile-gallery profile-video-gallery" aria-label="Videos">
         @for (video of profileVideos; track $index) {
           <video controls playsinline preload="metadata" [attr.aria-label]="video.name"><source [src]="video.source" [type]="video.type" /></video>
         } @empty { <div class="empty-profile"><ion-icon name="videocam-outline"></ion-icon><p>No videos shared yet.</p></div> }
@@ -84,7 +84,16 @@
       </div>
     </div>
   } @else {
-    <div class="empty-profile"><ion-icon name="person-circle-outline"></ion-icon><p>This profile is unavailable.</p></div>
+    <div class="empty-profile profile-unavailable">
+      <ion-icon name="person-circle-outline"></ion-icon>
+      <p>This profile is unavailable.</p>
+      @if (accountService.selectedAccount()) {
+        <ion-button routerLink="/profile">Go to My Profile</ion-button>
+      } @else {
+        <p>Select an account to open your profile, settings, and sign-out options.</p>
+        <ion-button routerLink="/select-account">Choose an Account</ion-button>
+      }
+    </div>
   }
 </ion-content>
 @if (confirmingUnfollow && profileAccount; as profile) {

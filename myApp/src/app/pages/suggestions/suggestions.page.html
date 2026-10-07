@@ -80,6 +80,18 @@
     }
   }
 </ion-content>
+@if (pendingUnfollow; as person) {
+  <div class="suggestion-unfollow-backdrop" role="presentation" (click)="cancelUnfollow()">
+    <section class="suggestion-unfollow-dialog" role="alertdialog" aria-modal="true" aria-labelledby="suggestion-unfollow-title" (click)="$event.stopPropagation()">
+      <h2 id="suggestion-unfollow-title">Unfollow {{ person.name }}?</h2>
+      <p>Are you sure you want to unfollow this account?</p>
+      <div class="suggestion-unfollow-actions">
+        <ion-button fill="clear" (click)="cancelUnfollow()">Cancel</ion-button>
+        <ion-button class="confirm-suggestion-unfollow" (click)="confirmUnfollow()">Unfollow</ion-button>
+      </div>
+    </section>
+  </div>
+}
 <ion-footer class="page-footer ion-no-border"><ion-toolbar>
   <nav class="page-nav suggestions-nav" aria-label="Main navigation">
     <ion-button fill="clear" routerLink="/home" (click)="viewState.handleTabTap('/home', 'tali-view-home')" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>

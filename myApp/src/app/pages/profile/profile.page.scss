@@ -43,8 +43,8 @@
 	border: 2px solid rgba(255, 255, 255, .2);
 	border-radius: 50%;
 	overflow: hidden;
-	background: #49111c;
-	color: #f2f4f3;
+	background: #1a3bb0;
+	color: #e6edfd;
 	box-shadow: 0 8px 24px rgba(0, 0, 0, .32);
 }
 .profile-top ion-avatar ion-icon { width: 62px; height: 62px; }
@@ -55,19 +55,19 @@
 .profile-top ion-button { --color: var(--ion-color-primary); --border-color: var(--page-border); font-size: .76rem; }
 .profile-actions { display: flex; align-items: center; justify-content: center; gap: 9px; }
 .profile-actions ion-button { min-width: 104px; margin: 0; --border-radius: 11px; font-size: .78rem; }
-.profile-actions .message-profile-button { --background: var(--ion-color-primary); --color: #fff4ee; --opacity: 1; --box-shadow: 0 5px 16px rgba(133,79,108,.24); }
-.profile-actions .message-profile-button::part(native) { color: #fff4ee !important; }
-.message-button-label { display: inline-block; color: #fff4ee !important; opacity: 1 !important; visibility: visible !important; font-size: .78rem; font-weight: 600; line-height: 1; }
+.profile-actions .message-profile-button { --background: var(--ion-color-primary); --color: #e6edfd; --opacity: 1; --box-shadow: 0 5px 16px rgba(46,93,230,.24); }
+.profile-actions .message-profile-button::part(native) { color: #e6edfd !important; }
+.message-button-label { display: inline-block; color: #e6edfd !important; opacity: 1 !important; visibility: visible !important; font-size: .78rem; font-weight: 600; line-height: 1; }
 
 .stats-row { display: flex; justify-content: space-evenly; padding: 8px 0 0; border: 0; }
 .stats-row div, .stats-row button { display: grid; min-width: 76px; gap: 4px; text-align: center; }
 .stats-row button { padding: 0 10px; border: 0; background: transparent; cursor: pointer; }
 .stats-row strong { color: var(--ion-color-primary); font-size: 1.15rem; font-weight: 750; }
 .stats-row span { color: var(--page-text); font-size: .76rem; }
-:host-context(html:not(.app-light)) .profile-hero .stats-row strong { color: #c58aa8; }
+:host-context(html:not(.app-light)) .profile-hero .stats-row strong { color: #afc5f8; }
 :host-context(html:not(.app-light)) .profile-hero .profile-top > ion-button,
 :host-context(html:not(.app-light)) .profile-hero .profile-actions ion-button:not(.message-profile-button) {
-	--color: #c58aa8 !important;
+	--color: #afc5f8 !important;
 	--border-color: rgba(197,138,168,.7) !important;
 }
 
@@ -94,11 +94,13 @@
 .profile-posts h2 { margin: 0; color: var(--page-text); font-size: .98rem; font-weight: 750; }
 .profile-posts-feed { display: grid; gap: 12px; margin-top: 14px; }
 .trash-explanation { margin: 8px 0 0; color: var(--page-muted); font-size: .78rem; }
-.profile-gallery { display: flex; gap: 14px; overflow-x: auto; padding: 16px 22px 24px; scroll-snap-type: x proximity; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-.profile-gallery::-webkit-scrollbar { display: none; }
-.profile-gallery img, .profile-gallery video { display: block; width: clamp(220px, 40vw, 460px); max-width: calc(100vw - 64px); height: auto; flex: 0 0 clamp(220px, 40vw, 460px); aspect-ratio: 1.45 / 1; max-height: min(42vh, 380px); border: 1px solid var(--page-border); border-radius: 16px; background: var(--page-surface); object-fit: contain; scroll-snap-align: start; }
+.profile-gallery { display: flex; flex-direction: column; align-items: center; gap: 14px; overflow: visible; padding: 16px 22px 24px; }
+.profile-gallery img, .profile-gallery video { display: block; width: min(100%, 700px); max-width: calc(100vw - 40px); height: auto; flex: 0 0 auto; max-height: min(80vh, 720px); border: 1px solid var(--page-border); border-radius: 16px; background: #ffffff; object-fit: contain; }
+.profile-photo-gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: start; gap: 12px; }
+.profile-photo-gallery img { width: 100%; max-width: none; height: auto; aspect-ratio: 1 / 1; max-height: none; object-fit: contain; }
 .profile-video-gallery video { object-fit: contain; }
-.profile-gallery .empty-profile { grid-column: 1 / -1; }
+.profile-gallery .empty-profile { width: 100%; }
+.profile-photo-gallery .empty-profile { grid-column: 1 / -1; }
 .empty-profile { display: grid; justify-items: center; padding: 48px 10px; color: var(--page-muted); text-align: center; }
 .empty-profile ion-icon { color: var(--ion-color-primary); font-size: 1.8rem; }
 .empty-profile p { font-size: .8rem; }
@@ -107,6 +109,14 @@
 .edit-dialog { width: min(100%, 440px); max-height: calc(100dvh - 40px); margin: auto; overflow-y: auto; overscroll-behavior: contain; padding: 20px; border: 1px solid var(--page-border); border-radius: 22px; background: var(--page-surface); color: var(--page-text); box-shadow: 0 20px 60px rgba(0, 0, 0, .4); }
 .profile-editor-dialog { scrollbar-width: none; -ms-overflow-style: none; }
 .profile-editor-dialog::-webkit-scrollbar { display: none; }
+:host-context(html:not(.app-light)) .profile-editor-dialog {
+	--page-text: #071039;
+	--page-muted: #1a3bb0;
+	--page-border: rgba(26, 59, 176, .2);
+	background: #e6edfd;
+	border-color: #afc5f8;
+	color: #071039;
+}
 .edit-dialog h2 { margin: 0 0 18px; color: var(--page-text); font-size: 1.05rem; }
 .edit-profile-avatar { display: grid; width: 76px; height: 76px; margin: 0 auto 10px; place-items: center; overflow: hidden; border: 2px solid var(--ion-color-primary); border-radius: 50%; background: var(--page-bg); color: var(--ion-color-primary); }
 .edit-profile-avatar ion-icon { width: 62px; height: 62px; }
@@ -114,16 +124,31 @@
 .profile-photo-actions { display: flex; justify-content: center; gap: 8px; margin-bottom: 14px; }
 .profile-photo-error { margin: 0 0 12px; color: #a93343; font-size: .78rem; text-align: center; }
 .edit-dialog ion-input, .edit-dialog ion-textarea { margin-bottom: 12px; --color: var(--page-text); --highlight-color-focused: var(--ion-color-primary); }
+.profile-editor-dialog ion-input,
+.profile-editor-dialog ion-textarea {
+	--background: #ffffff;
+	--color: #071039;
+	--padding-start: 14px;
+	--padding-end: 14px;
+	--padding-top: 10px;
+	--padding-bottom: 10px;
+	min-height: 58px;
+	border: 1px solid #dbe5ff;
+	border-radius: 12px;
+	overflow: hidden;
+}
+.profile-editor-dialog ion-input::part(native),
+.profile-editor-dialog ion-textarea::part(native) { border-radius: 12px; }
 .edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 .unfollow-backdrop { z-index: 40; background: rgba(25, 0, 25, .62); backdrop-filter: blur(4px); }
 .unfollow-dialog { width: min(100%, 390px); padding: 24px; border-color: color-mix(in srgb, var(--ion-color-primary) 30%, var(--page-border)); }
 .unfollow-dialog h2 { margin-bottom: 8px; }
 .unfollow-dialog p { margin: 0; color: var(--page-muted); font-size: .9rem; line-height: 1.5; }
 .unfollow-dialog .edit-actions { margin-top: 22px; }
-.unfollow-dialog .confirm-unfollow-button { --background: var(--ion-color-primary); --color: #fff4ee; --border-radius: 11px; font-weight: 650; }
+.unfollow-dialog .confirm-unfollow-button { --background: var(--ion-color-primary); --color: #e6edfd; --border-radius: 11px; font-weight: 650; }
 .connections-dialog h2 { margin-bottom: 14px; }
 .connection-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--page-border); color: var(--page-text); text-decoration: none; }
-.connection-row ion-icon { flex: 0 0 34px; width: 34px; height: 34px; color: #a9927d; }
+.connection-row ion-icon { flex: 0 0 34px; width: 34px; height: 34px; color: #6e92f2; }
 .connection-row strong, .connection-row span { display: block; }
 .connection-row strong { font-size: .82rem; }
 .connection-row span, .connection-empty { color: var(--page-muted); font-size: .75rem; }
@@ -164,8 +189,8 @@
 	.connection-row span, .connection-empty { font-size: .72rem; }
 	.edit-dialog ion-input, .edit-dialog ion-textarea { font-size: .9rem; }
 }
-.profile-privacy-settings { display:grid;gap:12px;margin:18px 0;padding:16px;border:1px solid #dfe0e8;border-radius:16px;background:#f7f7fb; }
-.profile-privacy-settings h3 { margin:0;font-size:1rem; }
+.profile-privacy-settings { display:grid;gap:12px;margin:18px 0;padding:16px;border:1px solid #dbe5ff;border-radius:16px;background:#f8faff; }
+.profile-privacy-settings h3 { margin:0;color:#071039;font-size:1rem; }
 .profile-privacy-settings label { display:grid;gap:7px;color:#33354b;font-size:.84rem;font-weight:700; }
 .profile-privacy-settings select { min-height:42px;padding:8px 10px;border:1px solid #d9dbe5;border-radius:10px;background:white;color:#17182a;font:inherit; }
 .profile-privacy-settings p { margin:0;color:#707287;font-size:.8rem;line-height:1.45; }
