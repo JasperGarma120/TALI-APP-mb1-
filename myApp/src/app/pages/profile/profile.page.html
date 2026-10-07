@@ -21,7 +21,10 @@
           @if (isOwnProfile) {
             <ion-button fill="outline" size="small" (click)="openProfileEditor()"><ion-icon slot="start" name="create-outline"></ion-icon>Edit profile</ion-button>
           } @else {
-            <ion-button fill="outline" size="small" (click)="toggleFollowProfile()">{{ isFollowingProfile ? 'Following' : 'Follow' }}</ion-button>
+            <div class="profile-actions">
+              <ion-button fill="outline" size="small" (click)="toggleFollowProfile()">{{ isFollowingProfile ? 'Following' : 'Follow' }}</ion-button>
+              <ion-button fill="solid" size="small" class="message-profile-button" (click)="messageProfile()"><ion-icon slot="start" name="chatbubble-outline"></ion-icon><span class="message-button-label">Message</span></ion-button>
+            </div>
           }
         </div>
         <div class="stats-row"><div><strong>{{ ownPosts.length }}</strong><span>Posts</span></div><button type="button" (click)="setConnectionsView('followers')"><strong>{{ followers.length }}</strong><span>Followers</span></button><button type="button" (click)="setConnectionsView('following')"><strong>{{ following.length }}</strong><span>Following</span></button></div>
@@ -84,9 +87,21 @@
     <div class="empty-profile"><ion-icon name="person-circle-outline"></ion-icon><p>This profile is unavailable.</p></div>
   }
 </ion-content>
+@if (confirmingUnfollow && profileAccount; as profile) {
+  <div class="edit-backdrop unfollow-backdrop" role="presentation" (click)="confirmingUnfollow = false">
+    <section class="edit-dialog unfollow-dialog" role="alertdialog" aria-modal="true" aria-labelledby="unfollow-title" (click)="$event.stopPropagation()">
+      <h2 id="unfollow-title">Unfollow {{ profile.name }}?</h2>
+      <p>Are you sure you want to unfollow this account?</p>
+      <div class="edit-actions">
+        <ion-button fill="clear" (click)="confirmingUnfollow = false">Cancel</ion-button>
+        <ion-button class="confirm-unfollow-button" (click)="confirmUnfollowProfile()">Unfollow</ion-button>
+      </div>
+    </section>
+  </div>
+}
 @if (editingProfile) {
   <div class="edit-backdrop" role="presentation" (click)="editingProfile = false">
-    <section class="edit-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-profile-title" (click)="$event.stopPropagation()">
+    <section class="edit-dialog profile-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-profile-title" (click)="$event.stopPropagation()">
       <h2 id="edit-profile-title">Edit profile</h2>
       <ion-avatar class="edit-profile-avatar">
         @if (editProfileImage) {
@@ -100,14 +115,6 @@
         <ion-button fill="outline" size="small" (click)="profilePhotoInput.click()">Upload photo</ion-button>
         @if (editProfileImage) { <ion-button fill="clear" size="small" (click)="removeProfileImage()">Remove photo</ion-button> }
       </div>
-      <section class="profile-privacy-settings profile-photo-visibility">
-        <h3>Profile photo visibility</h3>
-        <label>Who can see your photo
-          <select [(ngModel)]="editProfileImageVisibility" aria-label="Profile photo visibility">
-            <option value="public">Public</option><option value="friends">Friends</option><option value="only-me">Only me</option>
-          </select>
-        </label>
-      </section>
       @if (profileImageError) { <p class="profile-photo-error" role="alert">{{ profileImageError }}</p> }
       <ion-input label="Name" labelPlacement="stacked" [(ngModel)]="editName" maxlength="80"></ion-input>
       <ion-input label="Username" labelPlacement="stacked" [(ngModel)]="editUsername" maxlength="30"></ion-input>
@@ -158,7 +165,7 @@
     </section>
   </div>
 }
-@if (isOwnProfile) {
+@if (isOwnProfile && !editingProfile && !croppingProfileImage) {
 <ion-footer class="page-footer ion-no-border"><ion-toolbar>
   <nav class="page-nav profile-nav" aria-label="Main navigation">
     <ion-button fill="clear" routerLink="/home" (click)="viewState.handleTabTap('/home', 'tali-view-home')" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>

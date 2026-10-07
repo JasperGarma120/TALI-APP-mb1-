@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IonAvatar, IonBackButton, IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonTextarea, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import { addCircle, archiveOutline, chatbubbleOutline, createOutline, homeOutline, imageOutline, notificationsOutline, personCircleOutline, repeatOutline, settingsOutline, trashOutline, trendingUpOutline, videocamOutline } from 'ionicons/icons';
@@ -10,6 +10,7 @@ import { Account, AccountService } from '../../services/account.service';
 import { PostService } from '../../services/post.service';
 import { NotificationService } from '../../services/notification.service';
 import { ViewStateService } from '../../services/view-state.service';
+import { MessageService } from '../../services/message.service';
 
 @Component({
   selector: 'app-profile',
@@ -23,6 +24,8 @@ export class ProfilePage {
   readonly postService = inject(PostService);
   readonly notificationService = inject(NotificationService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly messageService = inject(MessageService);
   readonly viewState = inject(ViewStateService);
   activeSection: 'posts' | 'photos' | 'videos' | 'reposts' | 'archive' | 'trash' = 'posts';
   editingProfile = false;
@@ -40,6 +43,7 @@ export class ProfilePage {
   editRepostVisibility: 'public' | 'friends' | 'only-me' = 'public';
   profileImageError = '';
   connectionsView: 'followers' | 'following' | null = null;
+  confirmingUnfollow = false;
 
   get unreadNotifications() {
     const accountId = this.accountService.selectedAccount()?.id;
@@ -171,8 +175,24 @@ export class ProfilePage {
   toggleFollowProfile() {
     const profileId = this.profileAccount?.id;
     if (profileId === undefined || this.isOwnProfile) return;
-    if (this.isFollowingProfile) this.accountService.unfollowAccount(profileId);
+    if (this.isFollowingProfile) this.confirmingUnfollow = true;
     else this.accountService.followAccount(profileId);
+  }
+
+  confirmUnfollowProfile() {
+    const profileId = this.profileAccount?.id;
+    if (profileId !== undefined && !this.isOwnProfile && this.isFollowingProfile) {
+      this.accountService.unfollowAccount(profileId);
+    }
+    this.confirmingUnfollow = false;
+  }
+
+  messageProfile() {
+    const viewer = this.accountService.selectedAccount();
+    const profile = this.profileAccount;
+    if (!viewer || !profile || profile.id === viewer.id) return;
+    const conversation = this.messageService.openDirectConversation(viewer.id, profile.id);
+    void this.router.navigate(['/messages'], { queryParams: { conversationId: conversation.id } });
   }
 
   openProfileEditor() {

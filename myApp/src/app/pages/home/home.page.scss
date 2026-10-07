@@ -191,9 +191,22 @@ app-post-card { display: block; margin: 0 12px 12px; }
   padding-bottom: 96px;
 }
 
+@media (min-width: 768px) {
+  .screen-shell {
+    max-width: none;
+    margin-inline: 0;
+  }
+
+  .screen-shell > app-post-card {
+    width: 50%;
+    margin-left: 12px;
+    margin-right: 0;
+  }
+}
+
 .feed-tabs {
   display: flex;
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid var(--page-border);
   margin-bottom: 4px;
 }
 
@@ -204,12 +217,13 @@ app-post-card { display: block; margin: 0 12px 12px; }
   border-bottom: 2px solid transparent;
   padding: 12px 0;
   font-size: 15px;
-  color: #9a8c80;
+  color: var(--page-muted);
   cursor: pointer;
 }
 
 .feed-tab.is-active {
-  color: #f3ebe3;
-  border-bottom-color: #c9a48a;
+  color: var(--page-text);
+  border-bottom-color: var(--ion-color-primary);
 }
+
 

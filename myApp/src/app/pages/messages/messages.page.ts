@@ -1,5 +1,5 @@
 ﻿import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonSearchbar, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -22,6 +22,7 @@ export class MessagesPage {
   readonly viewState = inject(ViewStateService);
   private readonly viewStateKey = 'tali-view-messages';
   private readonly accountService = inject(AccountService);
+  private readonly route = inject(ActivatedRoute);
   readonly messageService = inject(MessageService);
   readonly notificationService = inject(NotificationService);
   readonly selectedAccount = this.accountService.selectedAccount;
@@ -198,6 +199,15 @@ export class MessagesPage {
     this.composeMode = saved.composeMode ?? null;
     this.groupName = saved.groupName ?? '';
     this.selectedMemberIds = saved.selectedMemberIds ?? [];
+    this.route.queryParamMap.subscribe((params) => {
+      const conversationId = params.get('conversationId');
+      const conversation = conversationId && this.conversations().find((item) => item.id === conversationId);
+      if (!conversation || !conversation.memberIds.includes(this.selectedAccount()?.id ?? -1)) return;
+      this.activeConversationId = conversation.id;
+      this.activeTab = this.isConversationRequest(conversation, this.selectedAccount()?.id ?? -1) ? 'requests' : 'inbox';
+      this.composeMode = null;
+      this.saveViewState();
+    });
   }
 
   saveViewState() {
@@ -707,7 +717,8 @@ export class MessagesPage {
     const account = this.selectedAccount();
     const conversation = this.activeConversation;
     if (!account || !conversation || this.isPreferenceEnabled('blockedFor')) return;
-    const body = this.messageDraft.trim() || (this.pendingAttachments.length ? '' : '❤️');
+    const body = this.messageDraft.trim();
+    if (!body && !this.pendingAttachments.length) return;
     const replyTo = this.replyToMessage ? {
       messageId: this.replyToMessage.id,
       senderId: this.replyToMessage.senderId,
@@ -719,5 +730,12 @@ export class MessagesPage {
     this.replyToMessage = null;
     this.saveViewState();
     this.pendingAttachments = [];
+  }
+
+  sendQuickReaction() {
+    const conversation = this.activeConversation;
+    const account = this.selectedAccount();
+    if (!conversation || !account || this.isPreferenceEnabled('blockedFor')) return;
+    this.messageService.sendMessage(conversation.id, account.id, '❤️');
   }
 }

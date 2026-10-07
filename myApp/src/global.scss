@@ -747,11 +747,6 @@ ion-modal.post-comments-modal {
 	--backdrop-opacity: .68;
 }
 
-ion-modal.text-only-comments-modal {
-	--width: min(1410px, calc(100vw - 28px));
-	--height: min(920px, calc(100vh - 24px));
-}
-
 ion-modal.post-comments-modal::part(content) {
 	overflow: hidden;
 	background: var(--page-surface);
@@ -835,3 +830,142 @@ html.app-web-shell ion-modal.post-comments-modal::part(content) {
 .mention-option-copy strong { overflow: hidden; font-size: .82rem; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
 .mention-option-copy small { overflow: hidden; color: var(--page-muted); font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
 .mention-empty { margin:0;padding:12px;color:var(--page-muted);font-size:.82rem; }
+
+/* Tali plum and blush visual system. These tokens unify every route and mode. */
+:root {
+  --app-bg-dark: #190019;
+  --app-surface-dark: #351d50;
+  --app-text-dark: #fbe4d8;
+  --app-muted-dark: #dfb6b2;
+  --app-border-dark: rgba(223, 182, 178, .2);
+  --app-bg-light: #fbe4d8;
+  --app-surface-light: #fff4ee;
+  --app-text-light: #190019;
+  --app-muted-light: #522b5b;
+  --app-border-light: rgba(82, 43, 91, .2);
+}
+html, html:not(.app-light), html.app-web-shell:not(.app-light) {
+  --page-bg: #190019;
+  --page-surface: #351d50;
+  --page-text: #fbe4d8;
+  --page-muted: #dfb6b2;
+  --page-border: rgba(223, 182, 178, .2);
+  --ion-color-primary: #854f6c;
+  --ion-color-primary-rgb: 133, 79, 108;
+  --ion-color-primary-contrast: #fbe4d8;
+  --ion-color-primary-contrast-rgb: 251, 228, 216;
+  --ion-color-primary-shade: #75465f;
+  --ion-color-primary-tint: #92617b;
+  --ion-color-medium: #dfb6b2;
+  --ion-color-medium-rgb: 223, 182, 178;
+  --ion-color-medium-contrast: #190019;
+  --ion-background-color: #190019;
+  --ion-text-color: #fbe4d8;
+  --ion-toolbar-background: #190019;
+  --ion-item-background: #351d50;
+  --ion-color-step-50: #241024;
+  --ion-color-step-100: #351d50;
+  --ion-color-step-150: #522b5b;
+  --ion-color-step-200: #633858;
+}
+html.app-light, html.app-web-shell.app-light {
+  --page-bg: #fbe4d8;
+  --page-surface: #fff4ee;
+  --page-text: #190019;
+  --page-muted: #522b5b;
+  --page-border: rgba(82, 43, 91, .2);
+  --ion-color-primary: #854f6c;
+  --ion-color-primary-rgb: 133, 79, 108;
+  --ion-color-primary-contrast: #fff4ee;
+  --ion-color-primary-contrast-rgb: 255, 244, 238;
+  --ion-color-primary-shade: #75465f;
+  --ion-color-primary-tint: #92617b;
+  --ion-color-medium: #522b5b;
+  --ion-color-medium-rgb: 82, 43, 91;
+  --ion-color-medium-contrast: #fff4ee;
+  --ion-background-color: #fbe4d8;
+  --ion-text-color: #190019;
+  --ion-toolbar-background: #fbe4d8;
+  --ion-item-background: #fff4ee;
+  --ion-color-step-50: #fff4ee;
+  --ion-color-step-100: #f5d9d4;
+  --ion-color-step-150: #e7c6c6;
+  --ion-color-step-200: #d7b4bc;
+}
+
+/* Keep auth screens, Ionic surfaces and custom inline pages on the shared palette. */
+:root { --auth-ink: #190019; --auth-wine: #351d50; --auth-paper: #fbe4d8; --auth-taupe: #dfb6b2; --auth-earth: #522b5b; }
+html body ion-content.auth-screen { --background: #190019 !important; --color: #fbe4d8 !important; }
+html body ion-content.auth-screen::part(background) {
+  background: radial-gradient(ellipse at 50% 8%, rgba(133,79,108,.54), transparent 42%), linear-gradient(155deg, #190019 12%, #351d50 64%, #522b5b 100%) !important;
+}
+html body .login-wrapper, html body .create-account-card, html body .account-list,
+html body .more-content ion-list, html body .auth-empty-state {
+  border-color: rgba(223,182,178,.24) !important; background-color: rgba(61,32,84,.9) !important;
+  color: #fbe4d8 !important; box-shadow: 0 24px 70px rgba(25,0,25,.38), 0 0 36px rgba(133,79,108,.12) !important;
+}
+html body ion-item.login-field, html body .create-account-field, html body ion-content.auth-screen ion-item {
+  --background: rgba(82,43,91,.34) !important; --ion-item-background: rgba(82,43,91,.34) !important;
+  --color: #fbe4d8 !important; border-color: rgba(223,182,178,.22) !important; color: #fbe4d8 !important;
+}
+html body .login-field ion-input::part(native), html body .create-account-field input:-webkit-autofill,
+html body .create-account-field input:autofill {
+  -webkit-text-fill-color: #fbe4d8 !important; -webkit-box-shadow: 0 0 0 1000px #351d50 inset !important;
+  box-shadow: 0 0 0 1000px #351d50 inset !important;
+}
+html body .login-button, html body .create-account-button {
+  --background: #854f6c !important; --background-activated: #75465f !important;
+  --color: #fff4ee !important; --box-shadow: 0 10px 28px rgba(133,79,108,.32) !important;
+}
+html body .login-link-button, html body .create-account-footer a { --color: #dfb6b2 !important; color: #dfb6b2 !important; }
+html body .groups-page { --background: #190019 !important; --color: #fbe4d8 !important; }
+html body .groups-page main { color: #fbe4d8; }
+html body .groups-hero, html body .created-groups article {
+  background: #351d50 !important; border-color: rgba(223,182,178,.2) !important; color: #fbe4d8 !important;
+}
+html body .groups-hero h2, html body .created-groups h2, html body .created-groups article strong { color: #fbe4d8 !important; }
+html body .groups-hero input, html body .groups-hero textarea {
+  background: #190019 !important; color: #fbe4d8 !important; border-color: rgba(223,182,178,.25) !important;
+}
+html body .groups-hero ion-button { --background: #854f6c !important; --color: #fff4ee !important; }
+html body .group-mark, html body .group-tile { background: #522b5b !important; color: #fbe4d8 !important; }
+
+/* Post cards keep the light-mode paper surface in every theme and route. */
+app-post-card .post-card {
+  --page-surface: #fff4ee;
+  --page-bg: #fff4ee;
+  --page-text: #190019;
+  --page-muted: #522b5b;
+  --page-border: rgba(82,43,91,.2);
+  --ion-color-primary: #854f6c;
+  --ion-color-primary-contrast: #fff4ee;
+  background: #fff4ee !important;
+  color: #190019 !important;
+}
+
+/* The post composer uses the same paper card surface as posts in both themes. */
+.composer-card {
+  --page-surface: #fff4ee;
+  --page-bg: #fff4ee;
+  --page-text: #190019;
+  --page-muted: #522b5b;
+  --page-border: rgba(82,43,91,.2);
+  --ion-color-primary: #854f6c;
+  --ion-color-primary-contrast: #fff4ee;
+  background: #fff4ee !important;
+  color: #190019 !important;
+}
+.composer-card > ion-textarea {
+  --color: #190019 !important;
+  --placeholder-color: #765878 !important;
+}
+.composer-card .tool-button { color: #522b5b !important; }
+.composer-card .publish-button { background: #854f6c !important; color: #fff4ee !important; }
+
+/* Improve contrast for profile details on the dark plum profile header. */
+html:not(.app-light) .profile-hero .stats-row strong { color: #c58aa8 !important; }
+html:not(.app-light) .profile-hero .profile-top > ion-button,
+html:not(.app-light) .profile-hero .profile-actions ion-button:not(.message-profile-button) {
+  --color: #c58aa8 !important;
+  --border-color: rgba(197,138,168,.7) !important;
+}
