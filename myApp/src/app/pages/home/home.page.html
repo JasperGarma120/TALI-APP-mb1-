@@ -12,35 +12,29 @@
 
 <ion-content class="home-content" [scrollEvents]="true" (ionScroll)="saveScroll($event)">
   <div class="screen-shell">
-    @if (accountService.selectedAccount(); as account) {
-      <section class="home-account-row" aria-label="Current account">
-        <ion-avatar class="profile-avatar">
-          @if (account.profileImage; as profileImage) {
-            <img [src]="profileImage" alt="" />
-          } @else {
-            <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
-          }
-        </ion-avatar>
-        <div class="home-account-copy">
-          <strong>{{ account.name }}</strong>
-          <span>{{ account.username }}</span>
-        </div>
-      </section>
-    }
+    <div class="feed-tabs" role="tablist" aria-label="Feed">
+      <button type="button" role="tab" class="feed-tab" [class.is-active]="activeFeed === 'for-you'" [attr.aria-selected]="activeFeed === 'for-you'" (click)="setFeed('for-you')">For you</button>
+      <button type="button" role="tab" class="feed-tab" [class.is-active]="activeFeed === 'following'" [attr.aria-selected]="activeFeed === 'following'" (click)="setFeed('following')">Following</button>
+    </div>
 
-    @if (feedPosts.length === 0) {
+    @if (visiblePosts.length === 0) {
       <section class="feed-empty">
         <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
-        <h3>No posts yet</h3>
-        <p>Posts from you and other accounts will appear here.</p>
-        <ion-button fill="clear" routerLink="/add-post">
-          <ion-icon slot="start" name="add-circle"></ion-icon>
-          Create a post
-        </ion-button>
+        @if (activeFeed === 'following') {
+          <h3>Nothing from people you follow</h3>
+          <p>Follow accounts to see their posts here.</p>
+        } @else {
+          <h3>No posts yet</h3>
+          <p>Posts from you and other accounts will appear here.</p>
+          <ion-button fill="clear" routerLink="/add-post">
+            <ion-icon slot="start" name="add-circle"></ion-icon>
+            Create a post
+          </ion-button>
+        }
       </section>
     }
 
-    @for (post of feedPosts; track post.id) {
+    @for (post of visiblePosts; track post.id) {
       <app-post-card [post]="post" [focusPostOnLoad]="post.id === focusedPostId" [openCommentsOnLoad]="post.id === focusedPostId && openCommentsForFocusedPost" [focusRequestId]="notificationFocusKey"></app-post-card>
     }
   </div>
