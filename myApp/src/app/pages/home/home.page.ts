@@ -26,6 +26,8 @@ export class HomePage implements AfterViewInit {
   readonly viewState = inject(ViewStateService);
   private readonly viewStateKey = 'tali-view-home';
 
+  activeFeed: 'for-you' | 'following' = 'for-you';
+
   get unreadNotifications() {
     const accountId = this.accountService.selectedAccount()?.id;
     return accountId === undefined ? 0 : this.notificationService.unreadCount(accountId);
@@ -35,6 +37,14 @@ export class HomePage implements AfterViewInit {
     const viewer = this.accountService.selectedAccount();
     const accounts = this.accountService.accounts();
     return this.postService.posts().filter((post) => !post.archivedAt && !post.trashedAt && this.postService.canViewPost(post, viewer, accounts));
+  }
+
+  get visiblePosts() {
+    const posts = this.feedPosts;
+    if (this.activeFeed === 'for-you') return posts;
+    const viewer = this.accountService.selectedAccount() as unknown as { following?: unknown[] } | undefined;
+    const followingIds = viewer?.following ?? [];
+    return posts.filter((post) => followingIds.includes((post as unknown as { authorId?: unknown }).authorId));
   }
 
   get focusedPostId() {
@@ -56,6 +66,10 @@ export class HomePage implements AfterViewInit {
 
   constructor() {
     addIcons({ addCircle, chatbubbleOutline, documentOutline, ellipsisHorizontal, heartOutline, homeSharp, notificationsOutline, personCircleOutline, personOutline, repeatOutline, searchOutline, shareOutline });
+  }
+
+  setFeed(feed: 'for-you' | 'following') {
+    this.activeFeed = feed;
   }
 
   ngAfterViewInit() {

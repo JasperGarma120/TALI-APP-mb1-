@@ -44,6 +44,21 @@
 
 <ion-content class="page-content" [class.chat-mode]="activeConversation !== null" [class.chat-theme-warm]="activeChatSettings?.theme === 'warm'" [class.chat-theme-sage]="activeChatSettings?.theme === 'sage'" [class.chat-wallpaper-glow]="activeChatSettings?.wallpaper === 'glow'" [class.chat-wallpaper-grid]="activeChatSettings?.wallpaper === 'grid'" [fullscreen]="true">
   @if (activeConversation; as conversation) {
+    @if (isActiveConversationRequest && activeChatAccount; as requester) {
+      <section class="request-sender-intro" aria-label="Message request sender">
+        <span class="request-profile-avatar">
+          @if (requester.profileImage) { <img [src]="requester.profileImage" [alt]="requester.name" /> }
+          @else { <ion-icon name="person-circle-outline"></ion-icon> }
+        </span>
+        <h2>{{ requester.name }}</h2>
+        <p class="request-connection-status">You’re not connected yet</p>
+        @if (mutualConnectionCount > 0) { <p class="request-mutual-count">{{ mutualConnectionCount }} mutual {{ mutualConnectionCount === 1 ? 'connection' : 'connections' }}</p> }
+        <div class="request-profile-actions">
+          <a [routerLink]="['/profile', requester.id]"><ion-icon name="person-circle-outline"></ion-icon><span>View profile</span></a>
+        </div>
+        <p class="request-encryption-note">Messages and calls are secured with end-to-end encryption. Only people in this chat can read, listen to, or share them.</p>
+      </section>
+    }
     <section class="chat-thread" aria-live="polite" aria-label="Conversation messages">
       @if (conversation.messages.length === 0) {
         <div class="thread-empty">
@@ -62,13 +77,39 @@
           }
           <div class="message-content">
             @if (message.senderId !== selectedAccount()?.id) { <strong class="message-sender">{{ messageAuthorName(message) }}</strong> }
+            @if (message.pinnedFor?.includes(selectedAccount()?.id ?? -1)) { <span class="pinned-message-label"><ion-icon name="pin-outline"></ion-icon> Pinned</span> }
+            @if (message.forwarded) { <span class="message-context-label"><ion-icon name="arrow-redo-outline"></ion-icon> {{ message.senderId === selectedAccount()?.id ? 'You forwarded a message' : messageAuthorName(message) + ' forwarded a message' }}</span> }
+            @if (message.replyTo; as reply) {
+              <span class="message-context-label"><ion-icon name="arrow-undo-outline"></ion-icon> {{ message.senderId === selectedAccount()?.id ? 'You replied to ' + (accountName(reply.senderId) ?? 'a message') : messageAuthorName(message) + ' replied to you' }}</span>
+              <div class="message-quoted-preview"><strong>{{ accountName(reply.senderId) ?? 'Message' }}</strong><span>{{ reply.body }}</span></div>
+            }
             <div class="message-bubble-row">
-              <p class="message-bubble" (pointerdown)="startReactionPress(message)" (pointerup)="clearReactionPress()" (pointerleave)="clearReactionPress()" (pointercancel)="clearReactionPress()" (contextmenu)="$event.preventDefault(); reactionPickerMessageId = message.id">{{ message.body }}</p>
+              <p class="message-bubble" (pointerdown)="startReactionPress(message)" (pointerup)="clearReactionPress()" (pointerleave)="clearReactionPress()" (pointercancel)="clearReactionPress()" (contextmenu)="$event.preventDefault(); reactionPickerMessageId = message.id">@for (part of messageParts(message.body); track $index) { @if (part === '@everyone') { <button type="button" class="message-mention everyone-mention" (click)="$event.stopPropagation(); callNotice = 'Everyone in this conversation was mentioned.'">@everyone</button> } @else if (part.startsWith('@') && mentionAccount(part); as mentioned) { <a class="message-mention" [routerLink]="['/profile', mentioned.id]" (click)="$event.stopPropagation()">{{ part }}</a> } @else { {{ part }} } }</p>
+              <div class="message-action-buttons" aria-label="Message quick actions">
+                <button type="button" aria-label="React to message" (click)="reactionPickerMessageId = reactionPickerMessageId === message.id ? null : message.id"><ion-icon name="happy-outline"></ion-icon></button>
+                <button type="button" aria-label="Reply to message" (click)="messageAction(message, 'reply')"><ion-icon name="arrow-undo-outline"></ion-icon></button>
+                <button type="button" aria-label="More message actions" [attr.aria-expanded]="messageActionsId === message.id" (click)="messageActionsId = messageActionsId === message.id ? null : message.id"><ion-icon name="ellipsis-horizontal"></ion-icon></button>
+              </div>
+              @if (messageActionsId === message.id) {
+                <div class="message-action-menu" role="group" aria-label="Message actions" (click)="$event.stopPropagation()">
+                  <button type="button" (click)="messageAction(message, 'delete')">Remove</button>
+                  <button type="button" (click)="messageAction(message, 'forward')">Forward</button>
+                  <button type="button" (click)="messageAction(message, 'pin')">Pin</button>
+                  <button type="button" class="delete-message-action" (click)="messageAction(message, 'report')">Report</button>
+                </div>
+              }
             </div>
             @for (attachment of message.attachments ?? []; track attachment.url) {
               @if (attachment.kind === 'photo' || attachment.kind === 'gif') { <img class="message-attachment" [src]="attachment.url" [alt]="attachment.name" (pointerdown)="startReactionPress(message)" (pointerup)="clearReactionPress()" (pointerleave)="clearReactionPress()" (pointercancel)="clearReactionPress()" (contextmenu)="$event.preventDefault(); reactionPickerMessageId = message.id" /> }
               @if (attachment.kind === 'video') { <video class="message-attachment" [src]="attachment.url" controls playsinline (pointerdown)="startReactionPress(message)" (pointerup)="clearReactionPress()" (pointerleave)="clearReactionPress()" (pointercancel)="clearReactionPress()" (contextmenu)="$event.preventDefault(); reactionPickerMessageId = message.id"></video> }
-              @if (attachment.kind === 'voice') { <audio class="message-voice" [src]="attachment.url" controls></audio> }
+              @if (attachment.kind === 'voice') {
+                <div class="voice-message-player" [class.own-voice-message]="message.senderId === selectedAccount()?.id">
+                  <audio #voicePlayer class="voice-audio-element" [src]="attachment.url" (play)="voicePlayingUrl = attachment.url" (pause)="voicePlaybackPaused(attachment.url)" (ended)="voicePlaybackPaused(attachment.url)"></audio>
+                  <button type="button" class="voice-play-button" [attr.aria-label]="voicePlayingUrl === attachment.url ? 'Pause voice message' : 'Play voice message'" (click)="toggleVoicePlayback(voicePlayer)"><ion-icon [name]="voicePlayingUrl === attachment.url ? 'pause-outline' : 'play-outline'"></ion-icon></button>
+                  <span class="voice-waveform" aria-hidden="true">@for (bar of voiceWaveBars; track bar) { <i [style.height.%]="voiceBarHeight(bar)"></i> }</span>
+                  <span class="voice-duration">{{ formatVoiceDuration(attachment.durationSeconds ?? 0) }}</span>
+                </div>
+              }
             }
             <div class="message-reaction-tools">
               @for (reaction of messageReactionList(message); track reaction.emoji) {
@@ -140,7 +181,6 @@
                 <button type="button" role="menuitem" class="delete-chat-action" (click)="conversationAction(conversation, 'delete')">Delete chat</button>
               </div>
             }
-            @if (activeTab === 'requests') { <button type="button" class="accept-request-button" (click)="acceptConversationRequest(conversation.id)">Accept</button> }
           </div>
         }
       </section>
@@ -151,6 +191,32 @@
         <p>{{ activeTab === 'inbox' ? 'Mutual-follow conversations and group chats will appear here.' : 'Conversations from people who do not follow you will appear here.' }}</p>
       </section>
     }
+  }
+
+  @if (forwardMessage) {
+    <div class="forward-backdrop" (click)="closeForward()">
+      <section class="forward-dialog" role="dialog" aria-modal="true" aria-labelledby="forward-title" (click)="$event.stopPropagation()">
+        <header class="forward-heading"><h2 id="forward-title">Forward</h2><button type="button" aria-label="Close" (click)="closeForward()"><ion-icon name="close-outline"></ion-icon></button></header>
+        <label class="forward-search"><ion-icon name="search-outline"></ion-icon><input type="search" [(ngModel)]="forwardSearch" placeholder="Search for people and groups" aria-label="Search for people and groups" /></label>
+        <div class="forward-recipient-list">
+          <h3>Recent</h3>
+          @for (person of forwardAccounts; track person.id) {
+            <button type="button" class="forward-recipient" (click)="forwardToAccount(person.id)">
+              <span class="forward-avatar">@if (person.profileImage) { <img [src]="person.profileImage" [alt]="person.name" /> } @else { <ion-icon name="person-circle-outline"></ion-icon> }</span>
+              <strong>{{ person.name }}</strong><span class="forward-send">Send</span>
+            </button>
+          }
+          @if (forwardConversations.length) {
+            <h3>Chats and groups</h3>
+            @for (chat of forwardConversations; track chat.id) {
+              <button type="button" class="forward-recipient" (click)="forwardToConversation(chat)">
+                <span class="forward-avatar"><ion-icon name="people-outline"></ion-icon></span><strong>{{ conversationTitle(chat) }}</strong><span class="forward-send">Send</span>
+              </button>
+            }
+          }
+        </div>
+      </section>
+    </div>
   }
 
   @if (composeMode) {
@@ -298,24 +364,50 @@
 </ion-content>
 
 @if (activeConversation; as conversation) {
-  <ion-footer class="chat-footer ion-no-border">
+  <ion-footer class="chat-footer ion-no-border" [class.emoji-picker-open]="showComposerEmojiPicker">
+    @if (isActiveConversationRequest) {
+      <section class="request-decision-panel" aria-label="Message request decision">
+        <p>If you accept, {{ conversationTitle(conversation) }} will be able to call you and may see information like your active status and when you’ve read messages.</p>
+        <a [routerLink]="['/settings']">Decide who can message you</a>
+        <div class="request-decision-buttons">
+          <button type="button" class="request-accept-button" (click)="acceptConversationRequest(conversation.id)">Accept</button>
+          <button type="button" class="request-delete-button" (click)="deleteActiveConversationRequest()">Delete</button>
+        </div>
+      </section>
+    } @else {
     <ion-toolbar>
       <form class="chat-composer" [class.is-expanded]="isComposerExpanded" (ngSubmit)="sendMessage()">
         <input #photoPicker hidden type="file" accept="image/*" (change)="attachSelectedFile($event, 'photo')" />
         <input #videoPicker hidden type="file" accept="video/*" (change)="attachSelectedFile($event, 'video')" />
         <input #gifPicker hidden type="file" accept="image/gif,.gif" (change)="attachSelectedFile($event, 'gif')" />
         <ion-button type="button" fill="clear" class="composer-collapse" tabindex="-1" aria-label="Return to attachments" (pointerdown)="$event.preventDefault()" (click)="isComposerExpanded = false"><ion-icon slot="icon-only" name="chevron-back-outline"></ion-icon></ion-button>
+        @if (replyToMessage) {
+          <div class="reply-composer-preview"><strong>Replying to {{ messageAuthorName(replyToMessage) }}</strong><span>{{ replyToMessage.body }}</span><button type="button" aria-label="Cancel reply" (click)="replyToMessage = null"><ion-icon name="close-outline"></ion-icon></button></div>
+        }
+        @if (recordingVoice) {
+          <div class="voice-recording-bar" role="group" aria-label="Voice recording controls">
+            <button type="button" class="voice-recording-delete" aria-label="Discard voice recording" (click)="cancelVoiceRecording()"><ion-icon name="trash-outline"></ion-icon></button>
+            <button type="button" class="voice-recording-toggle" [attr.aria-label]="voiceRecordingPaused ? 'Resume recording' : 'Pause recording'" (click)="pauseVoiceRecording()"><ion-icon [name]="voiceRecordingPaused ? 'play-outline' : 'pause-outline'"></ion-icon></button>
+            <span class="voice-waveform recording-waveform" aria-hidden="true">@for (bar of voiceWaveBars; track bar) { <i [style.height.%]="voiceBarHeight(bar)"></i> }</span>
+            <span class="voice-duration">{{ formatVoiceDuration(voiceDuration) }}</span>
+            <button type="button" class="voice-recording-send" aria-label="Send voice message" (click)="sendVoiceRecording()"><ion-icon name="arrow-up-outline"></ion-icon></button>
+          </div>
+        } @else {
         <div class="chat-attachment-actions" aria-label="Message attachments">
           <ion-button fill="clear" aria-label="Upload photo" (click)="photoPicker.click()"><ion-icon slot="icon-only" name="image-outline"></ion-icon></ion-button>
           <ion-button fill="clear" aria-label="Upload video" (click)="videoPicker.click()"><ion-icon slot="icon-only" name="videocam-outline"></ion-icon></ion-button>
           <ion-button fill="clear" class="gif-upload-button" aria-label="Upload GIF" (click)="gifPicker.click()"><span>GIF</span></ion-button>
-          <ion-button fill="clear" [attr.aria-label]="recordingVoice ? 'Stop voice recording' : 'Record voice message'" (click)="toggleVoiceRecording()"><ion-icon slot="icon-only" [name]="recordingVoice ? 'stop-circle-outline' : 'mic-outline'"></ion-icon></ion-button>
+          <ion-button fill="clear" aria-label="Record voice message" (click)="toggleVoiceRecording()"><ion-icon slot="icon-only" name="mic-outline"></ion-icon></ion-button>
         </div>
-        <div class="composer-emoji-control"><ion-button type="button" fill="clear" aria-label="Open emoji list" (click)="showComposerEmojiPicker = !showComposerEmojiPicker"><ion-icon slot="icon-only" name="happy-outline"></ion-icon></ion-button>@if (showComposerEmojiPicker) { <emoji-picker class="composer-emoji-picker" data-source="/assets/emoji-data.json" (emoji-click)="onComposerEmojiSelected($event)"></emoji-picker> }</div>
-        <input class="chat-text-input" type="text" name="chatMessage" [ngModel]="messageDraft" (ngModelChange)="updateDraftTyping($event)" (focus)="isComposerExpanded = true" (blur)="clearTyping()" placeholder="Write a message" aria-label="Write a message" [disabled]="isPreferenceEnabled('blockedFor')" autocomplete="off" />
-        <ion-button type="submit" fill="solid" aria-label="Send message" [disabled]="(!messageDraft.trim() && !pendingAttachments.length) || isPreferenceEnabled('blockedFor')"><ion-icon slot="icon-only" name="arrow-up-outline"></ion-icon></ion-button>
+        <div class="composer-emoji-control"><ion-button type="button" fill="clear" aria-label="Open emoji picker" aria-haspopup="dialog" [attr.aria-expanded]="showComposerEmojiPicker" (click)="showComposerEmojiPicker = !showComposerEmojiPicker"><ion-icon slot="icon-only" name="happy-outline"></ion-icon></ion-button></div>
+        <div class="chat-input-wrap">
+          <input class="chat-text-input" type="text" name="chatMessage" [ngModel]="messageDraft" (ngModelChange)="updateDraftTyping($event)" (focus)="isComposerExpanded = true" (blur)="clearTyping()" placeholder="Write a message" aria-label="Write a message" [disabled]="isPreferenceEnabled('blockedFor')" autocomplete="off" />
+        </div>
+        <ion-button type="submit" fill="solid" [attr.aria-label]="messageDraft.trim() || pendingAttachments.length ? 'Send message' : 'Send heart reaction'" [disabled]="isPreferenceEnabled('blockedFor')">@if (messageDraft.trim() || pendingAttachments.length) { <ion-icon slot="icon-only" name="arrow-up-outline"></ion-icon> } @else { <span class="quick-heart" aria-hidden="true">❤️</span> }</ion-button>
+        }
       </form>
     </ion-toolbar>
+    }
   </ion-footer>
 } @else {
   <ion-footer class="page-footer ion-no-border"><ion-toolbar>
@@ -327,4 +419,24 @@
       <ion-button fill="clear" routerLink="/profile" (click)="viewState.handleTabTap('/profile', 'tali-view-profile:current')" aria-label="Profile"><ion-icon slot="icon-only" name="person-circle-outline"></ion-icon></ion-button>
     </nav>
   </ion-toolbar></ion-footer>
+}
+@if (showComposerEmojiPicker && activeConversation) {
+  <emoji-picker class="composer-emoji-picker" data-source="/assets/emoji-data.json" (emoji-click)="onComposerEmojiSelected($event)"></emoji-picker>
+}
+@if (mentionQuery !== null && activeConversation && !isActiveConversationRequest) {
+  <div class="mention-suggestions" role="listbox" aria-label="Group chat members to mention">
+    @for (person of mentionSuggestions; track person.id) {
+      <button type="button" role="option" (mousedown)="$event.preventDefault(); insertMention(person.username)">
+        <span class="mention-avatar">@if (person.profileImage) { <img [src]="person.profileImage" [alt]="''" /> } @else { <ion-icon name="person-circle-outline"></ion-icon> }</span>
+        <span class="mention-option-copy"><strong>{{ person.name }}</strong><small>{{ person.username }}</small></span>
+      </button>
+    }
+    @if (canMentionEveryone) {
+      <button type="button" role="option" (mousedown)="$event.preventDefault(); insertMention('@everyone')">
+        <span class="mention-avatar everyone-avatar"><ion-icon name="people-outline"></ion-icon></span>
+        <span class="mention-option-copy"><strong>everyone</strong><small>Mention everyone in this chat</small></span>
+      </button>
+    }
+    @if (!mentionSuggestions.length && !canMentionEveryone) { <p class="mention-empty">No members match that mention.</p> }
+  </div>
 }

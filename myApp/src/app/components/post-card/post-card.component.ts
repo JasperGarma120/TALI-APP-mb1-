@@ -58,6 +58,20 @@ export class PostCardComponent implements OnChanges {
     return Math.max(0, Math.ceil((30 * 24 * 60 * 60 * 1000 - elapsed) / (24 * 60 * 60 * 1000)));
   }
 
+  get timeAgo() {
+    const seconds = Math.floor((Date.now() - new Date(this.post.createdAt).getTime()) / 1000);
+    if (Number.isNaN(seconds)) return '';
+    if (seconds < 60) return 'now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d`;
+    if (days < 365) return `${Math.floor(days / 7)}w`;
+    return `${Math.floor(days / 365)}y`;
+  }
+
   ngOnChanges(changes: SimpleChanges) {
     if (this.post && typeof sessionStorage !== 'undefined') {
       try {

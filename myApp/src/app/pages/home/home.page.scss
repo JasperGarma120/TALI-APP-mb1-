@@ -185,4 +185,31 @@ app-post-card { display: block; margin: 0 12px 12px; }
 	.feed-empty p { font-size: .74rem; }
 	.feed-empty ion-button { font-size: .8rem; text-transform: none; }
 }
+.screen-shell {
+  max-width: 600px;
+  margin: 0 auto;
+  padding-bottom: 96px;
+}
+
+.feed-tabs {
+  display: flex;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 4px;
+}
+
+.feed-tab {
+  flex: 1;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 12px 0;
+  font-size: 15px;
+  color: #9a8c80;
+  cursor: pointer;
+}
+
+.feed-tab.is-active {
+  color: #f3ebe3;
+  border-bottom-color: #c9a48a;
+}
 

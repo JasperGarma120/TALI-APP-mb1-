@@ -85,11 +85,19 @@ export class SuggestionsPage {
       case 'share': return 'shared your post';
       case 'repost': return 'reposted your post';
       case 'mention': return 'mentioned you';
+      case 'message_request': return 'sent you a message request';
     }
   }
 
   markNotificationRead(notification: AppNotification) {
     this.notificationService.markRead(notification.id, notification.recipientId);
+    if (notification.type === 'message_request' && notification.conversationId) {
+      const messagesStateKey = 'tali-view-messages';
+      const saved = this.viewState.read<Record<string, unknown>>(messagesStateKey, {});
+      this.viewState.write(messagesStateKey, { ...saved, activeConversationId: notification.conversationId });
+      void this.router.navigate(['/messages']);
+      return;
+    }
     if (notification.type === 'follow') {
       void this.router.navigate(['/profile', notification.actorId]);
       return;
