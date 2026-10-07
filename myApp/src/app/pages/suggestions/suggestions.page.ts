@@ -26,6 +26,13 @@ export class SuggestionsPage {
   selectedSection: 'suggestions' | 'notifications' = 'suggestions';
   selectedCategory: 'people' | 'posts' | 'groups' = 'people';
 
+  get groups() {
+    try {
+      const value: unknown = JSON.parse(localStorage.getItem('tali-community-groups') ?? '[]');
+      return Array.isArray(value) ? value.filter((item) => !!item && typeof item.name === 'string') as { id: string; name: string; description: string }[] : [];
+    } catch { return []; }
+  }
+
   get people() {
     const selectedId = this.accountService.selectedAccount()?.id;
     return this.accountService.accounts().filter((account) => account.id !== selectedId);

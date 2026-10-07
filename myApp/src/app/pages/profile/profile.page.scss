@@ -155,3 +155,8 @@
 	.connection-row span, .connection-empty { font-size: .72rem; }
 	.edit-dialog ion-input, .edit-dialog ion-textarea { font-size: .9rem; }
 }
+.profile-privacy-settings { display:grid;gap:12px;margin:18px 0;padding:16px;border:1px solid #dfe0e8;border-radius:16px;background:#f7f7fb; }
+.profile-privacy-settings h3 { margin:0;font-size:1rem; }
+.profile-privacy-settings label { display:grid;gap:7px;color:#33354b;font-size:.84rem;font-weight:700; }
+.profile-privacy-settings select { min-height:42px;padding:8px 10px;border:1px solid #d9dbe5;border-radius:10px;background:white;color:#17182a;font:inherit; }
+.profile-privacy-settings p { margin:0;color:#707287;font-size:.8rem;line-height:1.45; }

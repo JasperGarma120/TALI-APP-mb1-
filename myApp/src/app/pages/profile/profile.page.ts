@@ -30,6 +30,8 @@ export class ProfilePage {
   editUsername = '';
   editBio = '';
   editProfileImage = '';
+  editPrivacy: 'public' | 'private' = 'public';
+  editRepostVisibility: 'public' | 'friends' | 'only-me' = 'public';
   profileImageError = '';
   connectionsView: 'followers' | 'following' | null = null;
 
@@ -131,9 +133,10 @@ export class ProfilePage {
     if (!profile) return [];
     const viewer = this.accountService.selectedAccount();
     const accounts = this.accountService.accounts();
-    return this.postService.posts().filter((post) =>
-      post.reposts.includes(profile.id) && this.postService.canViewPost(post, viewer, accounts),
-    );
+    const visibility = profile.repostVisibility ?? 'public';
+    const isFriend = !!viewer && profile.followingIds.includes(viewer.id) && viewer.followingIds.includes(profile.id);
+    if (!this.isOwnProfile && (visibility === 'only-me' || (visibility === 'friends' && !isFriend))) return [];
+    return this.postService.posts().filter((post) => post.reposts.includes(profile.id) && this.postService.canViewPost(post, viewer, accounts));
   }
 
   get followers() {
@@ -165,6 +168,8 @@ export class ProfilePage {
     this.editUsername = account.username;
     this.editBio = account.bio;
     this.editProfileImage = account.profileImage ?? '';
+    this.editPrivacy = account.privacy ?? 'public';
+    this.editRepostVisibility = account.repostVisibility ?? 'public';
     this.profileImageError = '';
     this.editingProfile = true;
   }
@@ -199,8 +204,10 @@ export class ProfilePage {
   saveProfile() {
     if (!this.editName.trim() || !this.editUsername.trim()) return;
     if (!this.isOwnProfile) return;
-    const account = this.accountService.updateProfile(this.editName, this.editUsername, this.editBio, this.editProfileImage || undefined);
-    if (account) this.postService.updateAuthor(account.id, account.name, account.username);
+    this.accountService.updateProfile(this.editName, this.editUsername, this.editBio, this.editProfileImage || undefined);
+    this.accountService.updatePrivacy(this.editPrivacy, this.editRepostVisibility);
+    const updated = this.accountService.selectedAccount();
+    if (updated) this.postService.updateAuthor(updated.id, updated.name, updated.username);
     this.editingProfile = false;
   }
 }
