@@ -1,5 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { loadBrowserData, saveBrowserData } from './browser-data.store';
+import { AccountService } from './account.service';
+import { NotificationService } from './notification.service';
 
 const conversationsStorageKey = 'tali-conversations';
 
@@ -12,12 +14,17 @@ export interface ChatMessage {
   readBy?: number[];
   seenBy?: number[];
   attachments?: ChatAttachment[];
+  pinnedFor?: number[];
+  reportedFor?: number[];
+  forwarded?: boolean;
+  replyTo?: { messageId: string; senderId: number; body: string };
 }
 
 export interface ChatAttachment {
   kind: 'photo' | 'video' | 'gif' | 'voice';
   name: string;
   url: string;
+  durationSeconds?: number;
 }
 
 export type SharedItemsType = 'photos' | 'links' | 'files' | 'voice messages';
@@ -51,6 +58,8 @@ export interface Conversation {
 
 @Injectable({ providedIn: 'root' })
 export class MessageService {
+  private readonly accountService = inject(AccountService);
+  private readonly notificationService = inject(NotificationService);
   readonly conversations = signal<Conversation[]>([]);
   private readonly typingByConversation = signal<Map<string, number[]>>(new Map());
   private nextId = 0;
@@ -95,9 +104,24 @@ export class MessageService {
     return this.typingByConversation().get(conversationId) ?? [];
   }
 
-  sendMessage(conversationId: string, senderId: number, body: string, attachments: ChatAttachment[] = []) {
+  sendMessage(conversationId: string, senderId: number, body: string, attachments: ChatAttachment[] = [], metadata: Pick<ChatMessage, 'forwarded' | 'replyTo'> = {}) {
     const text = body.trim();
     if (!text && !attachments.length) return;
+
+    const existingConversation = this.conversations().find((item) => item.id === conversationId);
+    if (existingConversation && !existingConversation.groupName && existingConversation.messages.length === 0) {
+      const actor = this.accountService.accounts().find((account) => account.id === senderId);
+      if (actor) {
+        for (const recipientId of existingConversation.memberIds.filter((id) => id !== senderId)) {
+          const recipient = this.accountService.accounts().find((account) => account.id === recipientId);
+          const acceptedFor = normalizeChatSettings(existingConversation.settings).acceptedFor;
+          if (recipient && !recipient.followingIds.includes(senderId) && !acceptedFor.includes(senderId) && !acceptedFor.includes(recipientId)) {
+            const preview = text || (attachments[0]?.kind === 'voice' ? 'Voice message' : attachments[0]?.kind === 'video' ? 'Video' : attachments[0]?.kind === 'gif' ? 'GIF' : 'Photo');
+            this.notificationService.notifyMessageRequest(actor, recipientId, conversationId, preview);
+          }
+        }
+      }
+    }
 
     const message: ChatMessage = {
       id: `${Date.now()}-${++this.nextId}`,
@@ -107,6 +131,7 @@ export class MessageService {
       createdAt: new Date(),
       readBy: [senderId],
       seenBy: [senderId],
+      ...metadata,
     };
     this.conversations.update((conversations) => conversations.map((conversation) => {
       if (conversation.id !== conversationId) return conversation;
@@ -210,6 +235,24 @@ export class MessageService {
         }),
       };
     }));
+    this.persistConversations();
+  }
+
+  deleteMessage(conversationId: string, messageId: string) {
+    this.conversations.update((items) => items.map((conversation) => conversation.id === conversationId
+      ? { ...conversation, messages: conversation.messages.filter((message) => message.id !== messageId) }
+      : conversation));
+    this.persistConversations();
+  }
+
+  toggleMessageFlag(conversationId: string, messageId: string, accountId: number, flag: 'pinnedFor' | 'reportedFor') {
+    this.conversations.update((items) => items.map((conversation) => conversation.id === conversationId
+      ? { ...conversation, messages: conversation.messages.map((message) => {
+        if (message.id !== messageId) return message;
+        const values = message[flag] ?? [];
+        return { ...message, [flag]: values.includes(accountId) ? values.filter((id) => id !== accountId) : [...values, accountId] };
+      }) }
+      : conversation));
     this.persistConversations();
   }
 

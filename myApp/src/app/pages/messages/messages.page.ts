@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonSearchbar, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
 import 'emoji-picker-element';
-import { addCircle, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOffOutline, notificationsOutline, paperPlaneOutline, personCircleOutline, pinOutline, searchOutline, stopCircleOutline, videocamOutline } from 'ionicons/icons';
+import { addCircle, arrowRedoOutline, arrowUndoOutline, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOffOutline, notificationsOutline, paperPlaneOutline, pauseOutline, peopleOutline, personCircleOutline, pinOutline, playOutline, searchOutline, stopCircleOutline, trashOutline, videocamOutline } from 'ionicons/icons';
 import { Account, AccountService } from '../../services/account.service';
 import { ChatAttachment, ChatMessage, Conversation, MessageService, SharedItemsType } from '../../services/message.service';
 import { NotificationService } from '../../services/notification.service';
@@ -55,12 +55,24 @@ export class MessagesPage {
   isComposerExpanded = false;
   pendingAttachments: ChatAttachment[] = [];
   recordingVoice = false;
+  voiceRecordingPaused = false;
+  voiceDuration = 0;
+  voicePlayingUrl: string | null = null;
+  readonly voiceWaveBars = Array.from({ length: 34 }, (_, index) => index);
   reactionPickerMessageId: string | null = null;
+  messageActionsId: string | null = null;
+  replyToMessage: ChatMessage | null = null;
+  forwardMessage: ChatMessage | null = null;
+  forwardSearch = '';
   showComposerEmojiPicker = false;
   openConversationMenuId: string | null = null;
   private reactionPressTimer: ReturnType<typeof setTimeout> | null = null;
   private voiceRecorder: MediaRecorder | null = null;
-  readonly filters = ['All', 'Unread', 'Unanswered', 'Verified', 'Archived', 'Restricted', 'Blocked'];
+  private voiceTimerInterval: ReturnType<typeof setInterval> | null = null;
+  private sendVoiceAfterStop = false;
+  private discardVoiceRecording = false;
+  private voiceRecordingStartedAt = 0;
+  readonly filters = ['All', 'Unread', 'Unanswered', 'Archived', 'Restricted', 'Blocked'];
 
   get visibleConversations() {
     const accountId = this.selectedAccount()?.id;
@@ -81,7 +93,6 @@ export class MessagesPage {
           const latestMessage = conversation.messages.at(-1);
           return !!latestMessage && latestMessage.senderId !== accountId;
         }
-        if (this.activeFilter === 'Verified') return this.conversationHasVerifiedParticipant(conversation, accountId);
         return true;
       })
       .filter((conversation) => this.conversationTitle(conversation).toLowerCase().includes(query) || conversation.messages.some((message) => message.body.toLowerCase().includes(query)))
@@ -105,11 +116,6 @@ export class MessagesPage {
       : !conversation.messages.some((message) => message.senderId === accountId);
   }
 
-  private conversationHasVerifiedParticipant(conversation: Conversation, accountId: number) {
-    const participants = this.accounts().filter((account) => account.id !== accountId && conversation.memberIds.includes(account.id));
-    return participants.length > 0 && participants.every((account) => account.verified === true);
-  }
-
   acceptConversationRequest(conversationId: string) {
     const accountId = this.selectedAccount()?.id;
     if (accountId === undefined) return;
@@ -119,6 +125,14 @@ export class MessagesPage {
     if (!acceptedFor.includes(accountId)) {
       this.messageService.updateSettings(conversationId, { acceptedFor: [...acceptedFor, accountId] });
     }
+  }
+
+  deleteActiveConversationRequest() {
+    const conversation = this.activeConversation;
+    if (!conversation || !this.isActiveConversationRequest) return;
+    this.messageService.deleteConversation(conversation.id);
+    this.activeConversationId = null;
+    this.saveViewState();
   }
 
   get activeConversation() {
@@ -136,14 +150,40 @@ export class MessagesPage {
     return this.activeConversation ? this.messageService.settingsFor(this.activeConversation.id) : null;
   }
 
+  get isActiveConversationRequest() {
+    const conversation = this.activeConversation;
+    const accountId = this.selectedAccount()?.id;
+    return !!conversation && accountId !== undefined && conversation.messages[0]?.senderId !== accountId
+      && this.isConversationRequest(conversation, accountId);
+  }
+
+  get mutualConnectionCount() {
+    const current = this.selectedAccount();
+    const other = this.activeChatAccount;
+    if (!current || !other) return 0;
+    const otherFollowing = new Set(other.followingIds);
+    return current.followingIds.filter((id) => id !== current.id && id !== other.id && otherFollowing.has(id)).length;
+  }
+
   get visibleMessages() {
     const messages = this.activeConversation?.messages ?? [];
     const query = this.conversationSearch.trim().toLowerCase();
     return query ? messages.filter((message) => message.body.toLowerCase().includes(query)) : messages;
   }
 
+  get forwardAccounts() {
+    const query = this.forwardSearch.trim().toLowerCase();
+    return this.otherAccounts().filter((account) => !query || account.name.toLowerCase().includes(query) || account.username.toLowerCase().includes(query));
+  }
+
+  get forwardConversations() {
+    const query = this.forwardSearch.trim().toLowerCase();
+    return this.conversations().filter((item) => item.id !== this.activeConversationId && item.memberIds.includes(this.selectedAccount()?.id ?? -1))
+      .filter((item) => !query || this.conversationTitle(item).toLowerCase().includes(query));
+  }
+
   constructor() {
-    addIcons({ addCircle, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOffOutline, notificationsOutline, paperPlaneOutline, personCircleOutline, pinOutline, searchOutline, stopCircleOutline, videocamOutline });
+    addIcons({ addCircle, arrowRedoOutline, arrowUndoOutline, arrowUpOutline, chatbubbleOutline, checkmarkOutline, chevronBackOutline, closeOutline, createOutline, ellipsisHorizontal, filterOutline, happyOutline, homeOutline, imageOutline, micOutline, notificationsOffOutline, notificationsOutline, paperPlaneOutline, pauseOutline, peopleOutline, personCircleOutline, pinOutline, playOutline, searchOutline, stopCircleOutline, trashOutline, videocamOutline });
     const saved = this.viewState.read<Partial<{ activeTab: 'inbox' | 'requests'; activeFilter: string; searchQuery: string; activeConversationId: string | null; messageDraft: string; conversationSearch: string; showChatSettings: boolean; showSharedItems: boolean; sharedItemsType: SharedItemsType; showFilters: boolean; composeMode: 'menu' | 'direct' | 'group' | null; groupName: string; selectedMemberIds: number[] }>>(this.viewStateKey, {});
     if (saved.activeTab) this.activeTab = saved.activeTab;
     if (saved.activeFilter && this.filters.includes(saved.activeFilter)) this.activeFilter = saved.activeFilter;
@@ -249,6 +289,10 @@ export class MessagesPage {
 
   messageAuthorName(message: ChatMessage) {
     return this.messageAuthor(message)?.name ?? 'Former account';
+  }
+
+  accountName(accountId: number) {
+    return this.accounts().find((account) => account.id === accountId)?.name;
   }
 
   messageWasReadByOther(message: ChatMessage) {
@@ -419,6 +463,72 @@ export class MessagesPage {
     this.saveViewState();
   }
 
+  get mentionQuery() {
+    return this.messageDraft.match(/(?:^|\s)@([\w.]*)$/)?.[1] ?? null;
+  }
+
+  get mentionSuggestions() {
+    const query = this.mentionQuery?.toLowerCase() ?? '';
+    const accountId = this.selectedAccount()?.id;
+    return this.otherAccounts().filter((account) => account.id !== accountId && account.username.toLowerCase().replace(/^@/, '').includes(query)).slice(0, 5);
+  }
+
+  insertMention(username: string) {
+    this.messageDraft = this.messageDraft.replace(/(?:^|\s)@[\w.]*$/, (match) => `${match.startsWith(' ') ? ' ' : ''}${username} `);
+    this.updateDraftTyping(this.messageDraft);
+  }
+
+  messageAction(message: ChatMessage, action: 'reply' | 'forward' | 'delete' | 'pin' | 'report') {
+    const conversation = this.activeConversation;
+    if (!conversation) return;
+    this.messageActionsId = null;
+    if (action === 'delete') {
+      this.messageService.deleteMessage(conversation.id, message.id);
+    } else if (action === 'reply') {
+      this.replyToMessage = message;
+    } else if (action === 'forward') {
+      this.forwardMessage = message;
+      this.forwardSearch = '';
+    } else if (action === 'pin' || action === 'report') {
+      const accountId = this.selectedAccount()?.id;
+      if (accountId === undefined) return;
+      const flag = action === 'pin' ? 'pinnedFor' : 'reportedFor';
+      this.messageService.toggleMessageFlag(conversation.id, message.id, accountId, flag);
+      this.callNotice = action === 'pin'
+        ? (message.pinnedFor ?? []).includes(accountId) ? 'You unpinned a message.' : 'You pinned a message.'
+        : 'Message reported.';
+    }
+  }
+
+  closeForward() { this.forwardMessage = null; this.forwardSearch = ''; }
+
+  forwardToAccount(accountId: number) {
+    const account = this.selectedAccount();
+    const message = this.forwardMessage;
+    if (!account || !message) return;
+    const conversation = this.messageService.openDirectConversation(account.id, accountId);
+    this.messageService.sendMessage(conversation.id, account.id, message.body, message.attachments ?? [], { forwarded: true });
+    this.closeForward();
+    this.callNotice = 'Message forwarded.';
+  }
+
+  forwardToConversation(conversation: Conversation) {
+    const account = this.selectedAccount();
+    const message = this.forwardMessage;
+    if (!account || !message) return;
+    this.messageService.sendMessage(conversation.id, account.id, message.body, message.attachments ?? [], { forwarded: true });
+    this.closeForward();
+    this.callNotice = 'Message forwarded.';
+  }
+
+  mentionAccount(username: string) {
+    return this.accounts().find((account) => account.username.toLowerCase() === username.toLowerCase());
+  }
+
+  messageParts(body: string) {
+    return body.split(/(@everyone|@[\w.]+)/g).filter(Boolean);
+  }
+
   clearTyping() {
     const accountId = this.selectedAccount()?.id;
     const conversation = this.activeConversation;
@@ -432,9 +542,8 @@ export class MessagesPage {
 
   onComposerEmojiSelected(event: Event) {
     const emoji = (event as CustomEvent<{ unicode: string }>).detail?.unicode;
-    if (emoji) this.messageDraft += emoji;
+    if (emoji) this.updateDraftTyping(this.messageDraft + emoji);
     this.showComposerEmojiPicker = false;
-    this.saveViewState();
   }
   messageReactionList(message: ChatMessage) {
     return Object.entries(message.reactions ?? {})
@@ -480,40 +589,114 @@ export class MessagesPage {
       const chunks: BlobPart[] = [];
       const recorder = new MediaRecorder(stream);
       this.voiceRecorder = recorder;
+      this.voiceDuration = 0;
+      this.voiceRecordingStartedAt = Date.now();
+      this.sendVoiceAfterStop = false;
+      this.discardVoiceRecording = false;
       recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
       recorder.onstop = () => {
         stream.getTracks().forEach((track) => track.stop());
+        if (this.voiceTimerInterval !== null) clearInterval(this.voiceTimerInterval);
+        this.voiceTimerInterval = null;
         this.recordingVoice = false;
+        this.voiceRecordingPaused = false;
         this.voiceRecorder = null;
+        const shouldSend = this.sendVoiceAfterStop;
+        const shouldDiscard = this.discardVoiceRecording;
+        const durationSeconds = this.voiceDuration;
+        this.sendVoiceAfterStop = false;
+        this.discardVoiceRecording = false;
+        if (shouldDiscard) return;
         const recording = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
         if (recording.size > 15 * 1024 * 1024) {
           this.callNotice = 'The voice message is larger than 15 MB.';
           return;
         }
+        if (!recording.size) {
+          this.callNotice = 'No audio was recorded. Try again.';
+          return;
+        }
         const reader = new FileReader();
         reader.onload = () => {
           if (typeof reader.result === 'string') {
-            this.pendingAttachments = [...this.pendingAttachments, { kind: 'voice', name: 'Voice message', url: reader.result }];
-            this.sendMessage();
+            this.pendingAttachments = [...this.pendingAttachments, { kind: 'voice', name: 'Voice message', url: reader.result, durationSeconds }];
+            if (shouldSend) this.sendMessage();
           }
         };
         reader.readAsDataURL(recording);
       };
       recorder.start();
       this.recordingVoice = true;
-      this.callNotice = 'Recording voice message. Tap the microphone again to send it.';
+      this.voiceTimerInterval = setInterval(() => {
+        if (!this.voiceRecordingPaused) this.voiceDuration = Math.floor((Date.now() - this.voiceRecordingStartedAt) / 1000);
+      }, 250);
+      this.callNotice = '';
     } catch {
       this.callNotice = 'Microphone access was not granted.';
     }
   }
 
+  pauseVoiceRecording() {
+    if (!this.voiceRecorder) return;
+    if (this.voiceRecordingPaused) {
+      this.voiceRecorder.resume();
+      this.voiceRecordingStartedAt = Date.now() - this.voiceDuration * 1000;
+      this.voiceRecordingPaused = false;
+    } else {
+      this.voiceDuration = Math.floor((Date.now() - this.voiceRecordingStartedAt) / 1000);
+      this.voiceRecorder.pause();
+      this.voiceRecordingPaused = true;
+    }
+  }
+
+  sendVoiceRecording() {
+    if (!this.voiceRecorder || !this.recordingVoice) return;
+    if (!this.voiceRecordingPaused) this.voiceDuration = Math.floor((Date.now() - this.voiceRecordingStartedAt) / 1000);
+    this.sendVoiceAfterStop = true;
+    this.voiceRecorder.stop();
+  }
+
+  cancelVoiceRecording() {
+    if (!this.voiceRecorder || !this.recordingVoice) return;
+    this.discardVoiceRecording = true;
+    this.sendVoiceAfterStop = false;
+    this.voiceRecorder.stop();
+    this.callNotice = 'Voice recording discarded.';
+  }
+
+  formatVoiceDuration(seconds: number) {
+    const safeSeconds = Math.max(0, Math.floor(seconds));
+    return `${Math.floor(safeSeconds / 60)}:${String(safeSeconds % 60).padStart(2, '0')}`;
+  }
+
+  voiceBarHeight(index: number) {
+    return 18 + ((index * 29 + 17) % 72);
+  }
+
+  async toggleVoicePlayback(player: HTMLAudioElement) {
+    if (player.paused) {
+      try { await player.play(); } catch { this.callNotice = 'This voice message could not be played.'; }
+    } else player.pause();
+  }
+
+  voicePlaybackPaused(url: string) {
+    if (this.voicePlayingUrl === url) this.voicePlayingUrl = null;
+  }
+
   sendMessage() {
     const account = this.selectedAccount();
     const conversation = this.activeConversation;
-    if (!account || !conversation || (!this.messageDraft.trim() && !this.pendingAttachments.length) || this.isPreferenceEnabled('blockedFor')) return;
-    this.messageService.sendMessage(conversation.id, account.id, this.messageDraft, this.pendingAttachments);
+    if (!account || !conversation || this.isPreferenceEnabled('blockedFor')) return;
+    const body = this.messageDraft.trim() || (this.pendingAttachments.length ? '' : '❤️');
+    const replyTo = this.replyToMessage ? {
+      messageId: this.replyToMessage.id,
+      senderId: this.replyToMessage.senderId,
+      body: this.replyToMessage.body,
+    } : undefined;
+    this.messageService.sendMessage(conversation.id, account.id, body, this.pendingAttachments, replyTo ? { replyTo } : {});
     this.clearTyping();
     this.messageDraft = '';
+    this.replyToMessage = null;
     this.saveViewState();
     this.pendingAttachments = [];
   }

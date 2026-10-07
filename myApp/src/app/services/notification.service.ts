@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import type { Account } from './account.service';
 import { loadBrowserData, saveBrowserData } from './browser-data.store';
 
-export type NotificationType = 'like' | 'comment' | 'follow' | 'share' | 'repost' | 'mention';
+export type NotificationType = 'like' | 'comment' | 'follow' | 'share' | 'repost' | 'mention' | 'message_request';
 
 export interface AppNotification {
   id: string;
@@ -12,6 +12,7 @@ export interface AppNotification {
   actorUsername: string;
   type: NotificationType;
   postId: string | null;
+  conversationId?: string;
   postPreview: string;
   createdAt: Date;
   read: boolean;
@@ -49,6 +50,11 @@ export class NotificationService {
 
   notifyFollow(actor: Pick<Account, 'id' | 'name' | 'username'>, recipientId: number) {
     this.add('follow', actor, recipientId, null, '');
+  }
+
+  notifyMessageRequest(actor: Pick<Account, 'id' | 'name' | 'username'>, recipientId: number, conversationId: string, preview: string) {
+    if (this.notifications().some((notification) => notification.type === 'message_request' && notification.conversationId === conversationId && notification.recipientId === recipientId)) return;
+    this.add('message_request', actor, recipientId, null, preview.trim().slice(0, 120), conversationId);
   }
 
   notifyPostAction(
@@ -104,6 +110,7 @@ export class NotificationService {
     recipientId: number,
     postId: string | null,
     postPreview: string,
+    conversationId?: string,
   ) {
     if (actor.id === recipientId) return;
     const notification: AppNotification = {
@@ -114,6 +121,7 @@ export class NotificationService {
       actorUsername: actor.username,
       type,
       postId,
+      ...(conversationId ? { conversationId } : {}),
       postPreview,
       createdAt: new Date(),
       read: false,
@@ -140,8 +148,9 @@ function isStoredNotificationList(value: unknown): value is AppNotification[] {
     return typeof notification.id === 'string' && Number.isSafeInteger(notification.recipientId) &&
       Number.isSafeInteger(notification.actorId) && typeof notification.actorName === 'string' &&
       typeof notification.actorUsername === 'string' &&
-      ['like', 'comment', 'follow', 'share', 'repost', 'mention'].includes(String(notification.type)) &&
+      ['like', 'comment', 'follow', 'share', 'repost', 'mention', 'message_request'].includes(String(notification.type)) &&
       (typeof notification.postId === 'string' || notification.postId === null) &&
+      (notification.conversationId === undefined || typeof notification.conversationId === 'string') &&
       typeof notification.postPreview === 'string' &&
       (typeof notification.createdAt === 'string' || notification.createdAt instanceof Date) &&
       typeof notification.read === 'boolean';

@@ -815,3 +815,17 @@ html.app-web-shell ion-modal.post-comments-modal::part(content) {
 		--border-radius: 0;
 	}
 }
+
+.message-bubble { cursor: pointer; }
+.message-mention { padding: 0; border: 0; background: transparent; color: #82c7ff; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; }
+.everyone-mention { color: #ffd166; }
+.message-action-menu { position: absolute; z-index: 9; top: 100%; right: 4px; display: flex; gap: 3px; padding: 5px; border: 1px solid var(--page-border); border-radius: 12px; background: var(--page-surface); box-shadow: 0 8px 24px #0005; }
+.message-action-menu button { padding: 7px 9px; border: 0; border-radius: 8px; background: transparent; color: var(--page-text); font-size: .76rem; cursor: pointer; }
+.message-action-menu button:hover { background: var(--page-hover); }
+.message-action-menu .delete-message-action { color: #ff777d; }
+.chat-input-wrap { position: relative; display: flex; min-width: 0; flex: 1 1 auto; }
+.chat-input-wrap .chat-text-input { width: 100%; min-width: 0; flex: 1 1 auto; }
+.mention-suggestions { position: absolute; z-index: 20; bottom: calc(100% + 8px); left: 0; display: grid; width: min(280px, calc(100vw - 32px)); max-height: 240px; overflow: auto; padding: 6px; border: 1px solid var(--page-border); border-radius: 14px; background: var(--page-surface); box-shadow: 0 12px 32px #0005; }
+.mention-suggestions button { display: flex; justify-content: space-between; gap: 12px; padding: 10px; border: 0; border-radius: 9px; background: transparent; color: var(--page-text); text-align: left; cursor: pointer; }
+.mention-suggestions button:hover { background: var(--page-hover); }
+.mention-suggestions small { color: var(--page-muted); }
