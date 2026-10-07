@@ -232,6 +232,26 @@
 .shared-audio { width:min(100%,320px); }
 .settings-notice { margin: 8px 0; color: var(--ion-color-primary); font-size: .82rem; }
 
+.block-confirm-backdrop { position: fixed; z-index: 100; inset: 0; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.64); }
+.block-confirm-sheet { display: grid; width: min(100%, 540px); justify-items: center; gap: 18px; padding: 12px 24px calc(22px + env(safe-area-inset-bottom, 0px)); border-radius: 28px 28px 0 0; background: #252525; color: #f5f5f5; text-align: center; box-shadow: 0 -12px 40px rgba(0,0,0,.28); }
+.block-sheet-handle { width: 56px; height: 5px; margin: 0 0 4px; border-radius: 8px; background: #858585; }
+.block-confirm-avatar { display: grid; width: 94px; height: 94px; place-items: center; overflow: hidden; border-radius: 50%; background: #e4e6eb; color: #777; }
+.block-confirm-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.block-confirm-avatar ion-icon { width: 100%; height: 100%; }
+.block-confirm-sheet h2 { margin: 0; font-size: 1.45rem; }
+.block-confirm-sheet > p:not(.block-learn-link) { margin: 0; color: #d0d0d0; font-size: .94rem; line-height: 1.45; }
+.block-learn-link { margin: 2px 0 6px; color: #69aaff; font-weight: 650; }
+.confirm-block-button,.confirm-block-report-button,.cancel-block-button { width: 100%; min-height: 58px; border: 0; border-radius: 16px; font: inherit; font-size: 1rem; font-weight: 650; cursor: pointer; }
+.confirm-block-button { background: #0866ff; color: white; }
+.confirm-block-report-button { min-height: 48px; background: transparent; color: #69aaff; }
+.cancel-block-button { min-height: 42px; background: transparent; color: #c9c9c9; font-size: .9rem; }
+.blocked-chat-footer { display: grid; width: 100%; gap: 10px; padding: 0 16px calc(12px + env(safe-area-inset-bottom, 0px)); text-align: center; }
+.blocked-chat-footer p,.blocked-chat-footer h2 { margin: 0; }
+.blocked-chat-footer .blocked-delivered { margin-bottom: 12px; color: var(--page-muted); font-size: .82rem; }
+.blocked-chat-footer h2 { font-size: 1.05rem; }
+.blocked-chat-footer > p:not(.blocked-delivered) { color: var(--page-muted); font-size: .86rem; line-height: 1.4; }
+.blocked-chat-footer button { min-height: 54px; border: 0; border-radius: 16px; background: var(--page-surface); color: var(--page-text); font: inherit; font-weight: 650; }
+
 /* Message list styling follows the app theme; light mode keeps its blue accents. */
 .page-header:has(.message-list-header) {
   --background: var(--page-surface);
@@ -310,6 +330,7 @@
 .chat-toolbar-row .chat-group-title { color:#a9927d; }
 .chat-toolbar-row .chat-profile-name, .chat-toolbar-row .chat-group-title,
 .chat-toolbar-row .chat-header-actions ion-button { color: var(--page-text); --color: var(--page-text); }
+.chat-toolbar-row .chat-group-title { color:#a9927d; }
 .chat-profile-avatar { border: 2px solid var(--page-border); background: var(--page-surface); color: var(--ion-color-primary); }
 .chat-toolbar-row .chat-header-actions ion-button { border:0;border-radius:14px;background:transparent;--background:transparent;--background-hover:transparent;--background-focused:transparent;--background-activated:transparent;--box-shadow:none;--color:#a9927d;color:#a9927d; }
 .chat-toolbar-row .chat-header-actions ion-button::part(native) { padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none; }
@@ -372,13 +393,39 @@
 .composer-emoji-control ion-button[aria-expanded="true"] { --background: var(--page-surface); --border-radius: 50%; }
 .composer-emoji-picker { position:fixed;z-index:1000;left:50%;bottom:calc(82px + env(safe-area-inset-bottom, 0px));display:block;width:min(350px,calc(100vw - 28px));height:min(340px,calc(100dvh - 120px));transform:translateX(-50%);border:1px solid var(--page-border);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.32);--background:var(--page-bg);--border-color:var(--page-border);--border-radius:16px;--category-font-color:var(--page-text);--input-font-color:var(--page-text);--input-placeholder-color:var(--page-muted);--button-hover-background:var(--page-surface);--emoji-size:1.45rem;--emoji-padding:.22rem; }
 .quick-heart { font-size:1.35rem; line-height:1; }
-.quick-heart-button { --background:transparent;--background-hover:transparent;--background-focused:transparent;--background-activated:transparent;--box-shadow:none;--color:var(--ion-color-primary); }
+.chat-composer .quick-heart-button { --background:transparent;--background-hover:transparent;--background-focused:transparent;--background-activated:transparent;--box-shadow:none;--border-width:0;--color:#a9927d; }
+.chat-composer .quick-heart-button::part(native) { padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none; }
+.chat-composer .quick-heart-button ion-icon { color:#a9927d; }
 .gif-upload-button span { font-size:.72rem;font-weight:800;letter-spacing:.02em; }
 .typing-indicator { padding:4px 20px 10px;color:var(--page-muted);font-size:.8rem;font-style:italic; }
 .typing-dots { display:inline-block;padding-left:3px;font-weight:800;animation:typing-pulse 1s steps(3,end) infinite; }
 .group-member-requirement { margin:12px 0 4px;color:var(--page-muted);font-size:.82rem;text-align:center; }
 @keyframes typing-pulse { to { opacity:.25; } }
 @keyframes recording-wave { from { opacity:.68; } to { opacity:1; } }
+
+/* Make the send action visually distinct from the transparent composer tools. */
+.chat-composer > ion-button[type="submit"] {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 50%;
+  --background: #854f6c !important;
+  --background-activated: #75465f !important;
+  --background-hover: #92617b !important;
+  --color: #fff4ee !important;
+  --border-radius: 50%;
+  --box-shadow: 0 4px 14px rgba(133,79,108,.34);
+}
+.chat-composer > ion-button[type="submit"]::part(native) {
+  min-width: 44px;
+  border: 1px solid rgba(251,228,216,.28);
+  border-radius: 50%;
+  background: #854f6c !important;
+  color: #fff4ee !important;
+}
+.chat-composer > ion-button[type="submit"] ion-icon { color: #fff4ee !important; font-size: 1.45rem !important; opacity: 1; }
+.chat-composer > ion-button[type="submit"][disabled] { opacity: .72; }
 @media (max-width: 600px) {
   .composer-emoji-picker { right:0; bottom:0; left:0; width:100vw; max-width:none; height:min(40dvh, 380px); transform:none; border:0; border-radius:18px 18px 0 0; box-shadow:0 -10px 30px rgba(0,0,0,.35); --emoji-size:1.7rem; }
   .chat-footer.emoji-picker-open { transform:translateY(calc(0px - min(40dvh, 380px))); }

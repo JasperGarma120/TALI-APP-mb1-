@@ -1,13 +1,16 @@
-<article class="post-card" [attr.id]="'post-' + post.id">
-  <div class="post-topline">
-    <a class="post-profile-link" [routerLink]="post.authorId === null ? null : ['/profile', post.authorId]">
-      <div class="post-avatar">
-        @if (authorImage; as profileImage) {
-          <img [src]="profileImage" alt="" />
-        } @else {
-          <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
-        }
-      </div>
+<article class="post-layout" [attr.id]="'post-' + post.id">
+  <a class="post-avatar-link" [routerLink]="post.authorId === null ? null : ['/profile', post.authorId]" [attr.aria-label]="'View ' + post.authorName + ' profile'">
+    <div class="post-avatar">
+      @if (authorImage; as profileImage) {
+        <img [src]="profileImage" alt="" />
+      } @else {
+        <ion-icon name="person-circle-outline" aria-hidden="true"></ion-icon>
+      }
+    </div>
+  </a>
+  <div class="post-card">
+    <div class="post-topline">
+      <a class="post-profile-link" [routerLink]="post.authorId === null ? null : ['/profile', post.authorId]">
       <div class="post-user-details">
         <div class="identity-row">
           <strong>{{ post.authorName }}</strong>
@@ -87,6 +90,7 @@
   </div> }
 
   @if (actionMessage) { <p class="action-message" role="status">{{ actionMessage }}</p> }
+  </div>
 </article>
 
 @if (commentsOpen) {

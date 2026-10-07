@@ -1,5 +1,5 @@
 ﻿import { Component, computed, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { IonButton, IonContent, IonFooter, IonHeader, IonIcon, IonInput, IonSearchbar, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
@@ -22,6 +22,7 @@ export class MessagesPage {
   readonly viewState = inject(ViewStateService);
   private readonly viewStateKey = 'tali-view-messages';
   private readonly accountService = inject(AccountService);
+  private readonly route = inject(ActivatedRoute);
   readonly messageService = inject(MessageService);
   readonly notificationService = inject(NotificationService);
   readonly selectedAccount = this.accountService.selectedAccount;
@@ -54,6 +55,8 @@ export class MessagesPage {
   nicknameDraft = '';
   callNotice = '';
   settingsNotice = '';
+  showBlockConfirmation = false;
+  pendingBlockConversationId: string | null = null;
   groupName = '';
   groupMemberSearch = '';
   selectedMemberIds: number[] = [];
@@ -152,6 +155,12 @@ export class MessagesPage {
     return this.accounts().find((account) => account.id === otherId) ?? null;
   }
 
+  get pendingBlockAccount(): Account | null {
+    const conversation = this.conversations().find((item) => item.id === this.pendingBlockConversationId);
+    const otherId = conversation?.memberIds.find((id) => id !== this.selectedAccount()?.id);
+    return this.accounts().find((account) => account.id === otherId) ?? null;
+  }
+
   get activeChatSettings() {
     return this.activeConversation ? this.messageService.settingsFor(this.activeConversation.id) : null;
   }
@@ -204,6 +213,15 @@ export class MessagesPage {
     this.composeMode = saved.composeMode ?? null;
     this.groupName = saved.groupName ?? '';
     this.selectedMemberIds = saved.selectedMemberIds ?? [];
+    this.route.queryParamMap.subscribe((params) => {
+      const conversationId = params.get('conversationId');
+      const conversation = conversationId && this.conversations().find((item) => item.id === conversationId);
+      if (!conversation || !conversation.memberIds.includes(this.selectedAccount()?.id ?? -1)) return;
+      this.activeConversationId = conversation.id;
+      this.activeTab = this.isConversationRequest(conversation, this.selectedAccount()?.id ?? -1) ? 'requests' : 'inbox';
+      this.composeMode = null;
+      this.saveViewState();
+    });
   }
 
   saveViewState() {
@@ -369,6 +387,10 @@ export class MessagesPage {
     if (accountId === undefined) return;
     if (action === 'delete') {
       this.messageService.deleteConversation(conversation.id);
+    } else if (action === 'blockedFor') {
+      const blocked = this.messageService.settingsFor(conversation.id).blockedFor.includes(accountId);
+      if (blocked) this.messageService.toggleAccountPreference(conversation.id, 'blockedFor', accountId);
+      else this.requestBlock(conversation);
     } else if (action === 'unreadFor' && this.unreadMessageCount(conversation) > 0) {
       this.messageService.markRead(conversation.id, accountId);
       const settings = this.messageService.settingsFor(conversation.id);
@@ -385,6 +407,32 @@ export class MessagesPage {
   }
 
   unblockActiveChat() { this.toggleChatPreference('blockedFor'); }
+
+  requestBlock(conversation = this.activeConversation) {
+    if (!conversation) return;
+    this.pendingBlockConversationId = conversation.id;
+    const accountId = this.selectedAccount()?.id;
+    if (accountId !== undefined && this.messageService.settingsFor(conversation.id).blockedFor.includes(accountId)) {
+      this.messageService.toggleAccountPreference(conversation.id, 'blockedFor', accountId);
+      this.pendingBlockConversationId = null;
+      return;
+    }
+    this.showBlockConfirmation = true;
+  }
+
+  confirmBlock(andReport = false) {
+    const conversation = this.conversations().find((item) => item.id === this.pendingBlockConversationId);
+    const accountId = this.selectedAccount()?.id;
+    if (!conversation || accountId === undefined) return;
+    this.messageService.toggleAccountPreference(conversation.id, 'blockedFor', accountId);
+    if (andReport && !this.messageService.settingsFor(conversation.id).reportedFor.includes(accountId)) {
+      this.messageService.toggleAccountPreference(conversation.id, 'reportedFor', accountId);
+    }
+    this.showBlockConfirmation = false;
+    this.pendingBlockConversationId = null;
+    this.showChatSettings = false;
+    this.settingsNotice = andReport ? 'This person was blocked and reported.' : '';
+  }
 
   closeConversation() {
     this.clearTyping();
@@ -425,6 +473,7 @@ export class MessagesPage {
       this.messageService.toggleAccountPreference(conversation.id, 'reportedFor', accountId);
     }
     this.settingsNotice = 'Report submitted for review.';
+    this.callNotice = 'Report submitted for review.';
   }
 
   saveNickname() {
@@ -740,7 +789,8 @@ export class MessagesPage {
     const account = this.selectedAccount();
     const conversation = this.activeConversation;
     if (!account || !conversation || this.isPreferenceEnabled('blockedFor')) return;
-    const body = this.messageDraft.trim() || (this.pendingAttachments.length ? '' : '❤️');
+    const body = this.messageDraft.trim();
+    if (!body && !this.pendingAttachments.length) return;
     const replyTo = this.replyToMessage ? {
       messageId: this.replyToMessage.id,
       senderId: this.replyToMessage.senderId,
@@ -752,6 +802,13 @@ export class MessagesPage {
     this.replyToMessage = null;
     this.saveViewState();
     this.pendingAttachments = [];
+  }
+
+  sendQuickReaction() {
+    const conversation = this.activeConversation;
+    const account = this.selectedAccount();
+    if (!conversation || !account || this.isPreferenceEnabled('blockedFor')) return;
+    this.messageService.sendMessage(conversation.id, account.id, '❤️');
   }
 }
 
