@@ -787,17 +787,17 @@ html.app-web-shell .suggestion-row ion-avatar {
 html.app-web-shell .notification-badge { background: #49111c; color: #f2f4f3; }
 html.app-web-shell .post-attachments .attachment-arrow { border-color: var(--page-border); background: rgba(10, 9, 8, .84); color: #f2f4f3; }
 html.app-web-shell .profile-content-panel app-post-card .post-card {
-	border-color: #e8e7ed;
-	background: #fff;
-	color: #08091f;
-	box-shadow: 0 8px 22px rgba(15, 17, 35, .08);
+	border-color: var(--page-border);
+	background: var(--page-surface);
+	color: var(--page-text);
+	box-shadow: 0 8px 22px rgba(0, 0, 0, .2);
 }
 html.app-web-shell .profile-content-panel app-post-card .post-card .identity-row strong,
-html.app-web-shell .profile-content-panel app-post-card .post-card .post-body { color: #08091f; }
+html.app-web-shell .profile-content-panel app-post-card .post-card .post-body { color: var(--page-text); }
 html.app-web-shell .profile-content-panel app-post-card .post-card .post-time,
 html.app-web-shell .profile-content-panel app-post-card .post-card .post-handle,
-html.app-web-shell .profile-content-panel app-post-card .post-card .action-button { color: #777986; }
-html.app-web-shell .profile-content-panel app-post-card .post-card .action-button.is-active { color: #8d2434; }
+html.app-web-shell .profile-content-panel app-post-card .post-card .action-button { color: var(--page-muted); }
+html.app-web-shell .profile-content-panel app-post-card .post-card .action-button.is-active { color: var(--ion-color-primary); }
 @media (max-width: 560px) {
 	html.app-web-shell .profile-content-panel .profile-posts-feed app-post-card { margin: 0; }
 	html.app-web-shell .profile-content-panel .profile-posts-feed app-post-card .post-card { width: 100%; margin: 0; }

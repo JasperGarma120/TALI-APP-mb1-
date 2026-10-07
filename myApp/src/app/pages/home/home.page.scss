@@ -1,6 +1,6 @@
 .home-content {
-	--background: #fff;
-	--color: #0a0908;
+	--background: var(--page-bg);
+	--color: var(--page-text);
   --padding-top: 0;
   --padding-bottom: 0;
 }
@@ -11,8 +11,8 @@
 	--border-color: var(--page-border);
 }
 
-.home-header { --background: #fff; --border-color: #e5e5ea; }
-.home-header ion-toolbar { --background: #fff; --color: #0a0908; --border-color: #e5e5ea; }
+.home-header { --background: var(--page-bg); --border-color: var(--page-border); }
+.home-header ion-toolbar { --background: var(--page-bg); --color: var(--page-text); --border-color: var(--page-border); }
 
 .home-footer ion-toolbar { --background: var(--page-bg); --border-color: var(--page-border); }
 
@@ -44,7 +44,7 @@
 }
 
 .search-button {
-	--color: #0a0908;
+	--color: var(--page-text);
   width: 40px;
   height: 40px;
   margin: 0;
@@ -54,7 +54,7 @@
 .screen-shell {
   width: 100%;
   min-height: 100%;
-	background: #fff;
+	background: var(--page-bg);
 }
 
 .home-account-row {
@@ -62,7 +62,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px 18px 14px;
-	border-bottom: 1px solid #e5e5ea;
+	border-bottom: 1px solid var(--page-border);
 }
 
 .profile-avatar,
@@ -77,7 +77,7 @@
 .profile-avatar {
   width: 48px;
   height: 48px;
-  border: 1px solid rgba(17, 17, 17, 0.08);
+	border: 1px solid var(--page-border);
 }
 
 .profile-avatar img,
@@ -107,13 +107,13 @@
 }
 
 .home-account-copy strong {
-	color: #0a0908;
+	color: var(--page-text);
   font-size: .9rem;
   font-weight: 700;
 }
 
 .home-account-copy span {
-	color: #777986;
+	color: var(--page-muted);
   font-size: .75rem;
 }
 
@@ -138,12 +138,12 @@ app-post-card { display: block; margin: 0 12px 12px; }
 .feed-empty h3 {
   margin: 12px 0 6px;
   font-size: 1rem;
-	color: #0a0908;
+	color: var(--page-text);
 }
 
 .feed-empty p {
   margin: 0;
-	color: #777986;
+	color: var(--page-muted);
   font-size: 0.8rem;
 }
 
