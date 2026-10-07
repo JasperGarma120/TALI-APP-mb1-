@@ -216,6 +216,26 @@
 .shared-link { overflow-wrap: anywhere; color: var(--ion-color-primary); font-size: .78rem; }
 .settings-notice { margin: 8px 0; color: var(--ion-color-primary); font-size: .82rem; }
 
+.block-confirm-backdrop { position: fixed; z-index: 100; inset: 0; display: flex; align-items: flex-end; justify-content: center; background: rgba(0,0,0,.64); }
+.block-confirm-sheet { display: grid; width: min(100%, 540px); justify-items: center; gap: 18px; padding: 12px 24px calc(22px + env(safe-area-inset-bottom, 0px)); border-radius: 28px 28px 0 0; background: #252525; color: #f5f5f5; text-align: center; box-shadow: 0 -12px 40px rgba(0,0,0,.28); }
+.block-sheet-handle { width: 56px; height: 5px; margin: 0 0 4px; border-radius: 8px; background: #858585; }
+.block-confirm-avatar { display: grid; width: 94px; height: 94px; place-items: center; overflow: hidden; border-radius: 50%; background: #e4e6eb; color: #777; }
+.block-confirm-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.block-confirm-avatar ion-icon { width: 100%; height: 100%; }
+.block-confirm-sheet h2 { margin: 0; font-size: 1.45rem; }
+.block-confirm-sheet > p:not(.block-learn-link) { margin: 0; color: #d0d0d0; font-size: .94rem; line-height: 1.45; }
+.block-learn-link { margin: 2px 0 6px; color: #69aaff; font-weight: 650; }
+.confirm-block-button,.confirm-block-report-button,.cancel-block-button { width: 100%; min-height: 58px; border: 0; border-radius: 16px; font: inherit; font-size: 1rem; font-weight: 650; cursor: pointer; }
+.confirm-block-button { background: #0866ff; color: white; }
+.confirm-block-report-button { min-height: 48px; background: transparent; color: #69aaff; }
+.cancel-block-button { min-height: 42px; background: transparent; color: #c9c9c9; font-size: .9rem; }
+.blocked-chat-footer { display: grid; width: 100%; gap: 10px; padding: 0 16px calc(12px + env(safe-area-inset-bottom, 0px)); text-align: center; }
+.blocked-chat-footer p,.blocked-chat-footer h2 { margin: 0; }
+.blocked-chat-footer .blocked-delivered { margin-bottom: 12px; color: var(--page-muted); font-size: .82rem; }
+.blocked-chat-footer h2 { font-size: 1.05rem; }
+.blocked-chat-footer > p:not(.blocked-delivered) { color: var(--page-muted); font-size: .86rem; line-height: 1.4; }
+.blocked-chat-footer button { min-height: 54px; border: 0; border-radius: 16px; background: var(--page-surface); color: var(--page-text); font: inherit; font-weight: 650; }
+
 /* Message list styling follows the app theme; light mode keeps its blue accents. */
 .page-header:has(.message-list-header) {
   --background: var(--page-surface);
