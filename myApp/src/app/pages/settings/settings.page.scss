@@ -42,9 +42,9 @@
 .activity-post p { margin: 0 0 6px; font-size: .82rem; }
 @media (max-width: 680px) {
 	.settings-layout { display: block; }
-	.settings-categories { flex-direction: row; overflow-x: auto; gap: 6px; padding: 10px 12px; border-right: 0; border-bottom: 1px solid rgba(237, 241, 239, .12); }
-	.settings-categories button { flex: 0 0 auto; min-height: 40px; }
-	.settings-categories button span { white-space: nowrap; }
+	.settings-categories { flex-direction: column; overflow: visible; gap: 2px; padding: 12px; border-right: 0; border-bottom: 1px solid var(--page-border); }
+	.settings-categories button { width: 100%; flex: 0 0 auto; min-height: 44px; }
+	.settings-categories button span { white-space: normal; }
 	.settings-categories .logout-category { margin-top: 0; }
 	.settings-detail { padding: 20px 18px; }
 }
