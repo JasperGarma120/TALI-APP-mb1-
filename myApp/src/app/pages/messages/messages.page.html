@@ -71,9 +71,9 @@
         <div class="message-row" [class.own-message]="message.senderId === selectedAccount()?.id">
           @if (message.senderId !== selectedAccount()?.id) {
             <span class="incoming-avatar">
-              @if (messageAuthorImage(message); as image) { <img [src]="image" [alt]="messageAuthorName(message)" /> }
+              @if (messageAuthor(message)?.profileImage; as image) { <img [src]="image" [alt]="messageAuthorName(message)" /> }
               @else { <ion-icon name="person-circle-outline"></ion-icon> }
-            </span>
+            </a>
           }
           <div class="message-content">
             @if (message.senderId !== selectedAccount()?.id) { <strong class="message-sender">{{ messageAuthorName(message) }}</strong> }
@@ -128,9 +128,6 @@
     </section>
     @if (typingNames.length) { <div class="typing-indicator" role="status">{{ typingNames.join(', ') }} {{ typingNames.length === 1 ? 'is' : 'are' }} typing<span class="typing-dots">…</span></div> }
     @if (callNotice) { <div class="call-notice" role="status">{{ callNotice }}<button type="button" aria-label="Dismiss" (click)="callNotice = ''"><ion-icon name="close-outline"></ion-icon></button></div> }
-    @if (activeChatSettings?.blockedFor?.includes(selectedAccount()?.id ?? -1)) {
-      <div class="blocked-notice" role="status">You blocked this person. You can unblock them to send messages again. <button type="button" (click)="unblockActiveChat()">Unblock</button></div>
-    }
   } @else {
     <ion-searchbar placeholder="Search" aria-label="Search messages" [value]="searchQuery" (ionInput)="setMessageSearch($any($event).detail.value ?? '')"></ion-searchbar>
 
@@ -353,7 +350,7 @@
 
           <div class="settings-actions safety-actions">
             <button type="button" (click)="toggleChatPreference('restrictedFor')">{{ isPreferenceEnabled('restrictedFor') ? 'Unrestrict' : 'Restrict' }}</button>
-            <button type="button" (click)="toggleChatPreference('blockedFor')">{{ isPreferenceEnabled('blockedFor') ? 'Unblock' : 'Block' }}</button>
+          <button type="button" (click)="requestBlock()">{{ isPreferenceEnabled('blockedFor') ? 'Unblock' : 'Block' }}</button>
             <button type="button" (click)="reportConversation()">Report</button>
           </div>
           @if (settingsNotice) { <p class="settings-notice" role="status">{{ settingsNotice }}</p> }
@@ -362,6 +359,24 @@
     </div>
   }
 </ion-content>
+
+@if (showBlockConfirmation && pendingBlockAccount; as person) {
+  <div class="block-confirm-backdrop" role="presentation" (click)="showBlockConfirmation = false; pendingBlockConversationId = null">
+    <section class="block-confirm-sheet" role="dialog" aria-modal="true" [attr.aria-label]="'Block ' + person.name + '?'" (click)="$event.stopPropagation()">
+      <div class="block-sheet-handle" aria-hidden="true"></div>
+      <span class="block-confirm-avatar">
+        @if (person.profileImage) { <img [src]="person.profileImage" [alt]="person.name" /> }
+        @else { <ion-icon name="person-circle-outline"></ion-icon> }
+      </span>
+      <h2>Block {{ person.name }}?</h2>
+      <p>You won’t be able to message or call each other, and you won’t receive their messages or calls. They won’t be notified that you blocked them.</p>
+      <p class="block-learn-link">Learn more about how blocking works</p>
+      <button type="button" class="confirm-block-button" (click)="confirmBlock()">Block {{ person.name }}</button>
+      <button type="button" class="confirm-block-report-button" (click)="confirmBlock(true)">Block and report</button>
+      <button type="button" class="cancel-block-button" (click)="showBlockConfirmation = false; pendingBlockConversationId = null">Cancel</button>
+    </section>
+  </div>
+}
 
 @if (activeConversation; as conversation) {
   <ion-footer class="chat-footer ion-no-border" [class.emoji-picker-open]="showComposerEmojiPicker">
@@ -373,6 +388,14 @@
           <button type="button" class="request-accept-button" (click)="acceptConversationRequest(conversation.id)">Accept</button>
           <button type="button" class="request-delete-button" (click)="deleteActiveConversationRequest()">Delete</button>
         </div>
+      </section>
+    } @else if (isPreferenceEnabled('blockedFor')) {
+      <section class="blocked-chat-footer" aria-label="Blocked conversation">
+        <p class="blocked-delivered">Delivered</p>
+        <h2>You blocked {{ activeChatAccount?.name || 'this person' }}</h2>
+        <p>You can’t message or call them in this chat, and you won’t receive their messages or calls.</p>
+        <button type="button" (click)="unblockActiveChat()">Unblock</button>
+        <button type="button" (click)="reportConversation()">Something’s wrong</button>
       </section>
     } @else {
     <ion-toolbar>

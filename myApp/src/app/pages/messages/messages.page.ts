@@ -50,6 +50,8 @@ export class MessagesPage {
   nicknameDraft = '';
   callNotice = '';
   settingsNotice = '';
+  showBlockConfirmation = false;
+  pendingBlockConversationId: string | null = null;
   groupName = '';
   selectedMemberIds: number[] = [];
   messageDraft = '';
@@ -144,6 +146,12 @@ export class MessagesPage {
     const conversation = this.activeConversation;
     if (!conversation || conversation.groupName) return null;
     const otherId = conversation.memberIds.find((id) => id !== this.selectedAccount()?.id);
+    return this.accounts().find((account) => account.id === otherId) ?? null;
+  }
+
+  get pendingBlockAccount(): Account | null {
+    const conversation = this.conversations().find((item) => item.id === this.pendingBlockConversationId);
+    const otherId = conversation?.memberIds.find((id) => id !== this.selectedAccount()?.id);
     return this.accounts().find((account) => account.id === otherId) ?? null;
   }
 
@@ -363,6 +371,10 @@ export class MessagesPage {
     if (accountId === undefined) return;
     if (action === 'delete') {
       this.messageService.deleteConversation(conversation.id);
+    } else if (action === 'blockedFor') {
+      const blocked = this.messageService.settingsFor(conversation.id).blockedFor.includes(accountId);
+      if (blocked) this.messageService.toggleAccountPreference(conversation.id, 'blockedFor', accountId);
+      else this.requestBlock(conversation);
     } else if (action === 'unreadFor' && this.unreadMessageCount(conversation) > 0) {
       this.messageService.markRead(conversation.id, accountId);
       const settings = this.messageService.settingsFor(conversation.id);
@@ -379,6 +391,32 @@ export class MessagesPage {
   }
 
   unblockActiveChat() { this.toggleChatPreference('blockedFor'); }
+
+  requestBlock(conversation = this.activeConversation) {
+    if (!conversation) return;
+    this.pendingBlockConversationId = conversation.id;
+    const accountId = this.selectedAccount()?.id;
+    if (accountId !== undefined && this.messageService.settingsFor(conversation.id).blockedFor.includes(accountId)) {
+      this.messageService.toggleAccountPreference(conversation.id, 'blockedFor', accountId);
+      this.pendingBlockConversationId = null;
+      return;
+    }
+    this.showBlockConfirmation = true;
+  }
+
+  confirmBlock(andReport = false) {
+    const conversation = this.conversations().find((item) => item.id === this.pendingBlockConversationId);
+    const accountId = this.selectedAccount()?.id;
+    if (!conversation || accountId === undefined) return;
+    this.messageService.toggleAccountPreference(conversation.id, 'blockedFor', accountId);
+    if (andReport && !this.messageService.settingsFor(conversation.id).reportedFor.includes(accountId)) {
+      this.messageService.toggleAccountPreference(conversation.id, 'reportedFor', accountId);
+    }
+    this.showBlockConfirmation = false;
+    this.pendingBlockConversationId = null;
+    this.showChatSettings = false;
+    this.settingsNotice = andReport ? 'This person was blocked and reported.' : '';
+  }
 
   closeConversation() {
     this.clearTyping();
@@ -419,6 +457,7 @@ export class MessagesPage {
       this.messageService.toggleAccountPreference(conversation.id, 'reportedFor', accountId);
     }
     this.settingsNotice = 'Report submitted for review.';
+    this.callNotice = 'Report submitted for review.';
   }
 
   saveNickname() {
