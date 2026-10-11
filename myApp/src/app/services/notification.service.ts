@@ -53,6 +53,7 @@ export class NotificationService {
   }
 
   notifyMessageRequest(actor: Pick<Account, 'id' | 'name' | 'username'>, recipientId: number, conversationId: string, preview: string) {
+    if (!isSettingEnabled('messageAlerts', true)) return;
     if (this.notifications().some((notification) => notification.type === 'message_request' && notification.conversationId === conversationId && notification.recipientId === recipientId)) return;
     this.add('message_request', actor, recipientId, null, preview.trim().slice(0, 120), conversationId);
   }
@@ -73,6 +74,7 @@ export class NotificationService {
     accounts: Account[],
     postId: string,
   ) {
+    if (!isSettingEnabled('tagsAndMentions', true)) return;
     const mentionedUsernames = new Set(
       Array.from(text.matchAll(/@([a-z0-9._-]+)/gi), (match) => match[1].toLowerCase()),
     );
@@ -112,6 +114,7 @@ export class NotificationService {
     postPreview: string,
     conversationId?: string,
   ) {
+    if (!isSettingEnabled('notifications', true)) return;
     if (actor.id === recipientId) return;
     const notification: AppNotification = {
       id: `${Date.now()}-${++this.nextId}`,
@@ -128,6 +131,17 @@ export class NotificationService {
     };
     this.notifications.update((notifications) => [notification, ...notifications]);
     this.persist();
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible' &&
+      typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      try {
+        const actions: Record<NotificationType, string> = {
+          like: 'liked your post', comment: 'commented on your post', follow: 'followed you',
+          share: 'shared your post', repost: 'reposted your post', mention: 'mentioned you',
+          message_request: 'sent you a message',
+        };
+        new Notification(`${actor.name} ${actions[type]}`, { body: postPreview || 'Open Tali to view it.' });
+      } catch { /* The in-app notification remains available if browser notifications fail. */ }
+    }
   }
 
   private persist() {
@@ -139,6 +153,12 @@ export class NotificationService {
       // IndexedDB above also stores notifications when localStorage is full.
     }
   }
+}
+
+function isSettingEnabled(key: string, fallback: boolean) {
+  if (typeof localStorage === 'undefined') return fallback;
+  const stored = localStorage.getItem(`tali-setting-${key}`);
+  return stored === null ? fallback : stored === 'true';
 }
 
 function isStoredNotificationList(value: unknown): value is AppNotification[] {

@@ -51,10 +51,10 @@
             </article>
           }
 
-          @if (!currentPost.comments.length) {
+          @if (!visibleComments.length) {
             <p class="comments-empty">No comments yet. Start the conversation.</p>
           }
-          @for (comment of currentPost.comments; track comment.id) {
+          @for (comment of visibleComments; track comment.id) {
             <article class="comment-entry">
               <div class="comment-avatar">
                 @if (commentAuthorImage(comment.authorId); as image) { <img [src]="image" alt="" /> }
@@ -65,10 +65,12 @@
           }
         </div>
 
-        <form class="comment-composer" (ngSubmit)="submitComment()">
-          <ion-textarea name="comment" [(ngModel)]="commentDraft" (ngModelChange)="saveDraft()" maxlength="500" rows="1" [autoGrow]="true" placeholder="Add a comment..." aria-label="Add a comment"></ion-textarea>
-          <ion-button type="submit" fill="clear" [disabled]="!commentDraft.trim()">Post</ion-button>
-        </form>
+        @if (commentsEnabled) {
+          <form class="comment-composer" (ngSubmit)="submitComment()">
+            <ion-textarea name="comment" [(ngModel)]="commentDraft" (ngModelChange)="saveDraft()" maxlength="500" rows="1" [autoGrow]="true" placeholder="Add a comment..." aria-label="Add a comment"></ion-textarea>
+            <ion-button type="submit" fill="clear" [disabled]="!commentDraft.trim()">Post</ion-button>
+          </form>
+        } @else { <p class="comments-empty">Comments are turned off for this account.</p> }
         @if (commentError) { <p class="comment-error" role="alert">{{ commentError }}</p> }
       </section>
     </div>

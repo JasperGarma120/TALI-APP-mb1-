@@ -58,6 +58,25 @@ export class CommentsPage implements OnChanges {
     return this.postService.canViewPost(post, this.accountService.selectedAccount(), this.accountService.accounts()) ? post : null;
   }
 
+  get commentsEnabled() {
+    return this.readSetting('commentsEnabled', true);
+  }
+
+  get visibleComments() {
+    const comments = this.post?.comments ?? [];
+    if (!this.readSetting('hiddenWordsEnabled', false) || typeof localStorage === 'undefined') return comments;
+    const words = (localStorage.getItem('tali-hidden-words') ?? '')
+      .split(',').map((word) => word.trim().toLowerCase()).filter(Boolean);
+    if (!words.length) return comments;
+    return comments.filter((comment) => !words.some((word) => comment.body.toLowerCase().includes(word)));
+  }
+
+  private readSetting(key: string, fallback: boolean) {
+    if (typeof localStorage === 'undefined') return fallback;
+    const stored = localStorage.getItem(`tali-setting-${key}`);
+    return stored === null ? fallback : stored === 'true';
+  }
+
   get mediaAttachments(): PostAttachment[] {
     return this.post?.attachments.filter((attachment) => attachment.type.startsWith('image/') || attachment.type.startsWith('video/')) ?? [];
   }
@@ -91,6 +110,10 @@ export class CommentsPage implements OnChanges {
   }
 
   submitComment() {
+    if (!this.commentsEnabled) {
+      this.commentError = 'Comments are turned off for this account.';
+      return;
+    }
     const account = this.accountService.selectedAccount();
     const post = this.post;
     const body = this.commentDraft.trim();

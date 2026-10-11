@@ -155,7 +155,7 @@ export class MessageService {
         const readBy = message.readBy ?? [];
         const seenBy = message.seenBy ?? [];
         const needsRead = !readBy.includes(accountId);
-        const needsReceipt = !seenBy.includes(accountId);
+        const needsReceipt = isSettingEnabled('readReceipts', true) && !seenBy.includes(accountId);
         if (!needsRead && !needsReceipt) return message;
         changed = true;
         return {
@@ -260,6 +260,12 @@ export class MessageService {
       // IndexedDB above holds the durable copy and supports larger app data.
     }
   }
+}
+
+function isSettingEnabled(key: string, fallback: boolean) {
+  if (typeof localStorage === 'undefined') return fallback;
+  const stored = localStorage.getItem(`tali-setting-${key}`);
+  return stored === null ? fallback : stored === 'true';
 }
 
 function isStoredConversationList(value: unknown): value is Conversation[] {
