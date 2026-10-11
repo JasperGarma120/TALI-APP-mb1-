@@ -1,89 +1,104 @@
-<ion-header class="page-header profile-header ion-no-border"><ion-toolbar>
-  @if (!isOwnProfile) { <ion-back-button slot="start" defaultHref="/home" text="" aria-label="Back"></ion-back-button> }
-  <h1>{{ isOwnProfile ? 'My Profile' : (profileAccount?.name || 'Profile') }}</h1>
-  @if (isOwnProfile) { <ion-button fill="clear" slot="end" routerLink="/settings" aria-label="Settings"><ion-icon slot="icon-only" name="settings-outline"></ion-icon></ion-button> }
-</ion-toolbar></ion-header>
 <ion-content class="page-content profile-content">
   @if (profileAccount; as profile) {
     <div class="profile-page-shell">
       <section class="profile-hero">
-        <div class="profile-top">
-          <ion-avatar>
-            @if (canViewProfileImage(profile)) {
-              <img [src]="profile.profileImage" alt="Profile photo" />
-            } @else {
-              <ion-icon name="person-circle-outline"></ion-icon>
-            }
-          </ion-avatar>
-          <h2>{{ profile.name }}</h2>
-          <p>{{ profile.username }}</p>
-          @if (profile.bio) { <p class="profile-bio">{{ profile.bio }}</p> }
+        <div class="profile-floating-header">
+          <button type="button" class="profile-circle-btn back-button" (click)="goBack()" aria-label="Back">
+            <img src="assets/chevron-left.png" alt="" aria-hidden="true" />
+          </button>
           @if (isOwnProfile) {
-            <ion-button class="edit-profile-button" fill="outline" size="small" (click)="openProfileEditor()"><ion-icon slot="start" name="create-outline"></ion-icon><span>Edit profile</span></ion-button>
-          } @else {
-            <div class="profile-actions">
-              <ion-button fill="outline" size="small" [class.is-following]="isFollowingProfile" (click)="toggleFollowProfile()">{{ isFollowingProfile ? 'Following' : 'Follow' }}</ion-button>
-              <ion-button fill="solid" size="small" class="message-profile-button" (click)="messageProfile()"><ion-icon slot="start" name="chatbubble-outline"></ion-icon><span class="message-button-label">Message</span></ion-button>
-            </div>
+            <button type="button" class="profile-circle-btn settings-button" routerLink="/settings" aria-label="Settings">
+              <ion-icon name="settings-outline" aria-hidden="true"></ion-icon>
+            </button>
           }
         </div>
-        <div class="stats-row"><div><strong>{{ ownPosts.length }}</strong><span>Posts</span></div><button type="button" (click)="setConnectionsView('followers')"><strong>{{ followers.length }}</strong><span>Followers</span></button><button type="button" (click)="setConnectionsView('following')"><strong>{{ following.length }}</strong><span>Following</span></button></div>
+        @if (isOwnProfile) {
+          <button type="button" class="profile-cover profile-cover-button" [class.has-cover-image]="profile.coverImage" (click)="coverPhotoInput.click()" aria-label="Upload a profile cover photo">
+            @if (profile.coverImage) { <img [src]="profile.coverImage" alt="Profile cover photo" /> }
+            @else {
+              <div class="cover-empty-state">
+                <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+                <span>Tap to add a cover photo</span>
+              </div>
+            }
+          </button>
+          <input #coverPhotoInput class="profile-photo-input" type="file" accept="image/*" (change)="onCoverImageSelected($event)" aria-label="Choose cover photo" />
+          @if (coverImageError) { <p class="profile-photo-error" role="alert">{{ coverImageError }}</p> }
+        } @else {
+          <div class="profile-cover" [class.has-cover-image]="profile.coverImage">
+            @if (profile.coverImage) { <img [src]="profile.coverImage" alt="Profile cover photo" /> }
+          </div>
+        }
+        <div class="profile-top">
+          <div class="profile-avatar-wrap">
+            <ion-avatar>
+              @if (canViewProfileImage(profile)) {
+                <button type="button" class="view-profile-photo" (click)="openProfilePhoto(profile)" [attr.aria-label]="'View ' + profile.name + ' profile photo'"><img [src]="profile.profileImage" alt="Profile photo" /></button>
+              } @else {
+                <ion-icon name="person-circle-outline"></ion-icon>
+              }
+            </ion-avatar>
+          </div>
+          <section class="profile-stats-card" aria-label="Profile statistics">
+            <div class="stats-row">
+              <div><strong>{{ formatProfileCount(ownPosts.length) }}</strong><span>Posts</span></div>
+              <button type="button" (click)="setConnectionsView('followers')"><strong>{{ formatProfileCount(followers.length) }}</strong><span>Followers</span></button>
+              <button type="button" (click)="setConnectionsView('following')"><strong>{{ formatProfileCount(following.length) }}</strong><span>Following</span></button>
+            </div>
+          </section>
+          <div class="profile-identity">
+            <h2>{{ profile.name }} @if (profile.verified) { <ion-icon class="verified-badge" name="checkmark-circle" aria-label="Verified account"></ion-icon> }</h2>
+            <div class="profile-bio">
+              @if (profile.bio) { <p>{{ profile.bio }}</p> }
+              @if (profile.website) { <p>Visit us: <a [href]="profile.website" target="_blank" rel="noopener noreferrer">{{ profile.website }}</a></p> }
+              @if (!profile.bio && !profile.website && isOwnProfile) { <p class="bio-placeholder">Add a bio</p> }
+            </div>
+            @if (!isOwnProfile) {
+              <div class="profile-actions">
+                <ion-button fill="outline" size="small" [class.is-following]="isFollowingProfile" (click)="toggleFollowProfile()">{{ isFollowingProfile ? 'Following' : 'Follow' }}</ion-button>
+                <ion-button fill="solid" size="small" class="message-profile-button" (click)="messageProfile()"><ion-icon slot="start" name="chatbubble-outline"></ion-icon><span class="message-button-label">Message</span></ion-button>
+              </div>
+            }
+          </div>
+        </div>
       </section>
       <div class="profile-content-panel">
-      <nav class="profile-sections" [class.profile-sections-owner]="isOwnProfile" aria-label="Profile content">
-      <button type="button" [class.active]="activeSection === 'posts'" [attr.aria-pressed]="activeSection === 'posts'" (click)="setProfileSection('posts')">Posts</button>
-      <button type="button" [class.active]="activeSection === 'photos'" [attr.aria-pressed]="activeSection === 'photos'" (click)="setProfileSection('photos')">Photos</button>
-      <button type="button" [class.active]="activeSection === 'videos'" [attr.aria-pressed]="activeSection === 'videos'" (click)="setProfileSection('videos')">Videos</button>
-      <button type="button" [class.active]="activeSection === 'reposts'" [attr.aria-pressed]="activeSection === 'reposts'" (click)="setProfileSection('reposts')">Reposts</button>
-      @if (isOwnProfile) {
-        <button type="button" [class.active]="activeSection === 'archive'" [attr.aria-pressed]="activeSection === 'archive'" (click)="setProfileSection('archive')">Archive</button>
-        <button type="button" [class.active]="activeSection === 'trash'" [attr.aria-pressed]="activeSection === 'trash'" (click)="setProfileSection('trash')">Trash</button>
-      }
+      <nav class="profile-sections" aria-label="Profile content">
+      <button type="button" aria-label="Posts" title="Posts" [class.active]="activeSection === 'posts'" [attr.aria-pressed]="activeSection === 'posts'" (click)="setProfileSection('posts')"><img src="assets/app.png" alt="" aria-hidden="true"></button>
+      <button type="button" aria-label="Videos" title="Videos" [class.active]="activeSection === 'videos'" [attr.aria-pressed]="activeSection === 'videos'" (click)="setProfileSection('videos')"><img class="video-tab-icon" src="assets/square-play.png?v=2" alt="" aria-hidden="true"></button>
+      <button type="button" aria-label="Reposts" title="Reposts" [class.active]="activeSection === 'reposts'" [attr.aria-pressed]="activeSection === 'reposts'" (click)="setProfileSection('reposts')"><ion-icon name="repeat-outline" aria-hidden="true"></ion-icon></button>
     </nav>
     @if (activeSection === 'posts') {
-      <section class="profile-posts"><h2>{{ isOwnProfile ? 'Your posts' : 'Posts' }}</h2>
+      <section class="profile-posts">
         @if (!ownPosts.length) { <div class="empty-profile"><ion-icon name="create-outline"></ion-icon><p>{{ isOwnProfile ? 'Your shared thoughts will appear here.' : 'No posts shared yet.' }}</p></div> }
         <div class="profile-posts-feed">
           @for (post of ownPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }
         </div>
       </section>
     }
-    @if (activeSection === 'photos') {
-      <section class="profile-gallery profile-photo-gallery" aria-label="Photos">
-        @for (photo of profilePhotos; track $index) { <img [src]="photo.source" [alt]="photo.name" /> }
-        @empty { <div class="empty-profile"><ion-icon name="image-outline"></ion-icon><p>No photos shared yet.</p></div> }
-      </section>
-    }
     @if (activeSection === 'videos') {
       <section class="profile-gallery profile-video-gallery" aria-label="Videos">
         @for (video of profileVideos; track $index) {
           <video controls playsinline preload="metadata" [attr.aria-label]="video.name"><source [src]="video.source" [type]="video.type" /></video>
-        } @empty { <div class="empty-profile"><ion-icon name="videocam-outline"></ion-icon><p>No videos shared yet.</p></div> }
+        } @empty { <div class="empty-profile"><img class="empty-state-icon" src="assets/square-play.png?v=2" alt="" aria-hidden="true"><p>No videos shared yet.</p></div> }
       </section>
     }
     @if (activeSection === 'reposts') {
-      <section class="profile-posts"><h2>Reposts</h2>
+      <section class="profile-posts">
         @if (!repostedPosts.length) { <div class="empty-profile"><ion-icon name="repeat-outline"></ion-icon><p>No reposts yet.</p></div> }
         <div class="profile-posts-feed">
           @for (post of repostedPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }
         </div>
       </section>
     }
-    @if (activeSection === 'archive' && isOwnProfile) {
-      <section class="profile-posts"><h2>Archived posts</h2>
-        @if (!archivedPosts.length) { <div class="empty-profile"><ion-icon name="archive-outline"></ion-icon><p>Your archived posts will appear here.</p></div> }
-        <div class="profile-posts-feed">@for (post of archivedPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }</div>
-      </section>
-    }
-    @if (activeSection === 'trash' && isOwnProfile) {
-      <section class="profile-posts"><h2>Trash</h2><p class="trash-explanation">Posts stay here for 30 days. Restore a post to keep it or delete it permanently now.</p>
-        @if (!trashedPosts.length) { <div class="empty-profile"><ion-icon name="trash-outline"></ion-icon><p>Your trash is empty.</p></div> }
-        <div class="profile-posts-feed">@for (post of trashedPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }</div>
-      </section>
-    }
       </div>
     </div>
   } @else {
+    <div class="profile-floating-header">
+      <button type="button" class="profile-circle-btn back-button" (click)="goBack()" aria-label="Back">
+        <img src="assets/chevron-left.png" alt="" aria-hidden="true" />
+      </button>
+    </div>
     <div class="empty-profile profile-unavailable">
       <ion-icon name="person-circle-outline"></ion-icon>
       <p>This profile is unavailable.</p>
@@ -108,59 +123,10 @@
     </section>
   </div>
 }
-@if (editingProfile) {
-  <div class="edit-backdrop" role="presentation" (click)="editingProfile = false">
-    <section class="edit-dialog profile-editor-dialog" role="dialog" aria-modal="true" aria-labelledby="edit-profile-title" (click)="$event.stopPropagation()">
-      <h2 id="edit-profile-title">Edit profile</h2>
-      <ion-avatar class="edit-profile-avatar">
-        @if (editProfileImage) {
-          <img [src]="editProfileImage" alt="Profile photo preview" />
-        } @else {
-          <ion-icon name="person-circle-outline"></ion-icon>
-        }
-      </ion-avatar>
-      <input #profilePhotoInput class="profile-photo-input" type="file" accept="image/*" (change)="onProfileImageSelected($event)" aria-label="Choose profile photo" />
-      <div class="profile-photo-actions">
-        <ion-button fill="outline" size="small" (click)="profilePhotoInput.click()">Upload photo</ion-button>
-        @if (editProfileImage) { <ion-button fill="clear" size="small" (click)="removeProfileImage()">Remove photo</ion-button> }
-      </div>
-      @if (profileImageError) { <p class="profile-photo-error" role="alert">{{ profileImageError }}</p> }
-      <ion-input label="Name" labelPlacement="stacked" [(ngModel)]="editName" maxlength="80"></ion-input>
-      <ion-input label="Username" labelPlacement="stacked" [(ngModel)]="editUsername" maxlength="30"></ion-input>
-      <ion-textarea label="Bio" labelPlacement="stacked" [(ngModel)]="editBio" maxlength="160" [autoGrow]="true"></ion-textarea>
-      <section class="profile-privacy-settings">
-        <h3>Privacy</h3>
-        <label>Account type
-          <select [(ngModel)]="editPrivacy" aria-label="Account privacy">
-            <option value="public">Public</option><option value="private">Private</option>
-          </select>
-        </label>
-        <p>{{ editPrivacy === 'public' ? 'Anyone can see your public posts, photos, videos, likes, comments, shares, and reposts.' : 'Only people you follow back can see your posts, photos, and videos.' }}</p>
-        <label>Who can see your reposts
-          <select [(ngModel)]="editRepostVisibility" aria-label="Repost visibility">
-            <option value="public">Public</option><option value="friends">Friends only</option><option value="only-me">Only me</option>
-          </select>
-        </label>
-      </section>
-      <div class="edit-actions"><ion-button fill="clear" (click)="editingProfile = false">Cancel</ion-button><ion-button [disabled]="!editName.trim() || !editUsername.trim()" (click)="saveProfile()">Save</ion-button></div>
-    </section>
-  </div>
-}
-@if (croppingProfileImage) {
-  <div class="edit-backdrop crop-backdrop" role="presentation">
-    <section class="edit-dialog crop-dialog" role="dialog" aria-modal="true" aria-labelledby="crop-photo-title">
-      <h2 id="crop-photo-title">Adjust profile photo</h2>
-      <div class="profile-photo-crop-preview"><img [src]="cropSource" [style.transform]="cropImageTransform" alt="Photo crop preview" /></div>
-      <label class="crop-control">Zoom <input type="range" min="1" max="3" step="0.05" [(ngModel)]="cropZoom" /></label>
-      <label class="crop-control">Horizontal position <input type="range" min="-100" max="100" step="1" [(ngModel)]="cropX" /></label>
-      <label class="crop-control">Vertical position <input type="range" min="-100" max="100" step="1" [(ngModel)]="cropY" /></label>
-      <label class="crop-control">Who can see your photo
-        <select [(ngModel)]="editProfileImageVisibility" aria-label="Profile photo visibility">
-          <option value="public">Public</option><option value="friends">Friends</option><option value="only-me">Only me</option>
-        </select>
-      </label>
-      <div class="edit-actions"><ion-button fill="clear" (click)="croppingProfileImage = false">Cancel</ion-button><ion-button (click)="finishProfileImageCrop()">Finish</ion-button></div>
-    </section>
+@if (viewingProfilePhoto) {
+  <div class="profile-photo-viewer" role="presentation" (click)="viewingProfilePhoto = ''">
+    <button type="button" class="profile-photo-viewer-close" (click)="viewingProfilePhoto = ''; $event.stopPropagation()" aria-label="Close photo">×</button>
+    <img [src]="viewingProfilePhoto" alt="Profile photo" (click)="$event.stopPropagation()" />
   </div>
 }
 @if (connectionsView) {
@@ -174,7 +140,7 @@
     </section>
   </div>
 }
-@if (isOwnProfile && !editingProfile && !croppingProfileImage) {
+@if (isOwnProfile) {
 <ion-footer class="page-footer ion-no-border"><ion-toolbar>
   <nav class="page-nav profile-nav" aria-label="Main navigation">
     <ion-button fill="clear" routerLink="/home" (click)="viewState.handleTabTap('/home', 'tali-view-home')" aria-label="Home"><ion-icon slot="icon-only" name="home-outline"></ion-icon></ion-button>

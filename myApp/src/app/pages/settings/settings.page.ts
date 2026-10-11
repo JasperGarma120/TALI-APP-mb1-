@@ -4,19 +4,20 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { IonButton, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonSelect, IonSelectOption, IonToggle, IonToolbar } from '@ionic/angular';
 import { addIcons } from 'ionicons';
-import { accessibilityOutline, banOutline, cardOutline, chatbubblesOutline, chevronBackOutline, chevronDownOutline, chevronForwardOutline, checkmarkOutline, colorPaletteOutline, documentTextOutline, eyeOffOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, personOutline, searchOutline, serverOutline, shieldCheckmarkOutline, starOutline, sunnyOutline, timeOutline } from 'ionicons/icons';
+import { accessibilityOutline, archiveOutline, banOutline, cardOutline, chatbubblesOutline, chevronBackOutline, chevronDownOutline, chevronForwardOutline, checkmarkOutline, colorPaletteOutline, documentTextOutline, eyeOffOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, personOutline, searchOutline, serverOutline, shieldCheckmarkOutline, starOutline, sunnyOutline, timeOutline, trashOutline } from 'ionicons/icons';
 import { Account, AccountService } from '../../services/account.service';
 import { PostService } from '../../services/post.service';
 import { MessageService } from '../../services/message.service';
+import { PostCardComponent } from '../../components/post-card/post-card.component';
 
-type SettingsSection = 'profile' | 'account' | 'privacy' | 'blocked' | 'story-privacy' | 'family' | 'muted' | 'like-counts' | 'tags' | 'comments' | 'sharing' | 'hidden-words' | 'security' | 'notifications' | 'messages' | 'content' | 'connections' | 'activity' | 'appearance' | 'accessibility' | 'language' | 'data' | 'permissions' | 'ads' | 'payments' | 'about';
+type SettingsSection = 'profile' | 'account' | 'privacy' | 'blocked' | 'story-privacy' | 'family' | 'muted' | 'like-counts' | 'tags' | 'comments' | 'sharing' | 'hidden-words' | 'security' | 'notifications' | 'messages' | 'content' | 'connections' | 'activity' | 'archive' | 'trash' | 'appearance' | 'accessibility' | 'language' | 'data' | 'permissions' | 'ads' | 'payments' | 'about';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
   templateUrl: './settings.page.html',
   styleUrls: ['./settings.page.scss'],
-  imports: [CommonModule, FormsModule, RouterLink, IonButton, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonSelect, IonSelectOption, IonToggle, IonToolbar],
+  imports: [CommonModule, FormsModule, RouterLink, IonButton, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonSelect, IonSelectOption, IonToggle, IonToolbar, PostCardComponent],
 })
 export class SettingsPage {
   readonly accountService = inject(AccountService);
@@ -41,6 +42,8 @@ export class SettingsPage {
     { id: 'content', label: 'Content Preferences', icon: 'document-text-outline' },
     { id: 'connections', label: 'Followers and Following', icon: 'people-outline' },
     { id: 'activity', label: 'Your Activity', icon: 'time-outline' },
+    { id: 'archive', label: 'Archive', icon: 'archive-outline' },
+    { id: 'trash', label: 'Trash', icon: 'trash-outline' },
     { id: 'appearance', label: 'Appearance', icon: 'color-palette-outline' },
     { id: 'accessibility', label: 'Accessibility', icon: 'accessibility-outline' },
     { id: 'language', label: 'Language', icon: 'language-outline' },
@@ -114,6 +117,7 @@ export class SettingsPage {
       accessibility: 'text motion', language: 'translation', data: 'storage saver', permissions: 'media access',
       ads: 'personalized recommendations', payments: 'meta pay subscriptions billing', about: 'version app',
       family: 'teen parental supervision',
+      archive: 'archived posts restore', trash: 'deleted posts restore permanently delete',
       muted: 'mute hide accounts', 'like-counts': 'likes shares counts numbers', tags: 'mentions tag people',
       comments: 'comment replies', sharing: 'share repost stories', 'hidden-words': 'filter words comments messages',
     };
@@ -148,7 +152,7 @@ export class SettingsPage {
   }
 
   constructor() {
-    addIcons({ accessibilityOutline, banOutline, cardOutline, chatbubblesOutline, chevronBackOutline, chevronDownOutline, chevronForwardOutline, checkmarkOutline, colorPaletteOutline, documentTextOutline, eyeOffOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, personOutline, searchOutline, serverOutline, shieldCheckmarkOutline, starOutline, sunnyOutline, timeOutline });
+    addIcons({ accessibilityOutline, archiveOutline, banOutline, cardOutline, chatbubblesOutline, chevronBackOutline, chevronDownOutline, chevronForwardOutline, checkmarkOutline, colorPaletteOutline, documentTextOutline, eyeOffOutline, informationCircleOutline, keyOutline, languageOutline, lockClosedOutline, logOutOutline, megaphoneOutline, moonOutline, notificationsOutline, peopleOutline, personAddOutline, personCircleOutline, personOutline, searchOutline, serverOutline, shieldCheckmarkOutline, starOutline, sunnyOutline, timeOutline, trashOutline });
     this.readPreferences();
     this.privateAccount = this.accountService.selectedAccount()?.privacy === 'private' || this.privateAccount;
     this.language = this.readLanguage();
@@ -298,6 +302,16 @@ export class SettingsPage {
   get ownPosts() {
     const id = this.accountService.selectedAccount()?.id;
     return this.postService.posts().filter((post) => post.authorId === id);
+  }
+
+  get archivedPosts() {
+    const id = this.accountService.selectedAccount()?.id;
+    return this.postService.posts().filter((post) => post.authorId === id && !!post.archivedAt && !post.trashedAt);
+  }
+
+  get trashedPosts() {
+    const id = this.accountService.selectedAccount()?.id;
+    return this.postService.posts().filter((post) => post.authorId === id && !!post.trashedAt);
   }
 
   updatePassword() {

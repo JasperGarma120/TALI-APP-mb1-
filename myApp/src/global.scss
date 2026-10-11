@@ -975,18 +975,19 @@ html:not(.app-light) .profile-hero .profile-actions ion-button:not(.message-prof
 
 /* Lift dark-mode profile surfaces one step brighter than the black page base. */
 html:not(.app-light) .profile-top ion-avatar {
-  background: #0f2270;
-  color: #e6edfd;
+	background: #000000;
+	color: #ffffff;
 }
 html:not(.app-light) .profile-sections button {
-  border-color: #ffffff;
-  background: #ffffff;
-  color: #071039;
+  border-color: transparent;
+  background: transparent;
+  color: #ffffff;
 }
 html:not(.app-light) .profile-sections button.active {
-  border-color: #e6edfd;
-  background: #e6edfd;
-  color: #071039;
+  border-color: transparent;
+  border-bottom-color: #ffffff;
+  background: transparent;
+  color: #ffffff;
 }
 
 /* Dark blue headers and profile hero in light mode, with pale foregrounds. */
@@ -1113,6 +1114,24 @@ html:not(.app-light) body button {
   background: #ffffff !important;
   color: #071039 !important;
 }
+html body .profile-content-panel .profile-sections button {
+  border-color: transparent !important;
+  background: transparent !important;
+  color: #ffffff !important;
+}
+html body .profile-content-panel .profile-sections button.active {
+  border-bottom-color: #ffffff !important;
+  background: transparent !important;
+  color: #ffffff !important;
+}
+html body .profile-circle-btn,
+html:not(.app-light) body .profile-circle-btn {
+  border: 0 !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
 html:not(.app-light) body button.conversation-indicator-button {
   border-color: transparent !important;
   background: transparent !important;
@@ -1193,6 +1212,7 @@ html:not(.app-light) body .stats-row button,
 html:not(.app-light) body .close-button,
 html:not(.app-light) body .tool-button,
 html:not(.app-light) body .remove-attachment,
+html:not(.app-light) body .profile-circle-btn,
 html:not(.app-light) body .page-nav ion-button[fill="clear"] {
   border-color: transparent !important;
   background: transparent !important;

@@ -63,6 +63,11 @@
             <button class="settings-row" [class.active]="activeSection === 'blocked'" type="button" (click)="openSection('blocked')"><ion-icon name="ban-outline" aria-hidden="true"></ion-icon><span>Restricted accounts</span></button>
             <button class="settings-row" [class.active]="activeSection === 'hidden-words'" type="button" (click)="openSection('hidden-words')"><ion-icon name="eye-off-outline" aria-hidden="true"></ion-icon><span>Hidden Words</span></button>
           </div>
+          <div class="settings-group">
+            <h2>Your activity</h2>
+            <button class="settings-row" [class.active]="activeSection === 'archive'" type="button" (click)="openSection('archive')"><ion-icon name="archive-outline" aria-hidden="true"></ion-icon><span>Archive</span></button>
+            <button class="settings-row" [class.active]="activeSection === 'trash'" type="button" (click)="openSection('trash')"><ion-icon name="trash-outline" aria-hidden="true"></ion-icon><span>Trash</span></button>
+          </div>
           <button class="settings-row logout-category" type="button" (click)="logout()"><ion-icon name="log-out-outline" aria-hidden="true"></ion-icon><span>Log out</span></button>
         }
       </main>
@@ -226,6 +231,20 @@
         <h2>Your Activity</h2><section class="settings-info-card activity-settings-card"><ion-item lines="none"><ion-label><strong>Activity status</strong><p>Show whether you are currently active.</p></ion-label><ion-toggle slot="end" [(ngModel)]="activityStatus" (ionChange)="savePreferences()"></ion-toggle></ion-item><p class="detail-copy">{{ ownPosts.length }} posts from this account.</p>
         @for (post of ownPosts; track post.id) { <article class="activity-post"><p>{{ post.body || 'Media post' }}</p><time>{{ post.createdAt | date:'medium' }}</time></article> } @empty { <p class="detail-copy">No activity to show yet.</p> }
         </section>
+      }
+      @if (activeSection === 'archive') {
+        <h2>Archive</h2><p class="detail-copy">Archived posts are visible only to you. Restore a post to return it to your profile.</p>
+        <div class="settings-post-feed">
+          @for (post of archivedPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }
+          @empty { <section class="settings-info-card"><p class="detail-copy">Your archive is empty.</p></section> }
+        </div>
+      }
+      @if (activeSection === 'trash') {
+        <h2>Trash</h2><p class="detail-copy">Posts stay in Trash for 30 days. Restore a post to keep it or delete it permanently.</p>
+        <div class="settings-post-feed">
+          @for (post of trashedPosts; track post.id) { <app-post-card [post]="post"></app-post-card> }
+          @empty { <section class="settings-info-card"><p class="detail-copy">Your trash is empty.</p></section> }
+        </div>
       }
       @if (activeSection === 'appearance') {
         <h2>Appearance</h2><div class="notification-settings-card"><ion-item lines="none"><ion-label>Dark mode</ion-label><ion-toggle slot="end" [(ngModel)]="darkMode" (ionChange)="savePreferences()"></ion-toggle></ion-item></div>

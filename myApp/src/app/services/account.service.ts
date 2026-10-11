@@ -16,6 +16,7 @@ export interface Account {
   privacy?: 'public' | 'private';
   repostVisibility?: 'public' | 'friends' | 'only-me';
   profileImage?: string;
+  coverImage?: string;
   profileImageVisibility?: 'public' | 'friends' | 'only-me';
   verified?: boolean;
   followersIds: number[];
@@ -142,6 +143,17 @@ export class AccountService {
     this.persistAccounts();
     this.persistActiveAccount();
     return updated;
+  }
+
+  updateCoverImage(coverImage?: string) {
+    const selected = this.selectedAccount();
+    if (!selected) return;
+    const updated = { ...selected, coverImage };
+    this.accounts.update((accounts) => accounts.map((account) => account.id === selected.id ? updated : account));
+    this.selectedAccount.set(updated);
+    this.changedBeforeHydration = true;
+    this.persistAccounts();
+    this.persistActiveAccount();
   }
 
   canViewProfileImage(profile: Account, viewer: Account | null) {
@@ -361,6 +373,7 @@ function isStoredAccount(value: unknown): value is Account {
     (account.privacy === undefined || account.privacy === 'public' || account.privacy === 'private') &&
     (account.repostVisibility === undefined || ['public', 'friends', 'only-me'].includes(account.repostVisibility)) &&
     (account.profileImage === undefined || typeof account.profileImage === 'string') &&
+    (account.coverImage === undefined || typeof account.coverImage === 'string') &&
     (account.verified === undefined || typeof account.verified === 'boolean') &&
     Array.isArray(account.followersIds) && account.followersIds.every(Number.isSafeInteger) &&
     Array.isArray(account.followingIds) && account.followingIds.every(Number.isSafeInteger) &&
