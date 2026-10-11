@@ -52,6 +52,19 @@ export class PostCardComponent implements OnChanges {
     return this.post.authorId !== null && this.post.authorId === this.accountService.selectedAccount()?.id;
   }
 
+  get hideLikeCounts() { return this.settingIs('hideLikeCounts'); }
+  get hideShareCounts() { return this.settingIs('hideShareCounts'); }
+  get commentsEnabled() { return this.settingIs('commentsEnabled', true); }
+  get sharingEnabled() { return this.settingIs('sharingEnabled', true); }
+  get autoplayVideos() { return this.settingIs('autoplayVideos', true) && !this.settingIs('dataSaver'); }
+  get dataSaver() { return this.settingIs('dataSaver'); }
+
+  private settingIs(key: string, fallback = false) {
+    if (typeof localStorage === 'undefined') return fallback;
+    const stored = localStorage.getItem(`tali-setting-${key}`);
+    return stored === null ? fallback : stored === 'true';
+  }
+
   get trashDaysRemaining() {
     if (!this.post.trashedAt) return 0;
     const elapsed = Date.now() - new Date(this.post.trashedAt).getTime();
@@ -120,6 +133,7 @@ export class PostCardComponent implements OnChanges {
   }
 
   openComments() {
+    if (!this.commentsEnabled) return;
     this.commentsOpen = true;
     try { sessionStorage.setItem('tali-open-comments', JSON.stringify({ postId: this.post.id, pathname: location.pathname })); } catch { /* Modal still opens if storage is unavailable. */ }
   }
@@ -222,6 +236,7 @@ export class PostCardComponent implements OnChanges {
   }
 
   async sharePost() {
+    if (!this.sharingEnabled) return;
     this.actionMessage = '';
     const postUrl = new URL(window.location.href);
     postUrl.hash = `post-${this.post.id}`;

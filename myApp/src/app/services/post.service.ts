@@ -140,6 +140,7 @@ export class PostService {
     const accountId = typeof actorOrId === 'number' ? actorOrId : actorOrId.id;
     const post = this.posts().find((item) => item.id === postId);
     const alreadyReposted = post?.reposts.includes(accountId) ?? false;
+    if (!alreadyReposted && !isSettingEnabled('sharingEnabled', true)) return;
     this.posts.update((posts) => posts.map((post) => {
       if (post.id !== postId) return post;
       const reposts = post.reposts.includes(accountId)
@@ -154,6 +155,7 @@ export class PostService {
   }
 
   recordShare(postId: string, actor: Pick<Account, 'id' | 'name' | 'username'>) {
+    if (!isSettingEnabled('sharingEnabled', true)) return;
     const post = this.posts().find((item) => item.id === postId);
     if (post && !post.notificationsDisabled) this.notificationService?.notifyPostAction('share', actor, post.authorId, post.id, post.body);
   }
@@ -324,6 +326,11 @@ function optionalNotificationService(): NotificationService | null {
     // Keep direct construction working in unit tests and non-Angular utilities.
     return null;
   }
+}
+
+function isSettingEnabled(key: string, fallback: boolean) {
+  if (typeof localStorage === 'undefined') return fallback;
+  return localStorage.getItem(`tali-setting-${key}`) !== 'false';
 }
 
 function isStoredPostList(value: unknown): value is Post[] {

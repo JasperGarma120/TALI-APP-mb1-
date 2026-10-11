@@ -9,13 +9,19 @@ export interface Account {
   contact: string;
   password: string;
   bio: string;
+  gender?: 'prefer-not-to-say' | 'female' | 'male' | 'custom';
+  customGender?: string;
+  website?: string;
+  hiddenStoryIds?: number[];
   privacy?: 'public' | 'private';
   repostVisibility?: 'public' | 'friends' | 'only-me';
   profileImage?: string;
+  coverImage?: string;
   profileImageVisibility?: 'public' | 'friends' | 'only-me';
   verified?: boolean;
   followersIds: number[];
   followingIds: number[];
+  closeFriendsIds?: number[];
 }
 
 const accountsStorageKey = 'tali-accounts';
@@ -116,7 +122,7 @@ export class AccountService {
     return account;
   }
 
-  updateProfile(name: string, username: string, bio: string, profileImage?: string, profileImageVisibility: 'public' | 'friends' | 'only-me' = 'public') {
+  updateProfile(name: string, username: string, bio: string, profileImage?: string, profileImageVisibility: 'public' | 'friends' | 'only-me' = 'public', gender?: Account['gender'], website?: string, customGender?: string) {
     const selected = this.selectedAccount();
     if (!selected) return null;
 
@@ -125,6 +131,9 @@ export class AccountService {
       name: name.trim(),
       username: username.trim().startsWith('@') ? username.trim() : `@${username.trim()}`,
       bio: bio.trim(),
+      gender: gender ?? selected.gender,
+      customGender: customGender ?? selected.customGender,
+      website: website ?? selected.website,
       profileImage,
       profileImageVisibility,
     };
@@ -134,6 +143,17 @@ export class AccountService {
     this.persistAccounts();
     this.persistActiveAccount();
     return updated;
+  }
+
+  updateCoverImage(coverImage?: string) {
+    const selected = this.selectedAccount();
+    if (!selected) return;
+    const updated = { ...selected, coverImage };
+    this.accounts.update((accounts) => accounts.map((account) => account.id === selected.id ? updated : account));
+    this.selectedAccount.set(updated);
+    this.changedBeforeHydration = true;
+    this.persistAccounts();
+    this.persistActiveAccount();
   }
 
   canViewProfileImage(profile: Account, viewer: Account | null) {
@@ -151,6 +171,23 @@ export class AccountService {
     const updated = { ...selected, privacy, repostVisibility };
     this.accounts.update((items) => items.map((item) => item.id === selected.id ? updated : item));
     this.selectedAccount.set(updated);
+    this.persistAccounts();
+    this.persistActiveAccount();
+  }
+
+  setStoryHidden(accountId: number, hidden: boolean) {
+    const selected = this.selectedAccount();
+    if (!selected || selected.id === accountId) return;
+    const hiddenStoryIds = selected.hiddenStoryIds ?? [];
+    const updated: Account = {
+      ...selected,
+      hiddenStoryIds: hidden
+        ? [...new Set([...hiddenStoryIds, accountId])]
+        : hiddenStoryIds.filter((id) => id !== accountId),
+    };
+    this.accounts.update((accounts) => accounts.map((account) => account.id === selected.id ? updated : account));
+    this.selectedAccount.set(updated);
+    this.selectionChanged = true;
     this.persistAccounts();
     this.persistActiveAccount();
   }
@@ -220,6 +257,29 @@ export class AccountService {
   getFollowing(accountId: number) {
     const account = this.accounts().find((item) => item.id === accountId);
     return this.accounts().filter((item) => account?.followingIds.includes(item.id));
+  }
+
+  getCloseFriends(accountId: number) {
+    const account = this.accounts().find((item) => item.id === accountId);
+    const ids = account?.closeFriendsIds ?? [];
+    return this.accounts().filter((item) => ids.includes(item.id));
+  }
+
+  toggleCloseFriend(targetId: number) {
+    const selected = this.selectedAccount();
+    if (!selected || selected.id === targetId || !this.accounts().some((item) => item.id === targetId)) return;
+    const closeFriendsIds = selected.closeFriendsIds ?? [];
+    const updated = {
+      ...selected,
+      closeFriendsIds: closeFriendsIds.includes(targetId)
+        ? closeFriendsIds.filter((id) => id !== targetId)
+        : [...closeFriendsIds, targetId],
+    };
+    this.accounts.update((items) => items.map((item) => item.id === selected.id ? updated : item));
+    this.selectedAccount.set(updated);
+    this.selectionChanged = true;
+    this.persistAccounts();
+    this.persistActiveAccount();
   }
 
   authenticate(identifier: string, password: string) {
@@ -313,7 +373,9 @@ function isStoredAccount(value: unknown): value is Account {
     (account.privacy === undefined || account.privacy === 'public' || account.privacy === 'private') &&
     (account.repostVisibility === undefined || ['public', 'friends', 'only-me'].includes(account.repostVisibility)) &&
     (account.profileImage === undefined || typeof account.profileImage === 'string') &&
+    (account.coverImage === undefined || typeof account.coverImage === 'string') &&
     (account.verified === undefined || typeof account.verified === 'boolean') &&
     Array.isArray(account.followersIds) && account.followersIds.every(Number.isSafeInteger) &&
-    Array.isArray(account.followingIds) && account.followingIds.every(Number.isSafeInteger);
+    Array.isArray(account.followingIds) && account.followingIds.every(Number.isSafeInteger) &&
+    (account.closeFriendsIds === undefined || Array.isArray(account.closeFriendsIds) && account.closeFriendsIds.every(Number.isSafeInteger));
 }

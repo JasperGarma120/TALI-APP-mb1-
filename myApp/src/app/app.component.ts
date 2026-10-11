@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { IonApp, IonRouterOutlet } from '@ionic/angular';
 
@@ -9,7 +9,9 @@ import { IonApp, IonRouterOutlet } from '@ionic/angular';
 	imports: [IonApp, IonRouterOutlet],
 })
 export class AppComponent {
-	constructor(router: Router) {
+	private readonly router = inject(Router);
+
+	constructor() {
 		if (typeof document === 'undefined' || typeof localStorage === 'undefined') return;
 
 		const savedDarkMode = localStorage.getItem('tali-setting-darkMode') ?? localStorage.getItem('tali-dark-mode');
@@ -22,8 +24,8 @@ export class AppComponent {
 			document.documentElement.classList.toggle('app-web-shell', isSignedInPage);
 		};
 
-		updateWebShell(router.url);
-		router.events.subscribe((event) => {
+		updateWebShell(this.router.url);
+		this.router.events.subscribe((event) => {
 			if (event instanceof NavigationEnd) updateWebShell(event.urlAfterRedirects);
 		});
 	}
