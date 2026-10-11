@@ -56,7 +56,7 @@
           @if (attachment.type.startsWith('image/')) {
             <img class="post-media" [src]="attachment.dataUrl" [alt]="attachment.name" />
           } @else if (attachment.type.startsWith('video/')) {
-            <video class="post-media" controls playsinline preload="metadata" [attr.aria-label]="attachment.name">
+            <video class="post-media" controls playsinline [muted]="autoplayVideos" [autoplay]="autoplayVideos" [attr.preload]="dataSaver ? 'none' : 'metadata'" [attr.aria-label]="attachment.name">
               <source [src]="attachment.dataUrl" [type]="attachment.type" />
             </video>
           } @else {
@@ -74,19 +74,25 @@
   @if (!post.trashedAt) { <div class="post-actions" aria-label="Post actions">
     <button class="action-button" [class.is-active]="isLiked" type="button" [attr.aria-pressed]="isLiked" [attr.aria-label]="isLiked ? 'Unlike post' : 'Like post'" (click)="toggleLike()">
       <ion-icon [name]="isLiked ? 'heart' : 'heart-outline'" aria-hidden="true"></ion-icon>
-      <span>{{ post.likes.length }}</span>
+      @if (!hideLikeCounts) { <span>{{ post.likes.length }}</span> }
     </button>
+    @if (commentsEnabled) {
     <button class="action-button" type="button" [attr.aria-label]="'View ' + post.comments.length + ' comments'" (click)="openComments()">
       <ion-icon name="chatbubble-outline" aria-hidden="true"></ion-icon>
       <span>{{ post.comments.length }}</span>
     </button>
+    }
+    @if (sharingEnabled || isReposted) {
     <button class="action-button" [class.is-active]="isReposted" type="button" [attr.aria-pressed]="isReposted" [attr.aria-label]="isReposted ? 'Undo repost' : 'Repost'" (click)="toggleRepost()">
       <ion-icon name="repeat-outline" aria-hidden="true"></ion-icon>
-      <span>{{ post.reposts.length }}</span>
+      @if (!hideShareCounts) { <span>{{ post.reposts.length }}</span> }
     </button>
+    }
+    @if (sharingEnabled) {
     <button class="action-button" type="button" aria-label="Share post" (click)="sharePost()">
       <ion-icon name="share-outline" aria-hidden="true"></ion-icon>
     </button>
+    }
   </div> }
 
   @if (actionMessage) { <p class="action-message" role="status">{{ actionMessage }}</p> }
